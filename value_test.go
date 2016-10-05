@@ -2,8 +2,6 @@ package goriak
 
 import (
 	"testing"
-
-	"log"
 )
 
 type teststoreobject struct {
@@ -79,9 +77,24 @@ func TestValueWithSliceIndex(t *testing.T) {
 	}
 
 	keys, err := KeysInIndex("testsuite", "default", "sliceindex_bin", "Hej")
-	log.Println(keys, err)
+
+	if err != nil {
+		t.Error(err)
+	}
+
+	if len(keys) != 1 || keys[0] != "slice1" {
+		t.Error("1: Unexpected content")
+		t.Errorf("%+v", keys)
+	}
 
 	keys, err = KeysInIndex("testsuite", "default", "sliceindex_bin", "Hola")
-	log.Println(keys, err)
 
+	if err != nil {
+		t.Error(err)
+	}
+
+	if len(keys) != 1 || keys[0] != "slice1" {
+		t.Error("2: Unexpected content")
+		t.Errorf("%+v", keys)
+	}
 }
