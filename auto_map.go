@@ -1,14 +1,14 @@
 package goriak
 
 import (
-	"fmt"
+	"errors"
 	"reflect"
 	"strconv"
 
 	riak "github.com/basho/riak-go-client"
 )
 
-func Set(bucket, key string, input interface{}) {
+func SetMap(bucket, bucketType, key string, input interface{}) error {
 	op := riak.MapOperation{}
 
 	rValue := reflect.ValueOf(input).Elem()
@@ -51,37 +51,48 @@ func Set(bucket, key string, input interface{}) {
 				continue
 			}
 
-			fmt.Println("Unknown Slice:", sliceVal.Index(0).Type())
-			fmt.Printf("%+v\n", sliceVal)
-			continue
+			// Slice: String
+			if rType.Field(i).Type.Elem().Kind() == reflect.String {
+
+				for ii := 0; ii < sliceLength; ii++ {
+					strVal := sliceVal.Index(ii).String()
+					op.AddToSet(itemKey, []byte(strVal))
+				}
+
+				continue
+			}
+
+			return errors.New("Unknown slice type: " + sliceVal.Index(0).Type().String())
 		}
 
-		fmt.Println("Unknown type")
-		fmt.Println(field.Type.Kind())
-		fmt.Printf("%+v\n\n", field)
-
+		return errors.New("Unexpected type: " + field.Type.Kind().String())
 	}
 
-	fmt.Printf("%+v\n\n", op)
-
-	cmd, err := riak.NewUpdateMapCommandBuilder().WithBucket(bucket).WithKey(key).WithBucketType("maps").WithMapOperation(&op).Build()
+	cmd, err := riak.NewUpdateMapCommandBuilder().
+		WithBucket(bucket).
+		WithKey(key).
+		WithBucketType(bucketType).
+		WithMapOperation(&op).
+		Build()
 
 	if err != nil {
-		panic(err)
+		return err
 	}
 
 	err = connect().Execute(cmd)
 
 	if err != nil {
-		panic(err)
+		return err
 	}
+
+	return nil
 }
 
-func Get(bucket, key string, output interface{}) {
+func GetMap(bucket, bucketType, key string, output interface{}) error {
 	cmd, err := riak.NewFetchMapCommandBuilder().
 		WithBucket(bucket).
 		WithKey(key).
-		WithBucketType("maps").
+		WithBucketType(bucketType).
 		Build()
 
 	if err != nil {
@@ -124,9 +135,9 @@ func Get(bucket, key string, output interface{}) {
 
 		// Slice
 		if field.Type.Kind() == reflect.Slice {
-			if rValue.Field(i).Type().Elem().Kind() == reflect.Int {
 
-				// Slice : Int
+			// Slice: Int
+			if rValue.Field(i).Type().Elem().Kind() == reflect.Int {
 				if setVal, ok := data.Sets[registerName]; ok {
 					result := make([]int, len(setVal))
 
@@ -144,8 +155,61 @@ func Get(bucket, key string, output interface{}) {
 					continue
 				}
 			}
+
+			// Slice: String
+			if rValue.Field(i).Type().Elem().Kind() == reflect.String {
+				if setVal, ok := data.Sets[registerName]; ok {
+					result := make([]string, len(setVal))
+
+					for i, v := range setVal {
+						result[i] = string(v)
+					}
+
+					rValue.Field(i).Set(reflect.ValueOf(result))
+					continue
+				}
+			}
+
+			return errors.New("Unknown slice type: " + rValue.Field(i).Type().Elem().Kind().String())
 		}
 
-		fmt.Println("Unknown type:", field.Type.Kind().String())
+		return errors.New("Unknown type: " + field.Type.Kind().String())
 	}
+
+	return nil
+}
+
+func MapOperation(bucket, bucketType, key string, op riak.MapOperation) error {
+	cmd, err := riak.NewUpdateMapCommandBuilder().
+		WithBucket(bucket).
+		WithBucketType(bucketType).
+		WithKey(key).
+		WithMapOperation(&op).
+		Build()
+
+	if err != nil {
+		return err
+	}
+
+	err = connect().Execute(cmd)
+
+	if err != nil {
+		return err
+	}
+
+	res, ok := cmd.(*riak.UpdateMapCommand)
+
+	if !ok {
+		return errors.New("Could not convert")
+	}
+
+	if !res.Success() {
+		return errors.New("Not successful")
+	}
+
+	return nil
+}
+
+func NewMapOperation() riak.MapOperation {
+	return riak.MapOperation{}
 }

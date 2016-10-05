@@ -110,3 +110,33 @@ func GetValue(bucket, key string, value interface{}) error {
 
 	return nil
 }
+
+func Delete(bucket, bucketType, key string) error {
+	cmd, err := riak.NewDeleteValueCommandBuilder().
+		WithBucket(bucket).
+		WithBucketType(bucketType).
+		WithKey(key).
+		Build()
+
+	if err != nil {
+		return err
+	}
+
+	err = connect().Execute(cmd)
+
+	if err != nil {
+		return err
+	}
+
+	res, ok := cmd.(*riak.DeleteValueCommand)
+
+	if !ok {
+		return errors.New("Could not convert")
+	}
+
+	if !res.Success() {
+		return errors.New("Command was not successful")
+	}
+
+	return nil
+}
