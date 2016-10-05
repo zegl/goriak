@@ -89,3 +89,11 @@ Keys in a particular index can be retreived with `KeysInIndex`.
 ```go
 goriak.KeysInIndex("bucket-name", "bucket-type", "nameindex_bin", "Value")
 ```
+
+Indexes can also be used in slices. If you are using a slice every value in the slice will be added to the index.
+
+```go
+type User struct {
+    Aliases []string `goriakindex:"aliasesindex_bin"`
+}
+```
