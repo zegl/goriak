@@ -70,3 +70,22 @@ goriak.SetValue("bucket-name", "bucket-type", "key", obj)
 ```go
 goriak.GetValue("bucket-name", "bucket-type", "key", &obj)
 ```
+
+# Secondary Indexes
+
+You can set secondary indexes on Values with `SetValue` by using struct tags.
+
+```go
+type User struct {
+    Name    string `goriakindex:"nameindex_bin"`
+    Aliases []string
+}
+```
+
+When saved the next time the index will be updated.
+
+Keys in a particular index can be retreived with `KeysInIndex`.
+
+```go
+goriak.KeysInIndex("bucket-name", "bucket-type", "nameindex_bin", "Value")
+```
