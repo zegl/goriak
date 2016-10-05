@@ -8,7 +8,9 @@ import (
 	riak "github.com/basho/riak-go-client"
 )
 
-func SetValue(bucket, key string, value interface{}) error {
+// SetValue saves value as key in the bucket bucket/bucketType
+// Values can automatically be added to indexes with the struct tag goriakindex
+func SetValue(bucket, bucketType, key string, value interface{}) error {
 	by, err := json.Marshal(value)
 
 	if err != nil {
@@ -22,6 +24,7 @@ func SetValue(bucket, key string, value interface{}) error {
 	refType := reflect.TypeOf(value)
 	refValue := reflect.ValueOf(value)
 
+	// Set indexes
 	for i := 0; i < refType.NumField(); i++ {
 
 		indexName := refType.Field(i).Tag.Get("goriakindex")
@@ -30,10 +33,26 @@ func SetValue(bucket, key string, value interface{}) error {
 			continue
 		}
 
-		// Test if this is a string value
+		// String
 		if refValue.Field(i).Type().Kind() == reflect.String {
 			object.AddToIndex(indexName, refValue.Field(i).String())
 			continue
+		}
+
+		// Slice
+		if refValue.Field(i).Type().Kind() == reflect.Slice {
+
+			sliceType := refValue.Field(i).Type().Elem()
+			sliceValue := refValue.Field(i)
+
+			// Slice: String
+			if sliceType.Kind() == reflect.String {
+				for sli := 0; sli < sliceValue.Len(); sli++ {
+					object.AddToIndex(indexName, sliceValue.Index(sli).String())
+				}
+
+				continue
+			}
 		}
 
 		return errors.New("Did not know how to set index: " + refType.Field(i).Name)
@@ -41,6 +60,7 @@ func SetValue(bucket, key string, value interface{}) error {
 
 	cmd, err := riak.NewStoreValueCommandBuilder().
 		WithBucket(bucket).
+		WithBucketType(bucketType).
 		WithKey(key).
 		WithContent(&object).
 		Build()

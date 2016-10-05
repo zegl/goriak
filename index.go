@@ -6,11 +6,12 @@ import (
 	riak "github.com/basho/riak-go-client"
 )
 
-func KeysInIndex(bucket, indexName, indexValue string) ([]string, error) {
+func KeysInIndex(bucket, bucketType, indexName, indexValue string) ([]string, error) {
 	result := []string{}
 
 	cmd, err := riak.NewSecondaryIndexQueryCommandBuilder().
 		WithBucket(bucket).
+		WithBucketType(bucketType).
 		WithIndexName(indexName).
 		WithIndexKey(indexValue).
 		Build()
