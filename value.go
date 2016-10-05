@@ -3,6 +3,7 @@ package goriak
 import (
 	"encoding/json"
 	"errors"
+	"log"
 	"reflect"
 
 	riak "github.com/basho/riak-go-client"
@@ -22,6 +23,7 @@ func SetValue(bucket, key string, value interface{}) error {
 	refType := reflect.TypeOf(value)
 	refValue := reflect.ValueOf(value)
 
+	// Set indexes
 	for i := 0; i < refType.NumField(); i++ {
 
 		indexName := refType.Field(i).Tag.Get("goriakindex")
@@ -30,10 +32,15 @@ func SetValue(bucket, key string, value interface{}) error {
 			continue
 		}
 
-		// Test if this is a string value
+		// String
 		if refValue.Field(i).Type().Kind() == reflect.String {
 			object.AddToIndex(indexName, refValue.Field(i).String())
 			continue
+		}
+
+		// Slice
+		if refValue.Field(i).Type().Kind() == reflect.Slice {
+			log.Println(refValue.Field(i).Type().Elem().Kind())
 		}
 
 		return errors.New("Did not know how to set index: " + refType.Field(i).Name)
