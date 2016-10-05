@@ -1,5 +1,72 @@
 # goriak ![Build Status](https://api.travis-ci.org/zegl/goriak.svg)
 
-A Golang Riak driver.
-
 Everything is currenly in alfa status, stay tuned. :)
+
+# What is goriak?
+
+goriak is a wrapper around [riak-go-client](https://github.com/basho/riak-go-client) to make it easier and more friendly for developers to user Riak.
+
+# Installation
+
+```bash
+go get -u github.com/zegl/goriak
+```
+
+# Maps
+
+goriak can automatically create [Riak maps](http://docs.basho.com/riak/kv/2.1.4/developing/data-types/) from your Go types.
+
+## SetMap
+
+In the example below `Name` will be saved as a register, and `Aliases` will be a set.
+
+```go
+type User struct {
+    Name    string
+    Aliases []string
+}
+
+user := User {
+    Name:   "Foo",
+    Alises: []string{"Foo", "Bar"},
+}
+
+goriak.SetMap("bucket-name", "bucket-type", "key", user)
+```
+
+## GetMap
+
+The map can later be retreived as a whole:
+
+```go
+var res User
+goriak.GetMap("bucket-name", "bucket-type", "key", &res)
+```
+
+## MapOperation
+
+There are ofcourse times where you want to perform Riak Map Operations.
+
+```go
+// Works with MapOperation from github.com/basho/riak-go-client
+operation := goriak.NewMapOperation()
+operation.AddToSet("Aliases", []byte("Baz"))
+
+goriak.MapOperation("bucket-name", "bucket-type", "key", operation)
+```
+
+# Values
+
+Values are automatically JSON encoded and decoded.
+
+## SetValue
+
+```go
+goriak.SetValue("bucket-name", "bucket-type", "key", obj)
+```
+
+## GetValue
+
+```go
+goriak.GetValue("bucket-name", "bucket-type", "key", &obj)
+```
