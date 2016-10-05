@@ -5,7 +5,6 @@ go:
   - 1.5
   - 1.6
   - 1.7
-  - tip
 
 services:
   - riak
@@ -15,3 +14,4 @@ sudo: required
 install:
     - sudo riak-admin bucket-type create maps '{"props":{"datatype":"map"}}'
     - sudo riak-admin bucket-type activate maps
+    - go get -t ./...
