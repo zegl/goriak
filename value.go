@@ -9,7 +9,9 @@ import (
 	riak "github.com/basho/riak-go-client"
 )
 
-func SetValue(bucket, key string, value interface{}) error {
+// SetValue saves value as key in the bucket bucket/bucketType
+// Values can automatically be added to indexes with the struct tag goriakindex
+func SetValue(bucket, bucketType, key string, value interface{}) error {
 	by, err := json.Marshal(value)
 
 	if err != nil {
@@ -48,6 +50,7 @@ func SetValue(bucket, key string, value interface{}) error {
 
 	cmd, err := riak.NewStoreValueCommandBuilder().
 		WithBucket(bucket).
+		WithBucketType(bucketType).
 		WithKey(key).
 		WithContent(&object).
 		Build()

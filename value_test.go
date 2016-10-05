@@ -2,6 +2,8 @@ package goriak
 
 import (
 	"testing"
+
+	"log"
 )
 
 type teststoreobject struct {
@@ -10,7 +12,7 @@ type teststoreobject struct {
 }
 
 func TestGetSetValue(t *testing.T) {
-	err := SetValue("testsuite", "val1", teststoreobject{
+	err := SetValue("testsuite", "default", "val1", teststoreobject{
 		A: "Abc",
 		B: 10002,
 	})
@@ -38,7 +40,7 @@ func TestGetSetValue(t *testing.T) {
 }
 
 func TestValueWithIndex(t *testing.T) {
-	err := SetValue("testsuite", "val2", teststoreobject{
+	err := SetValue("testsuite", "default", "val2", teststoreobject{
 		A: "HelloWorld",
 		B: 10002,
 	})
@@ -48,7 +50,7 @@ func TestValueWithIndex(t *testing.T) {
 		return
 	}
 
-	keys, err := KeysInIndex("testsuite", "testindex_bin", "HelloWorld")
+	keys, err := KeysInIndex("testsuite", "default", "testindex_bin", "HelloWorld")
 
 	if len(keys) != 1 {
 		t.Error("Did not receive exactly 1 key")
@@ -59,4 +61,27 @@ func TestValueWithIndex(t *testing.T) {
 		t.Error("The wrong key was returned")
 		return
 	}
+}
+
+type testsliceindex struct {
+	Thing   string
+	Indexes []string `goriakindex:"sliceindex_bin"`
+}
+
+func TestValueWithSliceIndex(t *testing.T) {
+	err := SetValue("testsuite", "default", "slice1", testsliceindex{
+		Thing:   "Hello",
+		Indexes: []string{"Hola", "Hej", "Halo"},
+	})
+
+	if err != nil {
+		t.Error(err)
+	}
+
+	keys, err := KeysInIndex("testsuite", "default", "sliceindex_bin", "Hej")
+	log.Println(keys, err)
+
+	keys, err = KeysInIndex("testsuite", "default", "sliceindex_bin", "Hola")
+	log.Println(keys, err)
+
 }
