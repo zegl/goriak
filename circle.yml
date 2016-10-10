@@ -11,6 +11,9 @@ machine:
     - sudo riak-admin bucket-type create tests '{"props":{"backend":"leveldb"}}'
     - sudo riak-admin bucket-type activate tests
 
+
 test:
+  override:
+    - go test ./... -v -race -coverprofile=coverage.txt -covermode=atomic
   post:
-    - bash <(curl -s https://codecov.io/bash) 
+    - bash <(curl -s https://codecov.io/bash)
