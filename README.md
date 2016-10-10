@@ -1,4 +1,4 @@
-# goriak ![Build Status](https://api.travis-ci.org/zegl/goriak.svg)
+# goriak [![Build Status](https://api.travis-ci.org/zegl/goriak.svg)](https://travis-ci.org/zegl/goriak)
 
 Everything is currenly in alfa status, stay tuned. :)
 
