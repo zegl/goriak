@@ -1,6 +1,7 @@
 package goriak
 
 import (
+	"reflect"
 	"testing"
 )
 
@@ -147,4 +148,49 @@ func TestSetNonPointer(t *testing.T) {
 	if res.A != "I am passed as Value" {
 		t.Error("Unkown response")
 	}
+}
+
+type aBunchOfTypes struct {
+	//Int    int
+	String string
+	Array  [3]byte
+	Slice  []byte
+
+	StringSlice []string
+	IntSlice    []int
+}
+
+func TestAbunchOfTypes(t *testing.T) {
+	o := aBunchOfTypes{
+		//Int:         9001,
+		String:      "Hello World",
+		Array:       [3]byte{100, 101, 102},
+		Slice:       []byte{50, 60, 70},
+		StringSlice: []string{"H", "e", "l", "o"},
+		IntSlice:    []int{4000, 5000, 6000},
+	}
+
+	err := SetMap("testsuitemap", "maps", "bunchofvalues", o)
+
+	if err != nil {
+		t.Error("Set", err)
+	}
+
+	var res aBunchOfTypes
+	err, isNotFound := GetMap("testsuitemap", "maps", "bunchofvalues", &res)
+
+	if err != nil {
+		t.Error("Get", err)
+	}
+
+	if isNotFound {
+		t.Error("Not found")
+	}
+
+	if !reflect.DeepEqual(o, res) {
+		t.Error("Not equal")
+		t.Errorf("Got: %+v", res)
+		t.Errorf("Expected: %+v", o)
+	}
+
 }
