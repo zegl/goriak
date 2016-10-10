@@ -5,8 +5,10 @@ machine:
 machine:
   post:
     - sudo service riak start
-    - sudo riak-admin bucket-type create maps '{"props":{"datatype":"map"}}'
+    - sudo riak-admin bucket-type create maps '{"props":{"datatype":"map","backend":"leveldb"}}'
     - sudo riak-admin bucket-type activate maps
+    - sudo riak-admin bucket-type create tests '{"props":{"backend":"leveldb"}}'
+    - sudo riak-admin bucket-type activate tests
 
 test:
   post:
