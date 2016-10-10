@@ -61,12 +61,14 @@ Only a few Go types ar currently supported in `SetMap()` and `GetMap()`.
 
 They are:
 
-| Go Type    | Riak Type |
-|------------|-----------|
-| struct     | map       |
-| string     | register  |
-| byte array | register  |
-| byte slice | register  |
+| Go Type      | Riak Type |
+|--------------|-----------|
+| struct       | map       |
+| string       | register  |
+| byte array   | register  |
+| byte slice   | register  |
+| string slice | set       |
+| int slice    | set       |
 
 # Values
 
