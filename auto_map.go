@@ -37,6 +37,12 @@ func SetMap(bucket, bucketType, key string, input interface{}) error {
 			itemKey = tag
 		}
 
+		// Int -> Register
+		if field.Type.Kind() == reflect.Int {
+			op.SetRegister(itemKey, []byte(strconv.Itoa(int(rValue.Field(i).Int()))))
+			continue
+		}
+
 		// String -> Register
 		if field.Type.Kind() == reflect.String {
 			op.SetRegister(itemKey, []byte(rValue.Field(i).String()))
@@ -199,6 +205,19 @@ func GetMap(bucket, bucketType, key string, output interface{}) (err error, isNo
 					for ii := 0; ii < rValue.Field(i).Len(); ii++ {
 						rValue.Field(i).Index(ii).SetUint(uint64(val[ii]))
 					}
+				}
+			}
+
+			continue
+		}
+
+		// Int
+		if field.Type.Kind() == reflect.Int {
+			if val, ok := data.Registers[registerName]; ok {
+				intVal, err := strconv.Atoi(string(val))
+
+				if err == nil {
+					rValue.Field(i).SetInt(int64(intVal))
 				}
 			}
 

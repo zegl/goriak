@@ -151,7 +151,7 @@ func TestSetNonPointer(t *testing.T) {
 }
 
 type aBunchOfTypes struct {
-	//Int    int
+	Int    int
 	String string
 	Array  [3]byte
 	Slice  []byte
@@ -161,8 +161,9 @@ type aBunchOfTypes struct {
 }
 
 func TestAbunchOfTypes(t *testing.T) {
+
 	o := aBunchOfTypes{
-		//Int:         9001,
+		Int:         9001,
 		String:      "Hello World",
 		Array:       [3]byte{100, 101, 102},
 		Slice:       []byte{50, 60, 70},
