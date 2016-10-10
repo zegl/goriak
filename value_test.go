@@ -1,10 +1,12 @@
 package goriak
 
 import (
-	"os"
-
 	"log"
+	"os"
 	"testing"
+
+	"math/rand"
+	"time"
 )
 
 // Cleanup Bucket
@@ -12,6 +14,8 @@ func TestMain(m *testing.M) {
 	deleteAllIn("testsuite", "tests")
 	deleteAllIn("customtype", "maps")
 	deleteAllIn("testsuitemap", "maps")
+
+	rand.Seed(time.Now().UnixNano())
 
 	os.Exit(m.Run())
 }
@@ -30,8 +34,20 @@ type teststoreobject struct {
 	B int
 }
 
+var letters = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
+
+func randomKey() string {
+	b := make([]rune, 10)
+	for i := range b {
+		b[i] = letters[rand.Intn(len(letters))]
+	}
+	return string(b)
+}
+
 func TestGetSetValue(t *testing.T) {
-	err := SetValue("testsuite", "tests", "val1", teststoreobject{
+	key := randomKey()
+
+	err := SetValue("testsuite", "tests", key, teststoreobject{
 		A: "Abc",
 		B: 10002,
 	})
@@ -42,10 +58,11 @@ func TestGetSetValue(t *testing.T) {
 	}
 
 	var res teststoreobject
-	getErr := GetValue("testsuite", "tests", "val1", &res)
+	getErr := GetValue("testsuite", "tests", key, &res)
 
 	if getErr != nil {
-		t.Error("GetValue:", err)
+		t.Error("GetValue:", getErr)
+		t.Errorf("%+v", res)
 		return
 	}
 
@@ -59,10 +76,9 @@ func TestGetSetValue(t *testing.T) {
 }
 
 func TestValueWithIndex(t *testing.T) {
+	key := randomKey()
 
-	Delete("testsuite", "tests", "val2")
-
-	err := SetValue("testsuite", "tests", "val2", teststoreobject{
+	err := SetValue("testsuite", "tests", key, teststoreobject{
 		A: "HelloWorld",
 		B: 10002,
 	})
@@ -80,7 +96,7 @@ func TestValueWithIndex(t *testing.T) {
 		return
 	}
 
-	if keys[0] != "val2" {
+	if keys[0] != key {
 		t.Error("The wrong key was returned")
 		return
 	}
@@ -92,7 +108,9 @@ type testsliceindex struct {
 }
 
 func TestValueWithSliceIndex(t *testing.T) {
-	err := SetValue("testsuite", "tests", "slice1", testsliceindex{
+	key := randomKey()
+
+	err := SetValue("testsuite", "tests", key, testsliceindex{
 		Thing:   "Hello",
 		Indexes: []string{"Hola", "Hej", "Halo"},
 	})
@@ -107,7 +125,7 @@ func TestValueWithSliceIndex(t *testing.T) {
 		t.Error(err)
 	}
 
-	if len(keys) != 1 || keys[0] != "slice1" {
+	if len(keys) != 1 || keys[0] != key {
 		t.Error("1: Unexpected content")
 		t.Errorf("%+v", keys)
 	}
@@ -118,7 +136,7 @@ func TestValueWithSliceIndex(t *testing.T) {
 		t.Error(err)
 	}
 
-	if len(keys) != 1 || keys[0] != "slice1" {
+	if len(keys) != 1 || keys[0] != key {
 		t.Error("2: Unexpected content")
 		t.Errorf("%+v", keys)
 	}

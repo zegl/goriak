@@ -11,13 +11,15 @@ type testmapobject struct {
 }
 
 func TestAutoMapSetAndGet(t *testing.T) {
-	err := Delete("testsuitemap", "maps", "testMap1")
+	key := randomKey()
+
+	err := Delete("testsuitemap", "maps", key)
 
 	if err != nil {
 		t.Error("Could not delete: " + err.Error())
 	}
 
-	errset := SetMap("testsuitemap", "maps", "testMap1", &testmapobject{
+	errset := SetMap("testsuitemap", "maps", key, &testmapobject{
 		A:   "Hello",
 		Set: []string{"One", "Two"},
 	})
@@ -27,7 +29,7 @@ func TestAutoMapSetAndGet(t *testing.T) {
 	}
 
 	var res testmapobject
-	errget, isNotFound := GetMap("testsuitemap", "maps", "testMap1", &res)
+	errget, isNotFound := GetMap("testsuitemap", "maps", key, &res)
 
 	if errget != nil {
 		t.Error("Set:", errset)
@@ -64,13 +66,15 @@ func TestAutoMapSetAndGet(t *testing.T) {
 }
 
 func TestMapOperation(t *testing.T) {
-	err := Delete("testsuitemap", "maps", "testMap2")
+	key := randomKey()
+
+	err := Delete("testsuitemap", "maps", key)
 
 	if err != nil {
 		t.Error("Could not delete: " + err.Error())
 	}
 
-	errset := SetMap("testsuitemap", "maps", "testMap2", &testmapobject{
+	errset := SetMap("testsuitemap", "maps", key, &testmapobject{
 		A:   "Hello",
 		Set: []string{"One", "Two"},
 	})
@@ -80,7 +84,7 @@ func TestMapOperation(t *testing.T) {
 	}
 
 	var res testmapobject
-	GetMap("testsuitemap", "maps", "testMap2", &res)
+	GetMap("testsuitemap", "maps", key, &res)
 
 	if len(res.Set) != 2 {
 		t.Error("Unexpected length. Should be 2, got ", len(res.Set))
@@ -89,14 +93,14 @@ func TestMapOperation(t *testing.T) {
 	op := NewMapOperation()
 	op.AddToSet("Set", []byte("Three"))
 
-	mapoperr := MapOperation("testsuitemap", "maps", "testMap2", op)
+	mapoperr := MapOperation("testsuitemap", "maps", key, op)
 
 	if mapoperr != nil {
 		t.Error("MapOperr:", mapoperr)
 	}
 
 	var res2 testmapobject
-	errget, _ := GetMap("testsuitemap", "maps", "testMap2", &res2)
+	errget, _ := GetMap("testsuitemap", "maps", key, &res2)
 
 	if errget != nil {
 		t.Error("ErrGet:", errget)
@@ -110,7 +114,7 @@ func TestMapOperation(t *testing.T) {
 
 func TestIsNotFound(t *testing.T) {
 	var res testmapobject
-	err, isNotFound := GetMap("testsuitemap", "maps", "idonotexist", &res)
+	err, isNotFound := GetMap("testsuitemap", "maps", randomKey(), &res)
 
 	if !isNotFound {
 		t.Error("not marked as not found")
@@ -126,16 +130,16 @@ func TestSetNonPointer(t *testing.T) {
 		A: "I am passed as Value",
 	}
 
-	Delete("testsuitemap", "maps", "passedAsValue")
+	key := randomKey()
 
-	err := SetMap("testsuitemap", "maps", "passedAsValue", input)
+	err := SetMap("testsuitemap", "maps", key, input)
 
 	if err != nil {
 		t.Error("Error: ", err.Error())
 	}
 
 	var res testmapobject
-	err, isNotFound := GetMap("testsuitemap", "maps", "passedAsValue", &res)
+	err, isNotFound := GetMap("testsuitemap", "maps", key, &res)
 
 	if isNotFound {
 		t.Error("Not found")
@@ -156,12 +160,11 @@ type aBunchOfTypes struct {
 	Array  [3]byte
 	Slice  []byte
 
-	StringSlice []string
+	StringSlice []string `goriak:"callme_string_slicer"`
 	IntSlice    []int
 }
 
 func TestAbunchOfTypes(t *testing.T) {
-
 	o := aBunchOfTypes{
 		Int:         9001,
 		String:      "Hello World",
@@ -171,14 +174,16 @@ func TestAbunchOfTypes(t *testing.T) {
 		IntSlice:    []int{4000, 5000, 6000},
 	}
 
-	err := SetMap("testsuitemap", "maps", "bunchofvalues", o)
+	key := randomKey()
+
+	err := SetMap("testsuitemap", "maps", key, o)
 
 	if err != nil {
 		t.Error("Set", err)
 	}
 
 	var res aBunchOfTypes
-	err, isNotFound := GetMap("testsuitemap", "maps", "bunchofvalues", &res)
+	err, isNotFound := GetMap("testsuitemap", "maps", key, &res)
 
 	if err != nil {
 		t.Error("Get", err)
@@ -194,4 +199,12 @@ func TestAbunchOfTypes(t *testing.T) {
 		t.Errorf("Expected: %+v", o)
 	}
 
+}
+
+func TestFailCases(t *testing.T) {
+	err := SetMap("testsuitemap", "maps", randomKey(), 500)
+
+	if err == nil {
+		t.Error("Did not receive error")
+	}
 }
