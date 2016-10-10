@@ -99,6 +99,12 @@ func SetMap(bucket, bucketType, key string, input interface{}) error {
 				continue
 			}
 
+			// Slice: Uint8 (byte)
+			if rType.Field(i).Type.Elem().Kind() == reflect.Uint8 {
+				op.SetRegister(itemKey, sliceVal.Bytes())
+				continue
+			}
+
 			return errors.New("Unknown slice type: " + sliceVal.Index(0).Type().String())
 		}
 
@@ -235,6 +241,15 @@ func GetMap(bucket, bucketType, key string, output interface{}) (err error, isNo
 
 					// Success!
 					rValue.Field(i).Set(reflect.ValueOf(result))
+				}
+
+				continue
+			}
+
+			// Slice: Uint8 (byte)
+			if rValue.Field(i).Type().Elem().Kind() == reflect.Uint8 {
+				if val, ok := data.Registers[registerName]; ok {
+					rValue.Field(i).SetBytes(val)
 				}
 
 				continue
