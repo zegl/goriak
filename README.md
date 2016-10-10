@@ -1,4 +1,5 @@
-# goriak [![Build Status](https://circleci.com/gh/zegl/goriak.svg?style=svg)](https://circleci.com/gh/zegl/goriak)
+# goriak [![Build Status](https://circleci.com/gh/zegl/goriak.svg?style=svg)](https://circleci.com/gh/zegl/goriak) [![codecov](https://codecov.io/gh/zegl/goriak/branch/master/graph/badge.svg)](https://codecov.io/gh/zegl/goriak)
+
 
 Everything is currenly in alfa status, stay tuned. :)
 
