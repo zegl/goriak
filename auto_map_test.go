@@ -201,10 +201,106 @@ func TestAbunchOfTypes(t *testing.T) {
 
 }
 
-func TestFailCases(t *testing.T) {
+func TestFailNonMapType(t *testing.T) {
 	err := SetMap("testsuitemap", "maps", randomKey(), 500)
 
 	if err == nil {
 		t.Error("Did not receive error")
+	}
+}
+
+func TestFailEmptyArray(t *testing.T) {
+	type testType struct {
+		A [0]byte
+	}
+
+	o := testType{}
+
+	key := randomKey()
+
+	err := SetMap("testsuitemap", "maps", key, o)
+
+	if err != nil {
+		t.Error(err)
+	}
+
+	var res testType
+	getErr, isNotFound := GetMap("testsuitemap", "maps", key, &res)
+
+	if isNotFound {
+		t.Error("not found")
+	}
+
+	if getErr != nil {
+		t.Error(getErr)
+	}
+}
+
+func TestUnsupportedArrayType(t *testing.T) {
+	type testType struct {
+		A [5]string
+	}
+
+	o := testType{}
+
+	key := randomKey()
+
+	err := SetMap("testsuitemap", "maps", key, o)
+
+	if err == nil {
+		t.Error("Did not get error")
+	}
+
+	if err.Error() != "Unkown Array type: string" {
+		t.Error("Unkown error")
+		t.Error(err)
+	}
+}
+
+func TestUnsupportedSliceType(t *testing.T) {
+	type testType struct {
+		A []bool
+	}
+
+	o := testType{
+		A: []bool{false, true, true, true, false, true},
+	}
+
+	key := randomKey()
+
+	err := SetMap("testsuitemap", "maps", key, o)
+
+	if err == nil {
+		t.Error("Did not get error")
+		return
+	}
+
+	if err.Error() != "Unknown slice type: bool" {
+		t.Error("Unkown error")
+		t.Error(err)
+	}
+}
+
+func TestUnsupportedType(t *testing.T) {
+	type testType struct {
+		A bool
+	}
+
+	o := testType{
+		A: true,
+	}
+
+	key := randomKey()
+
+	err := SetMap("testsuitemap", "maps", key, o)
+
+	if err == nil {
+		t.Error("Did not get error")
+		return
+	}
+
+	if err.Error() != "Unexpected type: bool" {
+		t.Error("Unkown error")
+		t.Error(err)
 	}
 }

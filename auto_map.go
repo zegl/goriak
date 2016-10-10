@@ -57,6 +57,7 @@ func SetMap(bucket, bucketType, key string, input interface{}) error {
 			// Empty
 			if f.Len() == 0 {
 				op.SetRegister(itemKey, []byte{})
+				continue
 			}
 
 			// Byte array (uint8 is the same as byte)
