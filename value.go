@@ -161,3 +161,28 @@ func Delete(bucket, bucketType, key string) error {
 
 	return nil
 }
+
+func AllKeys(bucket, bucketType string) ([]string, error) {
+	cmd, err := riak.NewListKeysCommandBuilder().
+		WithBucket(bucket).
+		WithBucketType(bucketType).
+		Build()
+
+	if err != nil {
+		return []string{}, err
+	}
+
+	err = connect().Execute(cmd)
+
+	if err != nil {
+		return []string{}, err
+	}
+
+	res, ok := cmd.(*riak.ListKeysCommand)
+
+	if !ok {
+		return []string{}, errors.New("Could not convert")
+	}
+
+	return res.Response.Keys, nil
+}

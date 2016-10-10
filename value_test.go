@@ -1,8 +1,29 @@
 package goriak
 
 import (
+	"os"
+
+	"log"
 	"testing"
 )
+
+// Cleanup Bucket
+func TestMain(m *testing.M) {
+	deleteAllIn("testsuite", "default")
+	deleteAllIn("customtype", "maps")
+	deleteAllIn("testsuitemap", "maps")
+
+	os.Exit(m.Run())
+}
+
+func deleteAllIn(bucket, bucketType string) {
+	keys, _ := AllKeys(bucket, bucketType)
+
+	for _, key := range keys {
+		log.Println("Delete:", key)
+		Delete(bucket, bucketType, key)
+	}
+}
 
 type teststoreobject struct {
 	A string `goriakindex:"testindex_bin"`
@@ -38,6 +59,9 @@ func TestGetSetValue(t *testing.T) {
 }
 
 func TestValueWithIndex(t *testing.T) {
+
+	Delete("testsuite", "default", "val2")
+
 	err := SetValue("testsuite", "default", "val2", teststoreobject{
 		A: "HelloWorld",
 		B: 10002,
