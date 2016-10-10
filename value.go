@@ -88,9 +88,10 @@ func SetValue(bucket, bucketType, key string, value interface{}) error {
 	return nil
 }
 
-func GetValue(bucket, key string, value interface{}) error {
+func GetValue(bucket, bucketType, key string, value interface{}) error {
 	cmd, err := riak.NewFetchValueCommandBuilder().
 		WithBucket(bucket).
+		WithBucketType(bucketType).
 		WithKey(key).
 		Build()
 

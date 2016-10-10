@@ -21,7 +21,7 @@ func TestGetSetValue(t *testing.T) {
 	}
 
 	var res teststoreobject
-	getErr := GetValue("testsuite", "val1", &res)
+	getErr := GetValue("testsuite", "default", "val1", &res)
 
 	if getErr != nil {
 		t.Error("GetValue:", err)
@@ -48,7 +48,7 @@ func TestValueWithIndex(t *testing.T) {
 		return
 	}
 
-	keys, err := KeysInIndex("testsuite", "default", "testindex_bin", "HelloWorld")
+	keys, err := KeysInIndex("testsuite", "default", "testindex_bin", "HelloWorld", 100)
 
 	if len(keys) != 1 {
 		t.Error("Did not receive exactly 1 key")
@@ -76,7 +76,7 @@ func TestValueWithSliceIndex(t *testing.T) {
 		t.Error(err)
 	}
 
-	keys, err := KeysInIndex("testsuite", "default", "sliceindex_bin", "Hej")
+	keys, err := KeysInIndex("testsuite", "default", "sliceindex_bin", "Hej", 100)
 
 	if err != nil {
 		t.Error(err)
@@ -87,7 +87,7 @@ func TestValueWithSliceIndex(t *testing.T) {
 		t.Errorf("%+v", keys)
 	}
 
-	keys, err = KeysInIndex("testsuite", "default", "sliceindex_bin", "Hola")
+	keys, err = KeysInIndex("testsuite", "default", "sliceindex_bin", "Hola", 100)
 
 	if err != nil {
 		t.Error(err)
