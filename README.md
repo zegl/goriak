@@ -55,6 +55,19 @@ operation.AddToSet("Aliases", []byte("Baz"))
 goriak.MapOperation("bucket-name", "bucket-type", "key", operation)
 ```
 
+## Supported Go types
+
+Only a few Go types ar currently supported in `SetMap()` and `GetMap()`.
+
+They are:
+
+| Go Type    | Riak Type |
+|------------|-----------|
+| struct     | map       |
+| string     | register  |
+| byte array | register  |
+| byte slice | register  |
+
 # Values
 
 Values are automatically JSON encoded and decoded.
