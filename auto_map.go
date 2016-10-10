@@ -37,13 +37,39 @@ func SetMap(bucket, bucketType, key string, input interface{}) error {
 			itemKey = tag
 		}
 
-		// Register: String
+		// String -> Register
 		if field.Type.Kind() == reflect.String {
 			op.SetRegister(itemKey, []byte(rValue.Field(i).String()))
 			continue
 		}
 
-		// Set
+		// Array -> Register
+		if field.Type.Kind() == reflect.Array {
+
+			f := rValue.Field(i)
+
+			// Empty
+			if f.Len() == 0 {
+				op.SetRegister(itemKey, []byte{})
+			}
+
+			// Byte array (uint8 is the same as byte)
+			if f.Index(0).Kind() == reflect.Uint8 {
+				register := make([]byte, f.Len())
+
+				for ii := 0; ii < f.Len(); ii++ {
+					register[ii] = uint8(f.Index(ii).Uint())
+				}
+
+				op.SetRegister(itemKey, register)
+
+				continue
+			}
+
+			return errors.New("Unkown Array type: " + f.Index(0).Kind().String())
+		}
+
+		// Slice -> Set
 		if field.Type.Kind() == reflect.Slice {
 
 			sliceLength := rValue.Field(i).Len()
@@ -153,6 +179,21 @@ func GetMap(bucket, bucketType, key string, output interface{}) (err error, isNo
 		if field.Type.Kind() == reflect.String {
 			if val, ok := data.Registers[registerName]; ok {
 				rValue.Field(i).SetString(string(val))
+			}
+
+			continue
+		}
+
+		// Array
+		if field.Type.Kind() == reflect.Array {
+
+			// []byte
+			if rValue.Field(i).Type().Elem().Kind() == reflect.Uint8 {
+				if val, ok := data.Registers[registerName]; ok {
+					for ii := 0; ii < rValue.Field(i).Len(); ii++ {
+						rValue.Field(i).Index(ii).SetUint(uint64(val[ii]))
+					}
+				}
 			}
 
 			continue
