@@ -4,5 +4,10 @@ machine:
 
 machine:
   post:
+    - sudo service riak start
     - sudo riak-admin bucket-type create maps '{"props":{"datatype":"map"}}'
-    - sudo riak-admin bucket-type activate maps 
+    - sudo riak-admin bucket-type activate maps
+
+test:
+  post:
+    - bash <(curl -s https://codecov.io/bash) 
