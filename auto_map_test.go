@@ -26,10 +26,14 @@ func TestAutoMapSetAndGet(t *testing.T) {
 	}
 
 	var res testmapobject
-	errget := GetMap("testsuitemap", "maps", "testMap1", &res)
+	errget, isNotFound := GetMap("testsuitemap", "maps", "testMap1", &res)
 
 	if errget != nil {
 		t.Error("Set:", errset)
+	}
+
+	if isNotFound {
+		t.Error("Not found")
 	}
 
 	if res.A != "Hello" {
@@ -91,7 +95,7 @@ func TestMapOperation(t *testing.T) {
 	}
 
 	var res2 testmapobject
-	errget := GetMap("testsuitemap", "maps", "testMap2", &res2)
+	errget, _ := GetMap("testsuitemap", "maps", "testMap2", &res2)
 
 	if errget != nil {
 		t.Error("ErrGet:", errget)
@@ -100,5 +104,47 @@ func TestMapOperation(t *testing.T) {
 	if len(res2.Set) != 3 {
 		t.Error("Unexpected length. Should be 3, got ", len(res2.Set))
 		t.Errorf("%+v", res2)
+	}
+}
+
+func TestIsNotFound(t *testing.T) {
+	var res testmapobject
+	err, isNotFound := GetMap("testsuitemap", "maps", "idonotexist", &res)
+
+	if !isNotFound {
+		t.Error("not marked as not found")
+	}
+
+	if err == nil {
+		t.Error("did not get error")
+	}
+}
+
+func TestSetNonPointer(t *testing.T) {
+	input := testmapobject{
+		A: "I am passed as Value",
+	}
+
+	Delete("testsuitemap", "maps", "passedAsValue")
+
+	err := SetMap("testsuitemap", "maps", "passedAsValue", input)
+
+	if err != nil {
+		t.Error("Error: ", err.Error())
+	}
+
+	var res testmapobject
+	err, isNotFound := GetMap("testsuitemap", "maps", "passedAsValue", &res)
+
+	if isNotFound {
+		t.Error("Not found")
+	}
+
+	if err != nil {
+		t.Error(err)
+	}
+
+	if res.A != "I am passed as Value" {
+		t.Error("Unkown response")
 	}
 }

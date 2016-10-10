@@ -11,8 +11,19 @@ import (
 func SetMap(bucket, bucketType, key string, input interface{}) error {
 	op := riak.MapOperation{}
 
-	rValue := reflect.ValueOf(input).Elem()
-	rType := reflect.TypeOf(input).Elem()
+	var rValue reflect.Value
+	var rType reflect.Type
+
+	if reflect.ValueOf(input).Kind() == reflect.Struct {
+		rValue = reflect.ValueOf(input)
+		rType = reflect.TypeOf(input)
+	} else if reflect.ValueOf(input).Kind() == reflect.Ptr {
+		rValue = reflect.ValueOf(input).Elem()
+		rType = reflect.TypeOf(input).Elem()
+	} else {
+		return errors.New("Could not parse value. Needs to be struct or pointer to struct")
+	}
+
 	num := rType.NumField()
 
 	for i := 0; i < num; i++ {
@@ -88,7 +99,13 @@ func SetMap(bucket, bucketType, key string, input interface{}) error {
 	return nil
 }
 
-func GetMap(bucket, bucketType, key string, output interface{}) error {
+func GetMap(bucket, bucketType, key string, output interface{}) (err error, isNotFound bool) {
+
+	// Type check
+	if reflect.ValueOf(output).Kind() != reflect.Ptr {
+		return errors.New("output needs to be a pointer"), false
+	}
+
 	cmd, err := riak.NewFetchMapCommandBuilder().
 		WithBucket(bucket).
 		WithKey(key).
@@ -96,16 +113,24 @@ func GetMap(bucket, bucketType, key string, output interface{}) error {
 		Build()
 
 	if err != nil {
-		panic(err)
+		return err, false
 	}
 
 	err = connect().Execute(cmd)
 
 	if err != nil {
-		panic(err)
+		return err, false
 	}
 
 	ma := cmd.(*riak.FetchMapCommand)
+
+	if !ma.Success() {
+		return errors.New("Not successful"), false
+	}
+
+	if ma.Response.IsNotFound {
+		return errors.New("Not found"), true
+	}
 
 	data := ma.Response.Map
 
@@ -151,9 +176,11 @@ func GetMap(bucket, bucketType, key string, output interface{}) error {
 						result[i] = int(intVal)
 					}
 
+					// Success!
 					rValue.Field(i).Set(reflect.ValueOf(result))
-					continue
 				}
+
+				continue
 			}
 
 			// Slice: String
@@ -165,18 +192,20 @@ func GetMap(bucket, bucketType, key string, output interface{}) error {
 						result[i] = string(v)
 					}
 
+					// Success!
 					rValue.Field(i).Set(reflect.ValueOf(result))
-					continue
 				}
+
+				continue
 			}
 
-			return errors.New("Unknown slice type: " + rValue.Field(i).Type().Elem().Kind().String())
+			return errors.New("Unknown slice type: " + rValue.Field(i).Type().Elem().Kind().String()), false
 		}
 
-		return errors.New("Unknown type: " + field.Type.Kind().String())
+		return errors.New("Unknown type: " + field.Type.Kind().String()), false
 	}
 
-	return nil
+	return nil, false
 }
 
 func MapOperation(bucket, bucketType, key string, op riak.MapOperation) error {
