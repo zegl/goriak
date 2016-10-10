@@ -76,6 +76,7 @@ func TestValueWithIndex(t *testing.T) {
 
 	if len(keys) != 1 {
 		t.Error("Did not receive exactly 1 key")
+		t.Error(keys)
 		return
 	}
 
