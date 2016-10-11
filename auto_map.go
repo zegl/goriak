@@ -8,7 +8,7 @@ import (
 	riak "github.com/basho/riak-go-client"
 )
 
-func SetMap(bucket, bucketType, key string, input interface{}) error {
+func (c *Client) SetMap(bucket, bucketType, key string, input interface{}) error {
 	op := riak.MapOperation{}
 
 	var rValue reflect.Value
@@ -129,7 +129,7 @@ func SetMap(bucket, bucketType, key string, input interface{}) error {
 		return err
 	}
 
-	err = connect().Execute(cmd)
+	err = c.riak.Execute(cmd)
 
 	if err != nil {
 		return err
@@ -138,7 +138,7 @@ func SetMap(bucket, bucketType, key string, input interface{}) error {
 	return nil
 }
 
-func GetMap(bucket, bucketType, key string, output interface{}) (err error, isNotFound bool) {
+func (c *Client) GetMap(bucket, bucketType, key string, output interface{}) (err error, isNotFound bool) {
 
 	// Type check
 	if reflect.ValueOf(output).Kind() != reflect.Ptr {
@@ -155,7 +155,7 @@ func GetMap(bucket, bucketType, key string, output interface{}) (err error, isNo
 		return err, false
 	}
 
-	err = connect().Execute(cmd)
+	err = c.riak.Execute(cmd)
 
 	if err != nil {
 		return err, false
@@ -284,7 +284,7 @@ func GetMap(bucket, bucketType, key string, output interface{}) (err error, isNo
 	return nil, false
 }
 
-func MapOperation(bucket, bucketType, key string, op riak.MapOperation) error {
+func (c *Client) MapOperation(bucket, bucketType, key string, op riak.MapOperation) error {
 	cmd, err := riak.NewUpdateMapCommandBuilder().
 		WithBucket(bucket).
 		WithBucketType(bucketType).
@@ -296,7 +296,7 @@ func MapOperation(bucket, bucketType, key string, op riak.MapOperation) error {
 		return err
 	}
 
-	err = connect().Execute(cmd)
+	err = c.riak.Execute(cmd)
 
 	if err != nil {
 		return err

@@ -6,7 +6,7 @@ import (
 	riak "github.com/basho/riak-go-client"
 )
 
-func KeysInIndex(bucket, bucketType, indexName, indexValue string, limit uint32) ([]string, error) {
+func (c *Client) KeysInIndex(bucket, bucketType, indexName, indexValue string, limit uint32) ([]string, error) {
 	result := []string{}
 
 	cmd, err := riak.NewSecondaryIndexQueryCommandBuilder().
@@ -21,7 +21,7 @@ func KeysInIndex(bucket, bucketType, indexName, indexValue string, limit uint32)
 		return result, err
 	}
 
-	err = connect().Execute(cmd)
+	err = c.riak.Execute(cmd)
 
 	if err != nil {
 		return result, err

@@ -10,7 +10,7 @@ import (
 
 // SetValue saves value as key in the bucket bucket/bucketType
 // Values can automatically be added to indexes with the struct tag goriakindex
-func SetValue(bucket, bucketType, key string, value interface{}) error {
+func (c *Client) SetValue(bucket, bucketType, key string, value interface{}) error {
 	by, err := json.Marshal(value)
 
 	if err != nil {
@@ -69,7 +69,7 @@ func SetValue(bucket, bucketType, key string, value interface{}) error {
 		return err
 	}
 
-	err = connect().Execute(cmd)
+	err = c.riak.Execute(cmd)
 
 	if err != nil {
 		return err
@@ -88,7 +88,7 @@ func SetValue(bucket, bucketType, key string, value interface{}) error {
 	return nil
 }
 
-func GetValue(bucket, bucketType, key string, value interface{}) error {
+func (c *Client) GetValue(bucket, bucketType, key string, value interface{}) error {
 	cmd, err := riak.NewFetchValueCommandBuilder().
 		WithBucket(bucket).
 		WithBucketType(bucketType).
@@ -99,7 +99,7 @@ func GetValue(bucket, bucketType, key string, value interface{}) error {
 		return err
 	}
 
-	err = connect().Execute(cmd)
+	err = c.riak.Execute(cmd)
 
 	if err != nil {
 		return err
@@ -132,7 +132,7 @@ func GetValue(bucket, bucketType, key string, value interface{}) error {
 	return nil
 }
 
-func Delete(bucket, bucketType, key string) error {
+func (c *Client) Delete(bucket, bucketType, key string) error {
 	cmd, err := riak.NewDeleteValueCommandBuilder().
 		WithBucket(bucket).
 		WithBucketType(bucketType).
@@ -143,7 +143,7 @@ func Delete(bucket, bucketType, key string) error {
 		return err
 	}
 
-	err = connect().Execute(cmd)
+	err = c.riak.Execute(cmd)
 
 	if err != nil {
 		return err
@@ -162,7 +162,7 @@ func Delete(bucket, bucketType, key string) error {
 	return nil
 }
 
-func AllKeys(bucket, bucketType string) ([]string, error) {
+func (c *Client) AllKeys(bucket, bucketType string) ([]string, error) {
 	cmd, err := riak.NewListKeysCommandBuilder().
 		WithBucket(bucket).
 		WithBucketType(bucketType).
@@ -172,7 +172,7 @@ func AllKeys(bucket, bucketType string) ([]string, error) {
 		return []string{}, err
 	}
 
-	err = connect().Execute(cmd)
+	err = c.riak.Execute(cmd)
 
 	if err != nil {
 		return []string{}, err

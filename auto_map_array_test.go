@@ -21,14 +21,16 @@ func TestCustomType(t *testing.T) {
 
 	key := randomKey()
 
-	err := SetMap("customtype", "maps", key, o)
+	con, _ := NewGoriak("127.0.0.1")
+
+	err := con.SetMap("customtype", "maps", key, o)
 
 	if err != nil {
 		t.Error("Set:", err)
 	}
 
 	var res objWithCustomType
-	err, isNotFound := GetMap("customtype", "maps", key, &res)
+	err, isNotFound := con.GetMap("customtype", "maps", key, &res)
 
 	if err != nil {
 		t.Error("Get:", err)
@@ -63,14 +65,16 @@ func TestAutoMapByteSlice(t *testing.T) {
 
 	key := randomKey()
 
-	err := SetMap("customtype", "maps", key, o)
+	con, _ := NewGoriak("127.0.0.1")
+
+	err := con.SetMap("customtype", "maps", key, o)
 
 	if err != nil {
 		t.Error("Set", err)
 	}
 
 	var res objWithByteSlice
-	err, isNotFound := GetMap("customtype", "maps", key, &res)
+	err, isNotFound := con.GetMap("customtype", "maps", key, &res)
 
 	if err != nil {
 		t.Error("Get", err)

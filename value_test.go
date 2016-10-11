@@ -21,11 +21,12 @@ func TestMain(m *testing.M) {
 }
 
 func deleteAllIn(bucket, bucketType string) {
-	keys, _ := AllKeys(bucket, bucketType)
+	con, _ := NewGoriak("127.0.0.1")
+	keys, _ := con.AllKeys(bucket, bucketType)
 
 	for _, key := range keys {
 		log.Println("Delete:", key)
-		Delete(bucket, bucketType, key)
+		con.Delete(bucket, bucketType, key)
 	}
 }
 
@@ -46,8 +47,9 @@ func randomKey() string {
 
 func TestGetSetValue(t *testing.T) {
 	key := randomKey()
+	con, _ := NewGoriak("127.0.0.1")
 
-	err := SetValue("testsuite", "tests", key, teststoreobject{
+	err := con.SetValue("testsuite", "tests", key, teststoreobject{
 		A: "Abc",
 		B: 10002,
 	})
@@ -58,7 +60,7 @@ func TestGetSetValue(t *testing.T) {
 	}
 
 	var res teststoreobject
-	getErr := GetValue("testsuite", "tests", key, &res)
+	getErr := con.GetValue("testsuite", "tests", key, &res)
 
 	if getErr != nil {
 		t.Error("GetValue:", getErr)
@@ -77,8 +79,9 @@ func TestGetSetValue(t *testing.T) {
 
 func TestValueWithIndex(t *testing.T) {
 	key := randomKey()
+	con, _ := NewGoriak("127.0.0.1")
 
-	err := SetValue("testsuite", "tests", key, teststoreobject{
+	err := con.SetValue("testsuite", "tests", key, teststoreobject{
 		A: "HelloWorld",
 		B: 10002,
 	})
@@ -88,7 +91,7 @@ func TestValueWithIndex(t *testing.T) {
 		return
 	}
 
-	keys, err := KeysInIndex("testsuite", "tests", "testindex_bin", "HelloWorld", 100)
+	keys, err := con.KeysInIndex("testsuite", "tests", "testindex_bin", "HelloWorld", 100)
 
 	if len(keys) != 1 {
 		t.Error("Did not receive exactly 1 key")
@@ -109,8 +112,9 @@ type testsliceindex struct {
 
 func TestValueWithSliceIndex(t *testing.T) {
 	key := randomKey()
+	con, _ := NewGoriak("127.0.0.1")
 
-	err := SetValue("testsuite", "tests", key, testsliceindex{
+	err := con.SetValue("testsuite", "tests", key, testsliceindex{
 		Thing:   "Hello",
 		Indexes: []string{"Hola", "Hej", "Halo"},
 	})
@@ -119,7 +123,7 @@ func TestValueWithSliceIndex(t *testing.T) {
 		t.Error(err)
 	}
 
-	keys, err := KeysInIndex("testsuite", "tests", "sliceindex_bin", "Hej", 100)
+	keys, err := con.KeysInIndex("testsuite", "tests", "sliceindex_bin", "Hej", 100)
 
 	if err != nil {
 		t.Error(err)
@@ -130,7 +134,7 @@ func TestValueWithSliceIndex(t *testing.T) {
 		t.Errorf("%+v", keys)
 	}
 
-	keys, err = KeysInIndex("testsuite", "tests", "sliceindex_bin", "Hola", 100)
+	keys, err = con.KeysInIndex("testsuite", "tests", "sliceindex_bin", "Hola", 100)
 
 	if err != nil {
 		t.Error(err)

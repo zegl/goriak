@@ -4,14 +4,31 @@ import (
 	riak "github.com/basho/riak-go-client"
 )
 
-func connect() *riak.Client {
+type Client struct {
+	riak *riak.Client
+}
+
+func NewGoriak(host string) (*Client, error) {
+	client := Client{}
+	err := client.connect(host)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &client, nil
+}
+
+func (c *Client) connect(host string) error {
 	con, err := riak.NewClient(&riak.NewClientOptions{
-		RemoteAddresses: []string{"127.0.0.1"},
+		RemoteAddresses: []string{host},
 	})
 
 	if err != nil {
-		panic(err)
+		return err
 	}
 
-	return con
+	c.riak = con
+
+	return nil
 }

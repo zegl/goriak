@@ -13,13 +13,15 @@ type testmapobject struct {
 func TestAutoMapSetAndGet(t *testing.T) {
 	key := randomKey()
 
-	err := Delete("testsuitemap", "maps", key)
+	con, _ := NewGoriak("127.0.0.1")
+
+	err := con.Delete("testsuitemap", "maps", key)
 
 	if err != nil {
 		t.Error("Could not delete: " + err.Error())
 	}
 
-	errset := SetMap("testsuitemap", "maps", key, &testmapobject{
+	errset := con.SetMap("testsuitemap", "maps", key, &testmapobject{
 		A:   "Hello",
 		Set: []string{"One", "Two"},
 	})
@@ -29,7 +31,7 @@ func TestAutoMapSetAndGet(t *testing.T) {
 	}
 
 	var res testmapobject
-	errget, isNotFound := GetMap("testsuitemap", "maps", key, &res)
+	errget, isNotFound := con.GetMap("testsuitemap", "maps", key, &res)
 
 	if errget != nil {
 		t.Error("Set:", errset)
@@ -68,13 +70,14 @@ func TestAutoMapSetAndGet(t *testing.T) {
 func TestMapOperation(t *testing.T) {
 	key := randomKey()
 
-	err := Delete("testsuitemap", "maps", key)
+	con, _ := NewGoriak("127.0.0.1")
+	err := con.Delete("testsuitemap", "maps", key)
 
 	if err != nil {
 		t.Error("Could not delete: " + err.Error())
 	}
 
-	errset := SetMap("testsuitemap", "maps", key, &testmapobject{
+	errset := con.SetMap("testsuitemap", "maps", key, &testmapobject{
 		A:   "Hello",
 		Set: []string{"One", "Two"},
 	})
@@ -84,7 +87,7 @@ func TestMapOperation(t *testing.T) {
 	}
 
 	var res testmapobject
-	GetMap("testsuitemap", "maps", key, &res)
+	con.GetMap("testsuitemap", "maps", key, &res)
 
 	if len(res.Set) != 2 {
 		t.Error("Unexpected length. Should be 2, got ", len(res.Set))
@@ -93,14 +96,14 @@ func TestMapOperation(t *testing.T) {
 	op := NewMapOperation()
 	op.AddToSet("Set", []byte("Three"))
 
-	mapoperr := MapOperation("testsuitemap", "maps", key, op)
+	mapoperr := con.MapOperation("testsuitemap", "maps", key, op)
 
 	if mapoperr != nil {
 		t.Error("MapOperr:", mapoperr)
 	}
 
 	var res2 testmapobject
-	errget, _ := GetMap("testsuitemap", "maps", key, &res2)
+	errget, _ := con.GetMap("testsuitemap", "maps", key, &res2)
 
 	if errget != nil {
 		t.Error("ErrGet:", errget)
@@ -113,8 +116,10 @@ func TestMapOperation(t *testing.T) {
 }
 
 func TestIsNotFound(t *testing.T) {
+	con, _ := NewGoriak("127.0.0.1")
+
 	var res testmapobject
-	err, isNotFound := GetMap("testsuitemap", "maps", randomKey(), &res)
+	err, isNotFound := con.GetMap("testsuitemap", "maps", randomKey(), &res)
 
 	if !isNotFound {
 		t.Error("not marked as not found")
@@ -131,15 +136,16 @@ func TestSetNonPointer(t *testing.T) {
 	}
 
 	key := randomKey()
+	con, _ := NewGoriak("127.0.0.1")
 
-	err := SetMap("testsuitemap", "maps", key, input)
+	err := con.SetMap("testsuitemap", "maps", key, input)
 
 	if err != nil {
 		t.Error("Error: ", err.Error())
 	}
 
 	var res testmapobject
-	err, isNotFound := GetMap("testsuitemap", "maps", key, &res)
+	err, isNotFound := con.GetMap("testsuitemap", "maps", key, &res)
 
 	if isNotFound {
 		t.Error("Not found")
@@ -175,15 +181,16 @@ func TestAbunchOfTypes(t *testing.T) {
 	}
 
 	key := randomKey()
+	con, _ := NewGoriak("127.0.0.1")
 
-	err := SetMap("testsuitemap", "maps", key, o)
+	err := con.SetMap("testsuitemap", "maps", key, o)
 
 	if err != nil {
 		t.Error("Set", err)
 	}
 
 	var res aBunchOfTypes
-	err, isNotFound := GetMap("testsuitemap", "maps", key, &res)
+	err, isNotFound := con.GetMap("testsuitemap", "maps", key, &res)
 
 	if err != nil {
 		t.Error("Get", err)
@@ -202,7 +209,8 @@ func TestAbunchOfTypes(t *testing.T) {
 }
 
 func TestFailNonMapType(t *testing.T) {
-	err := SetMap("testsuitemap", "maps", randomKey(), 500)
+	con, _ := NewGoriak("127.0.0.1")
+	err := con.SetMap("testsuitemap", "maps", randomKey(), 500)
 
 	if err == nil {
 		t.Error("Did not receive error")
@@ -217,15 +225,16 @@ func TestFailEmptyArray(t *testing.T) {
 	o := testType{}
 
 	key := randomKey()
+	con, _ := NewGoriak("127.0.0.1")
 
-	err := SetMap("testsuitemap", "maps", key, o)
+	err := con.SetMap("testsuitemap", "maps", key, o)
 
 	if err != nil {
 		t.Error(err)
 	}
 
 	var res testType
-	getErr, isNotFound := GetMap("testsuitemap", "maps", key, &res)
+	getErr, isNotFound := con.GetMap("testsuitemap", "maps", key, &res)
 
 	if isNotFound {
 		t.Error("not found")
@@ -244,8 +253,9 @@ func TestUnsupportedArrayType(t *testing.T) {
 	o := testType{}
 
 	key := randomKey()
+	con, _ := NewGoriak("127.0.0.1")
 
-	err := SetMap("testsuitemap", "maps", key, o)
+	err := con.SetMap("testsuitemap", "maps", key, o)
 
 	if err == nil {
 		t.Error("Did not get error")
@@ -267,8 +277,9 @@ func TestUnsupportedSliceType(t *testing.T) {
 	}
 
 	key := randomKey()
+	con, _ := NewGoriak("127.0.0.1")
 
-	err := SetMap("testsuitemap", "maps", key, o)
+	err := con.SetMap("testsuitemap", "maps", key, o)
 
 	if err == nil {
 		t.Error("Did not get error")
@@ -291,8 +302,9 @@ func TestUnsupportedType(t *testing.T) {
 	}
 
 	key := randomKey()
+	con, _ := NewGoriak("127.0.0.1")
 
-	err := SetMap("testsuitemap", "maps", key, o)
+	err := con.SetMap("testsuitemap", "maps", key, o)
 
 	if err == nil {
 		t.Error("Did not get error")
