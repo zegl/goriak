@@ -136,6 +136,23 @@ func encodeSlice(op *riak.MapOperation, itemKey string, f reflect.Value) error {
 		// Uint8 is the same as byte, store the value directly
 		op.SetRegister(itemKey, sliceVal.Bytes())
 
+	case reflect.Slice:
+
+		// Empty, do nothing
+		if sliceVal.Len() == 0 {
+			return nil
+		}
+
+		if sliceVal.Type().Elem().Elem().Kind() == reflect.Uint8 {
+			for ii := 0; ii < sliceVal.Len(); ii++ {
+				op.AddToSet(itemKey, sliceVal.Index(ii).Bytes())
+			}
+
+			return nil
+		}
+
+		return errors.New("Unknown slice slice type: " + sliceVal.Index(0).Kind().String())
+
 	default:
 		return errors.New("Unknown slice type: " + sliceType.String())
 	}

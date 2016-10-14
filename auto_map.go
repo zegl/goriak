@@ -71,7 +71,7 @@ func (c *Client) GetMap(bucket, bucketType, key string, output interface{}) (err
 	err = mapToStruct(ma.Response.Map, output)
 
 	if err != nil {
-		return nil, false
+		return err, false
 	}
 
 	return nil, false

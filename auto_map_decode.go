@@ -110,6 +110,18 @@ func mapSliceToStruct(sliceValue reflect.Value, registerName string, data *riak.
 			sliceValue.SetBytes(val)
 		}
 
+	// [][]byte
+	case reflect.Slice:
+		if sliceValue.Type().Elem().Elem().Kind() == reflect.Uint8 {
+			if val, ok := data.Sets[registerName]; ok {
+				sliceValue.Set(reflect.ValueOf(val))
+			}
+
+			return nil
+		}
+
+		return errors.New("Unknown slice slice type: " + sliceValue.Type().Elem().Elem().Kind().String())
+
 	default:
 		return errors.New("Unknown slice type: " + sliceValue.Type().Elem().Kind().String())
 	}

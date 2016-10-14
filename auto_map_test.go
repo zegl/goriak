@@ -160,24 +160,26 @@ func TestSetNonPointer(t *testing.T) {
 	}
 }
 
-type aBunchOfTypes struct {
-	Int    int
-	String string
-	Array  [3]byte
-	Slice  []byte
-
-	StringSlice []string `goriak:"callme_string_slicer"`
-	IntSlice    []int
-}
-
 func TestAbunchOfTypes(t *testing.T) {
+
+	type aBunchOfTypes struct {
+		Int            int
+		String         string
+		Array          [3]byte
+		ByteSlice      []byte
+		StringSlice    []string `goriak:"callme_string_slicer"`
+		IntSlice       []int
+		ByteSliceSlice [][]byte
+	}
+
 	o := aBunchOfTypes{
-		Int:         9001,
-		String:      "Hello World",
-		Array:       [3]byte{100, 101, 102},
-		Slice:       []byte{50, 60, 70},
-		StringSlice: []string{"H", "e", "l", "o"},
-		IntSlice:    []int{4000, 5000, 6000},
+		Int:            9001,
+		String:         "Hello World",
+		Array:          [3]byte{100, 101, 102},
+		ByteSlice:      []byte{50, 60, 70},
+		StringSlice:    []string{"H", "e", "l", "o"},
+		IntSlice:       []int{4000, 5000, 6000},
+		ByteSliceSlice: [][]byte{[]byte{10, 11, 12}, []byte{100, 110, 120}},
 	}
 
 	key := randomKey()
@@ -190,10 +192,10 @@ func TestAbunchOfTypes(t *testing.T) {
 	}
 
 	var res aBunchOfTypes
-	err, isNotFound := con.GetMap("testsuitemap", "maps", key, &res)
+	errGet, isNotFound := con.GetMap("testsuitemap", "maps", key, &res)
 
-	if err != nil {
-		t.Error("Get", err)
+	if errGet != nil {
+		t.Error("Get", errGet)
 	}
 
 	if isNotFound {
