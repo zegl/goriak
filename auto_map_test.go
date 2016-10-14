@@ -292,7 +292,7 @@ func TestUnsupportedSliceType(t *testing.T) {
 	}
 }
 
-func TestUnsupportedType(t *testing.T) {
+/*func TestUnsupportedType(t *testing.T) {
 	type testType struct {
 		A bool
 	}
@@ -314,5 +314,46 @@ func TestUnsupportedType(t *testing.T) {
 	if err.Error() != "Unexpected type: bool" {
 		t.Error("Unkown error")
 		t.Error(err)
+	}
+}*/
+
+func TestMapBool(t *testing.T) {
+	type testType struct {
+		A bool
+		B bool
+	}
+
+	o := testType{
+		A: true,
+		B: false,
+	}
+
+	key := randomKey()
+	con, _ := NewGoriak("127.0.0.1")
+
+	err := con.SetMap("testsuitemap", "maps", key, o)
+
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	var res testType
+	err, isNotFound := con.GetMap("testsuitemap", "maps", key, &res)
+
+	if err != nil {
+		t.Error(err)
+	}
+
+	if isNotFound {
+		t.Error("Not Found")
+	}
+
+	if !res.A {
+		t.Error("A was not true")
+	}
+
+	if res.B {
+		t.Error("B was not false")
 	}
 }

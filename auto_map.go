@@ -49,6 +49,13 @@ func (c *Client) SetMap(bucket, bucketType, key string, input interface{}) error
 			continue
 		}
 
+		// Bool -> Flag
+		if field.Type.Kind() == reflect.Bool {
+			boolVal := rValue.Field(i).Bool()
+			op.SetFlag(itemKey, boolVal)
+			continue
+		}
+
 		// Array -> Register
 		if field.Type.Kind() == reflect.Array {
 
@@ -112,7 +119,7 @@ func (c *Client) SetMap(bucket, bucketType, key string, input interface{}) error
 				continue
 			}
 
-			return errors.New("Unknown slice type: " + sliceVal.Index(0).Type().String())
+			return errors.New("Unknown slice type: " + rType.Field(i).Type.Elem().Kind().String())
 		}
 
 		return errors.New("Unexpected type: " + field.Type.Kind().String())
@@ -220,6 +227,15 @@ func (c *Client) GetMap(bucket, bucketType, key string, output interface{}) (err
 				if err == nil {
 					rValue.Field(i).SetInt(int64(intVal))
 				}
+			}
+
+			continue
+		}
+
+		// Bool
+		if field.Type.Kind() == reflect.Bool {
+			if val, ok := data.Flags[registerName]; ok {
+				rValue.Field(i).SetBool(val)
 			}
 
 			continue
