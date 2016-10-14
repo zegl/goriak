@@ -382,25 +382,24 @@ func TestUnknownTypeFloat(t *testing.T) {
 	}
 }
 
-/*func TestMapInStruct(t *testing.T) {
-	type ourTestType struct {
-		foo map[string]string
+func TestEmptyStruct(t *testing.T) {
+	type aBunchOfTypes struct {
+		Int            int
+		String         string
+		Array          [3]byte
+		ByteSlice      []byte
+		StringSlice    []string `goriak:"callme_string_slicer"`
+		IntSlice       []int
+		ByteSliceSlice [][]byte
 	}
 
-	item := ourTestType{
-		foo: make(map[string]string),
-	}
-
-	item.foo["a"] = "aaa"
-	item.foo["b"] = "bbb"
+	item := aBunchOfTypes{}
 
 	key := randomKey()
 	con, _ := NewGoriak("127.0.0.1")
 	err := con.SetMap("testsuitemap", "maps", key, item)
 
-	if err == nil {
-		t.Error("Did not get error")
+	if err != nil {
+		t.Error(err)
 	}
-
-	t.Error(err)
-}*/
+}
