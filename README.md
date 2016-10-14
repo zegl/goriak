@@ -64,12 +64,13 @@ They are:
 
 | Go Type      | Riak Type |
 |--------------|-----------|
-| struct       | map       |
-| string       | register  |
-| byte array   | register  |
-| byte slice   | register  |
-| string slice | set       |
-| int slice    | set       |
+| `struct`     | map       |
+| `string`     | register  |
+| `[n]byte`    | register  |
+| `[]byte`     | register  |
+| `[]slice`    | set       |
+| `[]slice`    | set       | 
+| `[][]byte`   | set       |
 
 # Values
 
