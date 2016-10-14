@@ -359,3 +359,48 @@ func TestMapBool(t *testing.T) {
 		t.Error("B was not false")
 	}
 }
+
+func TestUnknownTypeFloat(t *testing.T) {
+	type ourTestType struct {
+		foo float64
+	}
+
+	item := ourTestType{
+		foo: 12.34,
+	}
+	key := randomKey()
+	con, _ := NewGoriak("127.0.0.1")
+	err := con.SetMap("testsuitemap", "maps", key, item)
+
+	if err == nil {
+		t.Error("Did not get error")
+	}
+
+	if err != nil && err.Error() != "Unexpected type: float64" {
+		t.Error("Unknown error")
+		t.Error(err)
+	}
+}
+
+/*func TestMapInStruct(t *testing.T) {
+	type ourTestType struct {
+		foo map[string]string
+	}
+
+	item := ourTestType{
+		foo: make(map[string]string),
+	}
+
+	item.foo["a"] = "aaa"
+	item.foo["b"] = "bbb"
+
+	key := randomKey()
+	con, _ := NewGoriak("127.0.0.1")
+	err := con.SetMap("testsuitemap", "maps", key, item)
+
+	if err == nil {
+		t.Error("Did not get error")
+	}
+
+	t.Error(err)
+}*/
