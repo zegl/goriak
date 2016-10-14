@@ -151,7 +151,7 @@ func encodeSlice(op *riak.MapOperation, itemKey string, f reflect.Value) error {
 			return nil
 		}
 
-		return errors.New("Unknown slice slice type: " + sliceVal.Index(0).Kind().String())
+		return errors.New("Unknown slice slice type: " + sliceVal.Type().Elem().Elem().Kind().String())
 
 	default:
 		return errors.New("Unknown slice type: " + sliceType.String())

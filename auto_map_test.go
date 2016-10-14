@@ -294,13 +294,13 @@ func TestUnsupportedSliceType(t *testing.T) {
 	}
 }
 
-/*func TestUnsupportedType(t *testing.T) {
+func TestUnsupportedType(t *testing.T) {
 	type testType struct {
-		A bool
+		A [][]bool
 	}
 
 	o := testType{
-		A: true,
+		A: [][]bool{[]bool{true, false, true}},
 	}
 
 	key := randomKey()
@@ -313,11 +313,11 @@ func TestUnsupportedSliceType(t *testing.T) {
 		return
 	}
 
-	if err.Error() != "Unexpected type: bool" {
+	if err.Error() != "Unknown slice slice type: bool" {
 		t.Error("Unkown error")
 		t.Error(err)
 	}
-}*/
+}
 
 func TestMapBool(t *testing.T) {
 	type testType struct {
