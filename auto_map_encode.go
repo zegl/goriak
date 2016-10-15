@@ -36,42 +36,59 @@ func valueToOp(input interface{}) (*riak.MapOperation, error) {
 			itemKey = tag
 		}
 
-		switch field.Type.Kind() {
+		err := encodeValue(op, itemKey, rValue.Field(i))
 
-		// Ints are saved as Registers
-		case reflect.Int:
-			op.SetRegister(itemKey, []byte(strconv.Itoa(int(rValue.Field(i).Int()))))
-
-		// Strings are saved as Registers
-		case reflect.String:
-			op.SetRegister(itemKey, []byte(rValue.Field(i).String()))
-
-		// Bools are saved as Flags
-		case reflect.Bool:
-			op.SetFlag(itemKey, rValue.Field(i).Bool())
-
-		// Arrays are saved as Registers
-		case reflect.Array:
-			err := encodeArray(op, itemKey, rValue.Field(i))
-
-			if err != nil {
-				return nil, err
-			}
-
-		// Slices are saved as Sets
-		// []byte and []uint8 are saved as Registers
-		case reflect.Slice:
-			err := encodeSlice(op, itemKey, rValue.Field(i))
-			if err != nil {
-				return nil, err
-			}
-
-		default:
-			return nil, errors.New("Unexpected type: " + field.Type.Kind().String())
+		if err != nil {
+			return nil, err
 		}
 	}
 
 	return op, nil
+}
+
+func encodeValue(op *riak.MapOperation, itemKey string, f reflect.Value) error {
+	switch f.Kind() {
+
+	// Ints are saved as Registers
+	case reflect.Int:
+		op.SetRegister(itemKey, []byte(strconv.Itoa(int(f.Int()))))
+
+	// Strings are saved as Registers
+	case reflect.String:
+		op.SetRegister(itemKey, []byte(f.String()))
+
+	// Bools are saved as Flags
+	case reflect.Bool:
+		op.SetFlag(itemKey, f.Bool())
+
+	// Arrays are saved as Registers
+	case reflect.Array:
+		err := encodeArray(op, itemKey, f)
+
+		if err != nil {
+			return err
+		}
+
+	// Slices are saved as Sets
+	// []byte and []uint8 are saved as Registers
+	case reflect.Slice:
+		err := encodeSlice(op, itemKey, f)
+		if err != nil {
+			return err
+		}
+
+	case reflect.Map:
+		err := encodeMap(op, itemKey, f)
+
+		if err != nil {
+			return err
+		}
+
+	default:
+		return errors.New("Unexpected type: " + f.Kind().String())
+	}
+
+	return nil
 }
 
 // Arrays are saved as Registers
@@ -155,6 +172,45 @@ func encodeSlice(op *riak.MapOperation, itemKey string, f reflect.Value) error {
 
 	default:
 		return errors.New("Unknown slice type: " + sliceType.String())
+	}
+
+	return nil
+}
+
+func encodeMap(op *riak.MapOperation, itemKey string, f reflect.Value) error {
+	keys := f.MapKeys()
+
+	subOp := op.Map(itemKey)
+
+	keyType := f.Type().Key().Kind()
+
+	for _, key := range keys {
+
+		// Convert the key to string
+		var keyString string
+		switch keyType {
+		case reflect.String:
+			keyString = key.String()
+
+		case reflect.Int:
+			fallthrough
+		case reflect.Int8:
+			fallthrough
+		case reflect.Int16:
+			fallthrough
+		case reflect.Int32:
+			fallthrough
+		case reflect.Int64:
+			keyString = strconv.FormatInt(int64(key.Int()), 10)
+		default:
+			return errors.New("Unknown map key type")
+		}
+
+		err := encodeValue(subOp, keyString, f.MapIndex(key))
+
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil

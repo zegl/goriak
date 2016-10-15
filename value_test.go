@@ -60,7 +60,7 @@ func TestGetSetValue(t *testing.T) {
 	}
 
 	var res teststoreobject
-	getErr := con.GetValue("testsuite", "tests", key, &res)
+	getErr, _ := con.GetValue("testsuite", "tests", key, &res)
 
 	if getErr != nil {
 		t.Error("GetValue:", getErr)

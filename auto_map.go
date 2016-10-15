@@ -111,3 +111,14 @@ func (c *Client) MapOperation(bucket, bucketType, key string, op riak.MapOperati
 func NewMapOperation() riak.MapOperation {
 	return riak.MapOperation{}
 }
+
+/*type MapOperation struct {
+	op *riak.MapOperation
+}
+
+
+
+func (mo *MapOperation) SetRegister(key name, value interface{}) {
+	mo.op.SetRegister(key, )
+}
+*/

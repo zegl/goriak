@@ -88,7 +88,7 @@ func (c *Client) SetValue(bucket, bucketType, key string, value interface{}) err
 	return nil
 }
 
-func (c *Client) GetValue(bucket, bucketType, key string, value interface{}) error {
+func (c *Client) GetValue(bucket, bucketType, key string, value interface{}) (err error, isNotFound bool) {
 	cmd, err := riak.NewFetchValueCommandBuilder().
 		WithBucket(bucket).
 		WithBucketType(bucketType).
@@ -96,40 +96,40 @@ func (c *Client) GetValue(bucket, bucketType, key string, value interface{}) err
 		Build()
 
 	if err != nil {
-		return err
+		return err, false
 	}
 
 	err = c.riak.Execute(cmd)
 
 	if err != nil {
-		return err
+		return err, false
 	}
 
 	res, ok := cmd.(*riak.FetchValueCommand)
 
 	if !ok {
-		return errors.New("Unable to parse response from Riak")
+		return errors.New("Unable to parse response from Riak"), false
 	}
 
 	if !res.Success() {
-		return errors.New("Riak command was not successful")
+		return errors.New("Riak command was not successful"), false
 	}
 
 	if res.Response.IsNotFound {
-		return errors.New("Not Found")
+		return errors.New("Not Found"), true
 	}
 
 	if len(res.Response.Values) != 1 {
-		return errors.New("Not Found")
+		return errors.New("Not Found"), false
 	}
 
 	err = json.Unmarshal(res.Response.Values[0].Value, value)
 
 	if err != nil {
-		return err
+		return err, false
 	}
 
-	return nil
+	return nil, false
 }
 
 func (c *Client) Delete(bucket, bucketType, key string) error {

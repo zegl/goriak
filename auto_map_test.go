@@ -403,3 +403,60 @@ func TestEmptyStruct(t *testing.T) {
 		t.Error(err)
 	}
 }
+
+func TestMapInStruct(t *testing.T) {
+	type ourTestType struct {
+		Foo   string
+		Bar   map[int]string
+		Bar8  map[int8]string
+		Bar16 map[int16]string
+		Bar32 map[int32]string
+		Bar64 map[int64]string
+	}
+
+	item := ourTestType{
+		Foo: "Foo",
+		Bar: map[int]string{
+			10: "Ten",
+			20: "Twenty",
+		},
+		Bar8: map[int8]string{
+			10: "Ten",
+			20: "Twenty",
+		},
+		Bar16: map[int16]string{
+			10: "Ten",
+			20: "Twenty",
+		},
+		Bar32: map[int32]string{
+			10: "Ten",
+			20: "Twenty",
+		},
+		Bar64: map[int64]string{
+			10: "Ten",
+			20: "Twenty",
+		},
+	}
+
+	key := randomKey()
+	con, _ := NewGoriak("127.0.0.1")
+	err := con.SetMap("testsuitemap", "maps", key, item)
+
+	if err != nil {
+		t.Error("Set", err)
+	}
+
+	var res ourTestType
+	// res.Bar = make(map[int]string)
+	err, _ = con.GetMap("testsuitemap", "maps", key, &res)
+
+	if err != nil {
+		t.Error("Get", err)
+	}
+
+	if !reflect.DeepEqual(item, res) {
+		t.Error("Not equal")
+		t.Errorf("Got: %+v", res)
+		t.Errorf("Expected: %+v", item)
+	}
+}
