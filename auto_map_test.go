@@ -465,3 +465,55 @@ func TestMapInStruct(t *testing.T) {
 		t.Errorf("Expected: %+v", item)
 	}
 }
+
+func TestSubStructs(t *testing.T) {
+	type ourSubTestType struct {
+		AA string
+		BB string
+	}
+
+	type ourOtherSubTestType struct {
+		DD ourSubTestType
+	}
+
+	type ourTestType struct {
+		A string
+		B ourSubTestType
+		C ourOtherSubTestType
+	}
+
+	item := ourTestType{
+		A: "Outer A",
+		B: ourSubTestType{
+			AA: "Inner A",
+			BB: "Inner B",
+		},
+		C: ourOtherSubTestType{
+			DD: ourSubTestType{
+				AA: "Other A",
+				BB: "Other B",
+			},
+		},
+	}
+
+	key := randomKey()
+	con, _ := NewGoriak("127.0.0.1")
+	err := con.SetMap("testsuitemap", "maps", key, item)
+
+	if err != nil {
+		t.Error(err)
+	}
+
+	var res ourTestType
+	err, _ = con.GetMap("testsuitemap", "maps", key, &res)
+
+	if err != nil {
+		t.Error("Get", err)
+	}
+
+	if !reflect.DeepEqual(item, res) {
+		t.Error("Not equal")
+		t.Errorf("Got: %+v", res)
+		t.Errorf("Expected: %+v", item)
+	}
+}

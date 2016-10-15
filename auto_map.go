@@ -8,8 +8,7 @@ import (
 )
 
 func (c *Client) SetMap(bucket, bucketType, key string, input interface{}) error {
-
-	op, err := valueToOp(input)
+	op, err := encodeInterface(input)
 
 	if err != nil {
 		return err
@@ -68,7 +67,7 @@ func (c *Client) GetMap(bucket, bucketType, key string, output interface{}) (err
 		return errors.New("Not found"), true
 	}
 
-	err = mapToStruct(ma.Response.Map, output)
+	err = decodeInterface(ma.Response.Map, output)
 
 	if err != nil {
 		return err, false

@@ -7,11 +7,15 @@ import (
 	"strconv"
 )
 
-func mapToStruct(data *riak.Map, output interface{}) error {
+func decodeInterface(data *riak.Map, output interface{}) error {
+	return mapToStruct(
+		data,
+		reflect.ValueOf(output).Elem(),
+		reflect.TypeOf(output).Elem(),
+	)
+}
 
-	// Set values
-	rValue := reflect.ValueOf(output).Elem()
-	rType := reflect.TypeOf(output).Elem()
+func mapToStruct(data *riak.Map, rValue reflect.Value, rType reflect.Type) error {
 	num := rType.NumField()
 
 	for i := 0; i < num; i++ {
@@ -64,9 +68,18 @@ func mapToStruct(data *riak.Map, output interface{}) error {
 			}
 
 		case reflect.Map:
-
 			if subMap, ok := data.Maps[registerName]; ok {
 				err := mapMaptoMap(rValue.Field(i), subMap)
+
+				if err != nil {
+					return err
+				}
+			}
+
+		case reflect.Struct:
+			if subMap, ok := data.Maps[registerName]; ok {
+				f := rValue.Field(i)
+				err := mapToStruct(subMap, f, f.Type())
 
 				if err != nil {
 					return err

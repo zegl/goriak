@@ -7,21 +7,30 @@ import (
 	"strconv"
 )
 
-func valueToOp(input interface{}) (*riak.MapOperation, error) {
+func encodeInterface(input interface{}) (*riak.MapOperation, error) {
 	op := &riak.MapOperation{}
 
 	var rValue reflect.Value
-	var rType reflect.Type
 
 	if reflect.ValueOf(input).Kind() == reflect.Struct {
 		rValue = reflect.ValueOf(input)
-		rType = reflect.TypeOf(input)
 	} else if reflect.ValueOf(input).Kind() == reflect.Ptr {
 		rValue = reflect.ValueOf(input).Elem()
-		rType = reflect.TypeOf(input).Elem()
 	} else {
 		return nil, errors.New("Could not parse value. Needs to be struct or pointer to struct")
 	}
+
+	err := encodeStruct(rValue, op)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return op, nil
+}
+
+func encodeStruct(rValue reflect.Value, op *riak.MapOperation) error {
+	rType := rValue.Type()
 
 	num := rType.NumField()
 
@@ -39,11 +48,11 @@ func valueToOp(input interface{}) (*riak.MapOperation, error) {
 		err := encodeValue(op, itemKey, rValue.Field(i))
 
 		if err != nil {
-			return nil, err
+			return err
 		}
 	}
 
-	return op, nil
+	return nil
 }
 
 func encodeValue(op *riak.MapOperation, itemKey string, f reflect.Value) error {
@@ -83,6 +92,10 @@ func encodeValue(op *riak.MapOperation, itemKey string, f reflect.Value) error {
 		if err != nil {
 			return err
 		}
+
+	case reflect.Struct:
+		subOp := op.Map(itemKey)
+		encodeStruct(f, subOp)
 
 	default:
 		return errors.New("Unexpected type: " + f.Kind().String())
