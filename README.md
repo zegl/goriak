@@ -58,19 +58,23 @@ goriak.MapOperation("bucket-name", "bucket-type", "key", operation)
 
 ## Supported Go types
 
-Only a few Go types ar currently supported in `SetMap()` and `GetMap()`.
 
-They are:
+|  Go Type   | Riak Type |
+|------------|-----------|
+| `struct`   | map       |
+| `string`   | register  |
+| `[n]byte`  | register  |
+| `[]byte`   | register  |
+| `[]slice`  | set       |
+| `[]slice`  | set       |
+| `[][]byte` | set       |
+| `map`      | map       |
 
-| Go Type      | Riak Type |
-|--------------|-----------|
-| `struct`     | map       |
-| `string`     | register  |
-| `[n]byte`    | register  |
-| `[]byte`     | register  |
-| `[]slice`    | set       |
-| `[]slice`    | set       | 
-| `[][]byte`   | set       |
+
+### Golang map types
+
+Supported key types: `int`, `int8`, `int16`, `int32`, `int64`, `string`.  
+Supported value types: `string`, `[]byte`.
 
 # Values
 
