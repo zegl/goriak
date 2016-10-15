@@ -406,13 +406,14 @@ func TestEmptyStruct(t *testing.T) {
 
 func TestMapInStruct(t *testing.T) {
 	type ourTestType struct {
-		Foo     string
-		Bar     map[int]string
-		Bar8    map[int8]string
-		Bar16   map[int16]string
-		Bar32   map[int32]string
-		Bar64   map[int64]string
-		BarByte map[int64][]byte
+		Foo       string
+		Bar       map[int]string
+		Bar8      map[int8]string
+		Bar16     map[int16]string
+		Bar32     map[int32]string
+		Bar64     map[int64]string
+		BarByte   map[int64][]byte
+		BarString map[string]string
 	}
 
 	item := ourTestType{
@@ -441,6 +442,11 @@ func TestMapInStruct(t *testing.T) {
 		BarByte: map[int64][]byte{
 			4000:  []byte{1, 2, 3, 4, 5},
 			10000: []byte{50, 60, 70, 80},
+		},
+
+		BarString: map[string]string{
+			"Ten":    "TenTen",
+			"Twenty": "TewntyTwenty",
 		},
 	}
 
