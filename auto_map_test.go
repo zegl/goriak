@@ -406,12 +406,13 @@ func TestEmptyStruct(t *testing.T) {
 
 func TestMapInStruct(t *testing.T) {
 	type ourTestType struct {
-		Foo   string
-		Bar   map[int]string
-		Bar8  map[int8]string
-		Bar16 map[int16]string
-		Bar32 map[int32]string
-		Bar64 map[int64]string
+		Foo     string
+		Bar     map[int]string
+		Bar8    map[int8]string
+		Bar16   map[int16]string
+		Bar32   map[int32]string
+		Bar64   map[int64]string
+		BarByte map[int64][]byte
 	}
 
 	item := ourTestType{
@@ -436,6 +437,11 @@ func TestMapInStruct(t *testing.T) {
 			10: "Ten",
 			20: "Twenty",
 		},
+
+		BarByte: map[int64][]byte{
+			4000:  []byte{1, 2, 3, 4, 5},
+			10000: []byte{50, 60, 70, 80},
+		},
 	}
 
 	key := randomKey()
@@ -447,7 +453,6 @@ func TestMapInStruct(t *testing.T) {
 	}
 
 	var res ourTestType
-	// res.Bar = make(map[int]string)
 	err, _ = con.GetMap("testsuitemap", "maps", key, &res)
 
 	if err != nil {

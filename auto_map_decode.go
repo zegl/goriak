@@ -187,6 +187,17 @@ func mapMaptoMap(mapValue reflect.Value, data *riak.Map) error {
 		case reflect.String:
 			valValue = reflect.ValueOf(string(val))
 
+		case reflect.Slice:
+
+			sliceItemType := mapValue.Type().Elem().Elem().Kind()
+
+			switch sliceItemType {
+			case reflect.Uint8:
+				valValue = reflect.ValueOf(val)
+			default:
+				return errors.New("Unknown map value type")
+			}
+
 		default:
 			return errors.New("Unknown map value type")
 		}
