@@ -45,25 +45,25 @@ func randomKey() string {
 	return string(b)
 }
 
-func TestGetSetValue(t *testing.T) {
+func TestGetSetJSON(t *testing.T) {
 	key := randomKey()
 	con, _ := NewGoriak("127.0.0.1")
 
-	err := con.SetValue("testsuite", "tests", key, teststoreobject{
+	err := con.SetJSON("testsuite", "tests", key, teststoreobject{
 		A: "Abc",
 		B: 10002,
 	})
 
 	if err != nil {
-		t.Error("SetValue:", err)
+		t.Error("SetJSON:", err)
 		return
 	}
 
 	var res teststoreobject
-	getErr, _ := con.GetValue("testsuite", "tests", key, &res)
+	getErr, _ := con.GetJSON("testsuite", "tests", key, &res)
 
 	if getErr != nil {
-		t.Error("GetValue:", getErr)
+		t.Error("GetJSON:", getErr)
 		t.Errorf("%+v", res)
 		return
 	}
@@ -81,13 +81,13 @@ func TestValueWithIndex(t *testing.T) {
 	key := randomKey()
 	con, _ := NewGoriak("127.0.0.1")
 
-	err := con.SetValue("testsuite", "tests", key, teststoreobject{
+	err := con.SetJSON("testsuite", "tests", key, teststoreobject{
 		A: "HelloWorld",
 		B: 10002,
 	})
 
 	if err != nil {
-		t.Error("SetValue:", err)
+		t.Error("SetJSON:", err)
 		return
 	}
 
@@ -114,7 +114,7 @@ func TestValueWithSliceIndex(t *testing.T) {
 	key := randomKey()
 	con, _ := NewGoriak("127.0.0.1")
 
-	err := con.SetValue("testsuite", "tests", key, testsliceindex{
+	err := con.SetJSON("testsuite", "tests", key, testsliceindex{
 		Thing:   "Hello",
 		Indexes: []string{"Hola", "Hej", "Halo"},
 	})

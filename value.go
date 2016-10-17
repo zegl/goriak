@@ -8,9 +8,9 @@ import (
 	riak "github.com/basho/riak-go-client"
 )
 
-// SetValue saves value as key in the bucket bucket/bucketType
+// SetJSON saves value as key in the bucket bucket/bucketType
 // Values can automatically be added to indexes with the struct tag goriakindex
-func (c *Client) SetValue(bucket, bucketType, key string, value interface{}) error {
+func (c *Client) SetJSON(bucket, bucketType, key string, value interface{}) error {
 	by, err := json.Marshal(value)
 
 	if err != nil {
@@ -88,7 +88,61 @@ func (c *Client) SetValue(bucket, bucketType, key string, value interface{}) err
 	return nil
 }
 
-func (c *Client) GetValue(bucket, bucketType, key string, value interface{}) (err error, isNotFound bool) {
+// SetRaw saves the data in Riak directly without any modifications
+func (c *Client) SetRaw(bucket, bucketType, key string, data []byte) error {
+	object := riak.Object{
+		Value: data,
+	}
+
+	cmd, err := riak.NewStoreValueCommandBuilder().
+		WithBucket(bucket).
+		WithBucketType(bucketType).
+		WithKey(key).
+		WithContent(&object).
+		Build()
+
+	if err != nil {
+		return err
+	}
+
+	err = c.riak.Execute(cmd)
+
+	if err != nil {
+		return err
+	}
+
+	res, ok := cmd.(*riak.StoreValueCommand)
+
+	if !ok {
+		return errors.New("Unable to parse response from Riak")
+	}
+
+	if !res.Success() {
+		return errors.New("Riak command was not successful")
+	}
+
+	return nil
+}
+
+// GetJSON is the same as GetRaw, but with automatic JSON unmarshalling
+func (c *Client) GetJSON(bucket, bucketType, key string, value interface{}) (err error, isNotFound bool) {
+	raw, err, isNotFound := c.GetRaw(bucket, bucketType, key)
+
+	if err != nil {
+		return err, isNotFound
+	}
+
+	err = json.Unmarshal(raw, value)
+
+	if err != nil {
+		return err, false
+	}
+
+	return nil, false
+}
+
+// GetRaw retuns the raw []byte array that is stored in Riak without any modifications
+func (c *Client) GetRaw(bucket, bucketType, key string) (raw []byte, err error, isNotFound bool) {
 	cmd, err := riak.NewFetchValueCommandBuilder().
 		WithBucket(bucket).
 		WithBucketType(bucketType).
@@ -96,40 +150,34 @@ func (c *Client) GetValue(bucket, bucketType, key string, value interface{}) (er
 		Build()
 
 	if err != nil {
-		return err, false
+		return raw, err, false
 	}
 
 	err = c.riak.Execute(cmd)
 
 	if err != nil {
-		return err, false
+		return raw, err, false
 	}
 
 	res, ok := cmd.(*riak.FetchValueCommand)
 
 	if !ok {
-		return errors.New("Unable to parse response from Riak"), false
+		return raw, errors.New("Unable to parse response from Riak"), false
 	}
 
 	if !res.Success() {
-		return errors.New("Riak command was not successful"), false
+		return raw, errors.New("Riak command was not successful"), false
 	}
 
 	if res.Response.IsNotFound {
-		return errors.New("Not Found"), true
+		return raw, errors.New("Not Found"), true
 	}
 
 	if len(res.Response.Values) != 1 {
-		return errors.New("Not Found"), false
+		return raw, errors.New("Not Found"), false
 	}
 
-	err = json.Unmarshal(res.Response.Values[0].Value, value)
-
-	if err != nil {
-		return err, false
-	}
-
-	return nil, false
+	return res.Response.Values[0].Value, nil, false
 }
 
 func (c *Client) Delete(bucket, bucketType, key string) error {
