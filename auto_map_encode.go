@@ -166,6 +166,31 @@ func encodeSlice(op *riak.MapOperation, itemKey string, f reflect.Value) error {
 		// Uint8 is the same as byte, store the value directly
 		op.SetRegister(itemKey, sliceVal.Bytes())
 
+	case reflect.Array:
+		// Empty slice of arrays, do nothing
+		if sliceVal.Len() == 0 {
+			return nil
+		}
+
+		// [n]byte
+		if sliceVal.Type().Elem().Elem().Kind() == reflect.Uint8 {
+			for ii := 0; ii < sliceVal.Len(); ii++ {
+
+				item := sliceVal.Index(ii)
+
+				// Convert the array to a byte slice
+				byteValue := make([]byte, item.Len())
+
+				for byteValueIndex := 0; byteValueIndex < item.Len(); byteValueIndex++ {
+					byteValue[byteValueIndex] = uint8(item.Index(byteValueIndex).Uint())
+				}
+
+				op.AddToSet(itemKey, byteValue)
+			}
+
+			return nil
+		}
+
 	case reflect.Slice:
 
 		// Empty, do nothing

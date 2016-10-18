@@ -44,13 +44,22 @@ func mapToStruct(data *riak.Map, rValue reflect.Value, rType reflect.Type) error
 				}
 			}
 
+		// Integer types
 		case reflect.Int:
+			fallthrough
+		case reflect.Int8:
+			fallthrough
+		case reflect.Int16:
+			fallthrough
+		case reflect.Int32:
+			fallthrough
+		case reflect.Int64:
 
 			if val, ok := data.Registers[registerName]; ok {
-				intVal, err := strconv.Atoi(string(val))
+				intVal, err := strconv.ParseInt(string(val), 10, 0)
 
 				if err == nil {
-					rValue.Field(i).SetInt(int64(intVal))
+					rValue.Field(i).SetInt(intVal)
 				}
 			}
 
@@ -144,6 +153,44 @@ func mapSliceToStruct(sliceValue reflect.Value, registerName string, data *riak.
 		}
 
 		return errors.New("Unknown slice slice type: " + sliceValue.Type().Elem().Elem().Kind().String())
+
+	// [][n]byte
+	case reflect.Array:
+		if sliceValue.Type().Elem().Elem().Kind() == reflect.Uint8 {
+			if values, ok := data.Sets[registerName]; ok {
+
+				lengthOfExpectedArray := sliceValue.Type().Elem().Len()
+
+				// The type of the inner array
+				arrayType := reflect.ArrayOf(lengthOfExpectedArray, reflect.TypeOf(uint8(0)))
+
+				// A slice with array Type items
+				// The length is set to the amount of values in the Set from Riak
+				sliceType := reflect.SliceOf(arrayType)
+				finalSliceValue := reflect.MakeSlice(sliceType, len(values), len(values))
+
+				for valueIndex, value := range values {
+
+					// Create the array from Riak data
+					newArray := reflect.New(arrayType).Elem()
+
+					for i := 0; i < lengthOfExpectedArray; i++ {
+						newArray.Index(i).Set(reflect.ValueOf(value[i]))
+					}
+
+					// Add array to slice
+					finalSliceValue.Index(valueIndex).Set(newArray)
+				}
+
+				// Override the Slice from "Userland"
+				sliceValue.Set(finalSliceValue)
+
+			}
+
+			return nil
+		}
+
+		return errors.New("Unknown slice array type: " + sliceValue.Type().Elem().Elem().Kind().String())
 
 	default:
 		return errors.New("Unknown slice type: " + sliceValue.Type().Elem().Kind().String())
