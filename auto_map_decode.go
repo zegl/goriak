@@ -124,7 +124,7 @@ func mapSliceToStruct(sliceValue reflect.Value, registerName string, data *riak.
 				intVal, err := strconv.ParseInt(string(v), 10, 64)
 
 				if err != nil {
-					panic(err)
+					return err
 				}
 
 				result[i] = int(intVal)

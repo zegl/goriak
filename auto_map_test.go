@@ -761,4 +761,39 @@ func TestDecodeUnsupportedTypes(t *testing.T) {
 	if err.Error() != "Unknown map value type" {
 		t.Error("Unexpected error", err)
 	}
+
+	// ---------
+
+	key = randomKey()
+
+	type writeType8 struct {
+		A string
+		B []string
+	}
+
+	err = con.SetMap("testsuitemap", "maps", key, writeType8{
+		A: "aaaa",
+		B: []string{"a", "b"},
+	})
+
+	if err != nil {
+		t.Error(err)
+	}
+
+	type readType8 struct {
+		A string
+		B []int
+	}
+
+	var res8 readType8
+	err, _ = con.GetMap("testsuitemap", "maps", key, &res8)
+
+	if err == nil {
+		t.Error("No error")
+		return
+	}
+
+	if err.Error() != `strconv.ParseInt: parsing "a": invalid syntax` {
+		t.Error("Unexpected error", err)
+	}
 }
