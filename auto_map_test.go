@@ -531,3 +531,124 @@ func TestSubStructs(t *testing.T) {
 		t.Errorf("Expected: %+v", item)
 	}
 }
+
+func TestDecodeUnsupportedTypes(t *testing.T) {
+	type writeType struct {
+		A string
+	}
+
+	key := randomKey()
+	con, _ := NewGoriak("127.0.0.1")
+
+	err := con.SetMap("testsuitemap", "maps", key, writeType{
+		A: "aaaa",
+	})
+
+	if err != nil {
+		t.Error(err)
+	}
+
+	type readType struct {
+		A string
+		B float64
+	}
+
+	var res readType
+	err, _ = con.GetMap("testsuitemap", "maps", key, &res)
+
+	if err == nil {
+		t.Error("No error")
+		return
+	}
+
+	if err.Error() != "Unknown type: float64" {
+		t.Error("Unexpected error", err)
+	}
+
+	type readType2 struct {
+		A string
+		B [][]bool
+	}
+
+	var res2 readType2
+	err, _ = con.GetMap("testsuitemap", "maps", key, &res2)
+
+	if err == nil {
+		t.Error("No error")
+		return
+	}
+
+	if err.Error() != "Unknown slice slice type: bool" {
+		t.Error("Unexpected error", err)
+	}
+
+	type readType3 struct {
+		A string
+		B [][5]bool
+	}
+
+	var res3 readType3
+	err, _ = con.GetMap("testsuitemap", "maps", key, &res3)
+
+	if err == nil {
+		t.Error("No error")
+		return
+	}
+
+	if err.Error() != "Unknown slice array type: bool" {
+		t.Error("Unexpected error", err)
+	}
+
+	type readType4 struct {
+		A string
+		B []float64
+	}
+
+	var res4 readType4
+	err, _ = con.GetMap("testsuitemap", "maps", key, &res4)
+
+	if err == nil {
+		t.Error("No error")
+		return
+	}
+
+	if err.Error() != "Unknown slice type: float64" {
+		t.Error("Unexpected error", err)
+	}
+
+	key = randomKey()
+
+	type writeType5 struct {
+		A string
+		B map[string]string
+	}
+
+	err = con.SetMap("testsuitemap", "maps", key, writeType5{
+		A: "aaaa",
+		B: map[string]string{
+			"AA": "BB",
+			"CC": "DD",
+		},
+	})
+
+	if err != nil {
+		t.Error(err)
+	}
+
+	type readType5 struct {
+		A string
+		B map[float64]float64
+	}
+
+	var res5 readType5
+	err, _ = con.GetMap("testsuitemap", "maps", key, &res5)
+
+	if err == nil {
+		t.Error("No error")
+		return
+	}
+
+	if err.Error() != "Unknown map key type" {
+		t.Error("Unexpected error", err)
+	}
+}
