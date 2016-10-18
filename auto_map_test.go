@@ -8,6 +8,8 @@ import (
 type testmapobject struct {
 	A   string
 	Set []string
+
+	RiakContext []byte `goriak:"goriakcontext"`
 }
 
 func TestAutoMapSetAndGet(t *testing.T) {
@@ -96,7 +98,7 @@ func TestMapOperation(t *testing.T) {
 	op := NewMapOperation()
 	op.AddToSet("Set", []byte("Three"))
 
-	mapoperr := con.MapOperation("testsuitemap", "maps", key, op)
+	mapoperr := con.MapOperation("testsuitemap", "maps", key, op, res.RiakContext)
 
 	if mapoperr != nil {
 		t.Error("MapOperr:", mapoperr)
