@@ -162,7 +162,7 @@ func mapSliceToStruct(sliceValue reflect.Value, registerName string, data *riak.
 				lengthOfExpectedArray := sliceValue.Type().Elem().Len()
 
 				// The type of the inner array
-				arrayType := reflect.ArrayOf(lengthOfExpectedArray, reflect.TypeOf(uint8(0)))
+				arrayType := sliceValue.Type().Elem()
 
 				// A slice with array Type items
 				// The length is set to the amount of values in the Set from Riak
