@@ -24,38 +24,42 @@ func (c *Client) SetJSON(bucket, bucketType, key string, value interface{}) erro
 	refType := reflect.TypeOf(value)
 	refValue := reflect.ValueOf(value)
 
-	// Set indexes
-	for i := 0; i < refType.NumField(); i++ {
+	if refType.Kind() == reflect.Struct {
 
-		indexName := refType.Field(i).Tag.Get("goriakindex")
+		// Set indexes
+		for i := 0; i < refType.NumField(); i++ {
 
-		if len(indexName) == 0 {
-			continue
-		}
+			indexName := refType.Field(i).Tag.Get("goriakindex")
 
-		// String
-		if refValue.Field(i).Type().Kind() == reflect.String {
-			object.AddToIndex(indexName, refValue.Field(i).String())
-			continue
-		}
-
-		// Slice
-		if refValue.Field(i).Type().Kind() == reflect.Slice {
-
-			sliceType := refValue.Field(i).Type().Elem()
-			sliceValue := refValue.Field(i)
-
-			// Slice: String
-			if sliceType.Kind() == reflect.String {
-				for sli := 0; sli < sliceValue.Len(); sli++ {
-					object.AddToIndex(indexName, sliceValue.Index(sli).String())
-				}
-
+			if len(indexName) == 0 {
 				continue
 			}
+
+			// String
+			if refValue.Field(i).Type().Kind() == reflect.String {
+				object.AddToIndex(indexName, refValue.Field(i).String())
+				continue
+			}
+
+			// Slice
+			if refValue.Field(i).Type().Kind() == reflect.Slice {
+
+				sliceType := refValue.Field(i).Type().Elem()
+				sliceValue := refValue.Field(i)
+
+				// Slice: String
+				if sliceType.Kind() == reflect.String {
+					for sli := 0; sli < sliceValue.Len(); sli++ {
+						object.AddToIndex(indexName, sliceValue.Index(sli).String())
+					}
+
+					continue
+				}
+			}
+
+			return errors.New("Did not know how to set index: " + refType.Field(i).Name)
 		}
 
-		return errors.New("Did not know how to set index: " + refType.Field(i).Name)
 	}
 
 	cmd, err := riak.NewStoreValueCommandBuilder().
@@ -88,10 +92,41 @@ func (c *Client) SetJSON(bucket, bucketType, key string, value interface{}) erro
 	return nil
 }
 
+type Options struct {
+	indexes map[string][]string
+}
+
+func (o *Options) AddToIndex(key, value string) *Options {
+
+	// Create map if needed
+	if o.indexes == nil {
+		o.indexes = make(map[string][]string)
+	}
+
+	// Add to existing slice
+	if _, ok := o.indexes[key]; ok {
+		o.indexes[key] = append(o.indexes[key], value)
+	}
+
+	// Create new slice
+	o.indexes[key] = []string{value}
+
+	return o
+}
+
 // SetRaw saves the data in Riak directly without any modifications
-func (c *Client) SetRaw(bucket, bucketType, key string, data []byte) error {
+func (c *Client) SetRaw(bucket, bucketType, key string, data []byte, opt *Options) error {
 	object := riak.Object{
 		Value: data,
+	}
+
+	// Add to indexes
+	if opt != nil {
+		for name, values := range opt.indexes {
+			for _, val := range values {
+				object.AddToIndex(name, val)
+			}
+		}
 	}
 
 	cmd, err := riak.NewStoreValueCommandBuilder().
