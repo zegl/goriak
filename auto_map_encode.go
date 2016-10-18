@@ -132,14 +132,7 @@ func encodeArray(op *riak.MapOperation, itemKey string, f reflect.Value) error {
 // Slices are saved as Sets
 // []byte and []uint8 are saved as Registers
 func encodeSlice(op *riak.MapOperation, itemKey string, f reflect.Value) error {
-
-	// Empty, do nothing
-	if f.Len() == 0 {
-		return nil
-	}
-
-	sliceType := f.Index(0).Kind()
-
+	sliceType := f.Type().Elem().Kind()
 	sliceLength := f.Len()
 	sliceVal := f.Slice(0, sliceLength)
 
@@ -167,10 +160,6 @@ func encodeSlice(op *riak.MapOperation, itemKey string, f reflect.Value) error {
 		op.SetRegister(itemKey, sliceVal.Bytes())
 
 	case reflect.Array:
-		// Empty slice of arrays, do nothing
-		if sliceVal.Len() == 0 {
-			return nil
-		}
 
 		// [n]byte
 		if sliceVal.Type().Elem().Elem().Kind() == reflect.Uint8 {
