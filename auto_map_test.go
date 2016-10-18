@@ -704,4 +704,61 @@ func TestDecodeUnsupportedTypes(t *testing.T) {
 	if err.Error() != "Unknown type: float64" {
 		t.Error("Unexpected error", err)
 	}
+
+	// ---------
+
+	key = randomKey()
+
+	type writeType7 struct {
+		A string
+		B map[string]string
+	}
+
+	err = con.SetMap("testsuitemap", "maps", key, writeType5{
+		A: "aaaa",
+		B: map[string]string{
+			"AA": "BB",
+			"CC": "DD",
+		},
+	})
+
+	if err != nil {
+		t.Error(err)
+	}
+
+	type readType7 struct {
+		A string
+		B map[string]float64
+	}
+
+	var res7 readType7
+	err, _ = con.GetMap("testsuitemap", "maps", key, &res7)
+
+	if err == nil {
+		t.Error("No error")
+		return
+	}
+
+	if err.Error() != "Unknown map value type" {
+		t.Error("Unexpected error", err)
+	}
+
+	// ---------
+
+	type readType7b struct {
+		A string
+		B map[string][]float64
+	}
+
+	var res7b readType7b
+	err, _ = con.GetMap("testsuitemap", "maps", key, &res7b)
+
+	if err == nil {
+		t.Error("No error")
+		return
+	}
+
+	if err.Error() != "Unknown map value type" {
+		t.Error("Unexpected error", err)
+	}
 }
