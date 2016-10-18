@@ -2,10 +2,10 @@ package goriak
 
 import (
 	"log"
-	"os"
-	"testing"
-
 	"math/rand"
+	"os"
+	"reflect"
+	"testing"
 	"time"
 )
 
@@ -105,12 +105,12 @@ func TestValueWithIndex(t *testing.T) {
 	}
 }
 
-type testsliceindex struct {
-	Thing   string
-	Indexes []string `goriakindex:"sliceindex_bin"`
-}
-
 func TestValueWithSliceIndex(t *testing.T) {
+	type testsliceindex struct {
+		Thing   string
+		Indexes []string `goriakindex:"sliceindex_bin"`
+	}
+
 	key := randomKey()
 	con, _ := NewGoriak("127.0.0.1")
 
@@ -143,5 +143,70 @@ func TestValueWithSliceIndex(t *testing.T) {
 	if len(keys) != 1 || keys[0] != key {
 		t.Error("2: Unexpected content")
 		t.Errorf("%+v", keys)
+	}
+}
+
+func TestGetSetRaw(t *testing.T) {
+	key := randomKey()
+	con, _ := NewGoriak("127.0.0.1")
+
+	// Generate rawData
+	rawData := []byte(randomKey())
+
+	err := con.SetRaw("testsuite", "tests", key, rawData, nil)
+
+	if err != nil {
+		t.Error(err)
+	}
+
+	getRaw, err, _ := con.GetRaw("testsuite", "tests", key)
+
+	if err != nil {
+		t.Error(err)
+	}
+
+	if !reflect.DeepEqual(rawData, getRaw) {
+		t.Error("Unexpected content")
+	}
+}
+
+func TestRawWithIndex(t *testing.T) {
+	key := randomKey()
+	con, _ := NewGoriak("127.0.0.1")
+
+	// Generate rawData
+	rawData := []byte(randomKey())
+
+	ops := &Options{}
+	ops.AddToIndex("raw_index_bin", "indexvalue")
+
+	err := con.SetRaw("testsuite", "tests", key, rawData, ops)
+
+	if err != nil {
+		t.Error(err)
+	}
+
+	getRaw, err, _ := con.GetRaw("testsuite", "tests", key)
+
+	if err != nil {
+		t.Error(err)
+	}
+
+	if !reflect.DeepEqual(rawData, getRaw) {
+		t.Error("Unexpected content")
+	}
+
+	keys, err := con.KeysInIndex("testsuite", "tests", "raw_index_bin", "indexvalue", 10)
+
+	if err != nil {
+		t.Error(err)
+	}
+
+	if len(keys) != 1 {
+		t.Error("Unexpected count")
+	}
+
+	if keys[0] != key {
+		t.Error("Key was not in index")
 	}
 }
