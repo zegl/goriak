@@ -67,7 +67,7 @@ func (c *Client) GetMap(bucket, bucketType, key string, output interface{}) (err
 		return errors.New("Not found"), true
 	}
 
-	err = decodeInterface(ma.Response.Map, output)
+	err = decodeInterface(ma.Response, output)
 
 	if err != nil {
 		return err, false
@@ -76,12 +76,13 @@ func (c *Client) GetMap(bucket, bucketType, key string, output interface{}) (err
 	return nil, false
 }
 
-func (c *Client) MapOperation(bucket, bucketType, key string, op riak.MapOperation) error {
+func (c *Client) MapOperation(bucket, bucketType, key string, op riak.MapOperation, context []byte) error {
 	cmd, err := riak.NewUpdateMapCommandBuilder().
 		WithBucket(bucket).
 		WithBucketType(bucketType).
 		WithKey(key).
 		WithMapOperation(&op).
+		WithContext(context).
 		Build()
 
 	if err != nil {

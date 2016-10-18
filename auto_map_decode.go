@@ -7,15 +7,16 @@ import (
 	"strconv"
 )
 
-func decodeInterface(data *riak.Map, output interface{}) error {
+func decodeInterface(data *riak.FetchMapResponse, output interface{}) error {
 	return mapToStruct(
-		data,
+		data.Map,
 		reflect.ValueOf(output).Elem(),
 		reflect.TypeOf(output).Elem(),
+		data.Context,
 	)
 }
 
-func mapToStruct(data *riak.Map, rValue reflect.Value, rType reflect.Type) error {
+func mapToStruct(data *riak.Map, rValue reflect.Value, rType reflect.Type, riakContext []byte) error {
 	num := rType.NumField()
 
 	for i := 0; i < num; i++ {
@@ -23,6 +24,14 @@ func mapToStruct(data *riak.Map, rValue reflect.Value, rType reflect.Type) error
 		field := rType.Field(i)
 		registerName := field.Name
 		tag := field.Tag.Get("goriak")
+
+		// goriakcontext is a reserved keyword.
+		// Use the tag `goriak:"goriakcontext"` to get the Riak context neccesary for certaion Riak operations,
+		// such as removing items from a Set.
+		if tag == "goriakcontext" {
+			rValue.Field(i).SetBytes(riakContext)
+			continue
+		}
 
 		if len(tag) > 0 {
 			registerName = tag
@@ -88,7 +97,7 @@ func mapToStruct(data *riak.Map, rValue reflect.Value, rType reflect.Type) error
 		case reflect.Struct:
 			if subMap, ok := data.Maps[registerName]; ok {
 				f := rValue.Field(i)
-				err := mapToStruct(subMap, f, f.Type())
+				err := mapToStruct(subMap, f, f.Type(), riakContext)
 
 				if err != nil {
 					return err
