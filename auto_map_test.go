@@ -797,3 +797,49 @@ func TestDecodeUnsupportedTypes(t *testing.T) {
 		t.Error("Unexpected error", err)
 	}
 }
+
+func TestEncodeErrors(t *testing.T) {
+	type writeType1 struct {
+		A map[float64]string
+	}
+
+	key := randomKey()
+	con, _ := NewGoriak("127.0.0.1")
+
+	err := con.SetMap("testsuitemap", "maps", key, writeType1{
+		A: map[float64]string{
+			2.0: "2",
+			3.0: "3",
+		},
+	})
+
+	if err == nil {
+		t.Error("no error")
+	}
+
+	if err.Error() != "Unknown map key type" {
+		t.Error("Unexpected error", err)
+	}
+
+	// ----------
+
+	type writeType2 struct {
+		A map[int]float64
+	}
+
+	err = con.SetMap("testsuitemap", "maps", key, writeType2{
+		A: map[int]float64{
+			2: 2.0,
+			3: 3.0,
+		},
+	})
+
+	if err == nil {
+		t.Error("no error")
+	}
+
+	if err.Error() != "Unexpected type: float64" {
+		t.Error("Unexpected error", err)
+	}
+
+}
