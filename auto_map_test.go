@@ -565,6 +565,8 @@ func TestDecodeUnsupportedTypes(t *testing.T) {
 		t.Error("Unexpected error", err)
 	}
 
+	// ---------
+
 	type readType2 struct {
 		A string
 		B [][]bool
@@ -581,6 +583,8 @@ func TestDecodeUnsupportedTypes(t *testing.T) {
 	if err.Error() != "Unknown slice slice type: bool" {
 		t.Error("Unexpected error", err)
 	}
+
+	// ---------
 
 	type readType3 struct {
 		A string
@@ -599,6 +603,8 @@ func TestDecodeUnsupportedTypes(t *testing.T) {
 		t.Error("Unexpected error", err)
 	}
 
+	// ---------
+
 	type readType4 struct {
 		A string
 		B []float64
@@ -615,6 +621,8 @@ func TestDecodeUnsupportedTypes(t *testing.T) {
 	if err.Error() != "Unknown slice type: float64" {
 		t.Error("Unexpected error", err)
 	}
+
+	// ---------
 
 	key = randomKey()
 
@@ -649,6 +657,51 @@ func TestDecodeUnsupportedTypes(t *testing.T) {
 	}
 
 	if err.Error() != "Unknown map key type" {
+		t.Error("Unexpected error", err)
+	}
+
+	// ---------
+
+	key = randomKey()
+
+	type writeType6sub struct {
+		AA string
+	}
+
+	type writeType6 struct {
+		A string
+		B writeType6sub
+	}
+
+	err = con.SetMap("testsuitemap", "maps", key, writeType6{
+		A: "aaaa",
+		B: writeType6sub{
+			AA: "bbbb",
+		},
+	})
+
+	if err != nil {
+		t.Error(err)
+	}
+
+	type readType6sub struct {
+		AA float64
+	}
+
+	type readType6 struct {
+		A string
+		B readType6sub
+	}
+
+	var res6 readType6
+	err, _ = con.GetMap("testsuitemap", "maps", key, &res6)
+
+	if err == nil {
+		t.Error("No error")
+		return
+	}
+
+	if err.Error() != "Unknown type: float64" {
 		t.Error("Unexpected error", err)
 	}
 }
