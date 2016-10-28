@@ -2,10 +2,17 @@ package goriak
 
 import (
 	"errors"
+	"fmt"
 	"reflect"
 
 	riak "github.com/basho/riak-go-client"
 )
+
+type requestData struct {
+	bucket     string
+	bucketType string
+	key        string
+}
 
 func (c *Client) SetMap(bucket, bucketType, key string, input interface{}) error {
 	op, err := encodeInterface(input)
@@ -67,7 +74,13 @@ func (c *Client) GetMap(bucket, bucketType, key string, output interface{}) (err
 		return errors.New("Not found"), true
 	}
 
-	err = decodeInterface(ma.Response, output)
+	req := requestData{
+		bucket:     bucket,
+		bucketType: bucketType,
+		key:        key,
+	}
+
+	err = decodeInterface(ma.Response, output, req)
 
 	if err != nil {
 		return err, false
@@ -122,3 +135,29 @@ func (mo *MapOperation) SetRegister(key name, value interface{}) {
 	mo.op.SetRegister(key, )
 }
 */
+
+type Counter struct {
+	path []string    // Path to the counter (can be a map in a map in a map, etc..)
+	name string      // Name of the counter
+	key  requestData // bucket information
+
+	val        int64
+	increaseBy int64
+}
+
+func (c *Counter) Increase(i int64) int64 {
+	c.val += i
+	c.increaseBy += i
+
+	fmt.Printf("%+v\n", c)
+
+	return c.val
+}
+
+func (c *Counter) Decrease() int64 {
+	return 0
+}
+
+func (c *Counter) Value() int64 {
+	return 0
+}
