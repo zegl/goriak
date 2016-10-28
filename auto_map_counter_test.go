@@ -6,6 +6,7 @@ import (
 
 func TestMapCounter(t *testing.T) {
 	type testType struct {
+		AA   string
 		Foos *Counter
 	}
 
@@ -13,9 +14,7 @@ func TestMapCounter(t *testing.T) {
 	con, _ := NewGoriak("127.0.0.1")
 
 	testVal := testType{
-		Foos: &Counter{
-			val: 20,
-		},
+		AA: "hello",
 	}
 
 	errset := con.SetMap("testsuitemap", "maps", key, &testVal)
@@ -31,19 +30,22 @@ func TestMapCounter(t *testing.T) {
 		t.Error("Get:", errget)
 	}
 
-	if res.Foos.Value() != 20 {
+	if res.Foos.Value() != 0 {
 		t.Error("Unexpected initial value")
 	}
 
 	// Increase by one
-	res.Foos.Increase(1)
+	err := res.Foos.Increase(1).Exec(con)
 
-	if res.Foos.Value() != 21 {
-		t.Error("Unexpected value")
+	if err != nil {
+		t.Error("Error Increase: ", err.Error())
+	}
+
+	if res.Foos.Value() != 1 {
+		t.Error("a: Unexpected value:", res.Foos.Value())
 	}
 
 	// Get from Raik
-
 	var res2 testType
 	errget, _ = con.GetMap("testsuitemap", "maps", key, &res2)
 
@@ -51,7 +53,25 @@ func TestMapCounter(t *testing.T) {
 		t.Error("Get:", errget)
 	}
 
-	if res2.Foos.Value() != 21 {
-		t.Error("Unexpected value")
+	if res2.Foos.Value() != 1 {
+		t.Error("b: Unexpected value:", res2.Foos.Value())
+	}
+
+	err = res2.Foos.Increase(3).Exec(con)
+
+	if err != nil {
+		t.Error("Error Increase: ", err.Error())
+	}
+
+	// Get from Raik
+	var res3 testType
+	errget, _ = con.GetMap("testsuitemap", "maps", key, &res3)
+
+	if errget != nil {
+		t.Error("Get:", errget)
+	}
+
+	if res3.Foos.Value() != 4 {
+		t.Error("c: Unexpected value:", res3.Foos.Value())
 	}
 }

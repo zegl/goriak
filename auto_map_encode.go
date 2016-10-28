@@ -2,7 +2,6 @@ package goriak
 
 import (
 	"errors"
-	"fmt"
 	riak "github.com/basho/riak-go-client"
 	"reflect"
 	"strconv"
@@ -101,10 +100,7 @@ func encodeValue(op *riak.MapOperation, itemKey string, f reflect.Value) error {
 	case reflect.Ptr:
 
 		if f.Type().String() == "*goriak.Counter" {
-
-			//f.FieldByName("")
 			if f.IsNil() {
-				fmt.Println("Nil Pointer")
 				return nil
 			}
 
@@ -114,13 +110,6 @@ func encodeValue(op *riak.MapOperation, itemKey string, f reflect.Value) error {
 		} else {
 			return errors.New("Unexpected ptr type: " + f.Type().String())
 		}
-
-		//reflect.TypeOf()
-
-		// fmt.Printf("%+v\n", t.Kind())
-
-		//fmt.Printf("%+v\n", f.Type().AssignableTo(reflect.TypeOf(&Counter{})))
-		//fmt.Printf("%+v\n", f.Type())
 
 	default:
 		return errors.New("Unexpected type: " + f.Kind().String())

@@ -2,7 +2,6 @@ package goriak
 
 import (
 	"errors"
-	"fmt"
 	"reflect"
 
 	riak "github.com/basho/riak-go-client"
@@ -145,19 +144,56 @@ type Counter struct {
 	increaseBy int64
 }
 
-func (c *Counter) Increase(i int64) int64 {
+func (c *Counter) Increase(i int64) *Counter {
+	if c == nil {
+		return nil
+	}
+
 	c.val += i
 	c.increaseBy += i
 
-	fmt.Printf("%+v\n", c)
-
-	return c.val
-}
-
-func (c *Counter) Decrease() int64 {
-	return 0
+	return c
 }
 
 func (c *Counter) Value() int64 {
-	return 0
+	return c.val
+}
+
+func (c *Counter) Exec(client *Client) error {
+
+	if c == nil {
+		return errors.New("Nil Counter")
+	}
+
+	op := riak.MapOperation{}
+	op.IncrementCounter(c.name, c.increaseBy)
+
+	cmd, err := riak.NewUpdateMapCommandBuilder().
+		WithBucket(c.key.bucket).
+		WithBucketType(c.key.bucketType).
+		WithKey(c.key.key).
+		WithMapOperation(&op).
+		Build()
+
+	if err != nil {
+		return err
+	}
+
+	err = client.riak.Execute(cmd)
+
+	if err != nil {
+		return err
+	}
+
+	res, ok := cmd.(*riak.UpdateMapCommand)
+
+	if !ok {
+		return errors.New("Could not convert")
+	}
+
+	if !res.Success() {
+		return errors.New("Not successful")
+	}
+
+	return nil
 }
