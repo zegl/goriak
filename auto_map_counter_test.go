@@ -5,8 +5,8 @@ import (
 )
 
 func TestMapCounter(t *testing.T) {
+
 	type testType struct {
-		AA   string
 		Foos *Counter
 	}
 
@@ -14,7 +14,7 @@ func TestMapCounter(t *testing.T) {
 	con, _ := NewGoriak("127.0.0.1")
 
 	testVal := testType{
-		AA: "hello",
+		Foos: NewCounter(),
 	}
 
 	errset := con.SetMap("testsuitemap", "maps", key, &testVal)

@@ -2,9 +2,10 @@ package goriak
 
 import (
 	"errors"
-	riak "github.com/basho/riak-go-client"
 	"reflect"
 	"strconv"
+
+	riak "github.com/basho/riak-go-client"
 )
 
 func encodeInterface(input interface{}) (*riak.MapOperation, error) {
@@ -106,7 +107,6 @@ func encodeValue(op *riak.MapOperation, itemKey string, f reflect.Value) error {
 
 			counterValue := f.Elem().FieldByName("increaseBy").Int()
 			op.IncrementCounter(itemKey, counterValue)
-
 		} else {
 			return errors.New("Unexpected ptr type: " + f.Type().String())
 		}

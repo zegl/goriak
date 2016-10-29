@@ -2,9 +2,10 @@ package goriak
 
 import (
 	"errors"
-	riak "github.com/basho/riak-go-client"
 	"reflect"
 	"strconv"
+
+	riak "github.com/basho/riak-go-client"
 )
 
 func decodeInterface(data *riak.FetchMapResponse, output interface{}, riakRequest requestData) error {
