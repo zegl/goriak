@@ -7,6 +7,12 @@ import (
 	riak "github.com/basho/riak-go-client"
 )
 
+type requestData struct {
+	bucket     string
+	bucketType string
+	key        string
+}
+
 func (c *Client) SetMap(bucket, bucketType, key string, input interface{}) error {
 	op, err := encodeInterface(input)
 
@@ -67,7 +73,13 @@ func (c *Client) GetMap(bucket, bucketType, key string, output interface{}) (err
 		return errors.New("Not found"), true
 	}
 
-	err = decodeInterface(ma.Response, output)
+	req := requestData{
+		bucket:     bucket,
+		bucketType: bucketType,
+		key:        key,
+	}
+
+	err = decodeInterface(ma.Response, output, req)
 
 	if err != nil {
 		return err, false

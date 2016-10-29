@@ -2,21 +2,24 @@ package goriak
 
 import (
 	"errors"
-	riak "github.com/basho/riak-go-client"
 	"reflect"
 	"strconv"
+
+	riak "github.com/basho/riak-go-client"
 )
 
-func decodeInterface(data *riak.FetchMapResponse, output interface{}) error {
+func decodeInterface(data *riak.FetchMapResponse, output interface{}, riakRequest requestData) error {
 	return mapToStruct(
 		data.Map,
 		reflect.ValueOf(output).Elem(),
 		reflect.TypeOf(output).Elem(),
 		data.Context,
+		[]string{}, // Start with an empty path
+		riakRequest,
 	)
 }
 
-func mapToStruct(data *riak.Map, rValue reflect.Value, rType reflect.Type, riakContext []byte) error {
+func mapToStruct(data *riak.Map, rValue reflect.Value, rType reflect.Type, riakContext []byte, path []string, riakRequest requestData) error {
 	num := rType.NumField()
 
 	for i := 0; i < num; i++ {
@@ -97,11 +100,37 @@ func mapToStruct(data *riak.Map, rValue reflect.Value, rType reflect.Type, riakC
 		case reflect.Struct:
 			if subMap, ok := data.Maps[registerName]; ok {
 				f := rValue.Field(i)
-				err := mapToStruct(subMap, f, f.Type(), riakContext)
+
+				newPath := append(path, registerName)
+
+				err := mapToStruct(subMap, f, f.Type(), riakContext, newPath, riakRequest)
 
 				if err != nil {
 					return err
 				}
+			}
+
+		case reflect.Ptr:
+
+			f := rValue.Field(i)
+			if f.Type().String() == "*goriak.Counter" {
+				var counterValue int64
+
+				if val, ok := data.Counters[registerName]; ok {
+					counterValue = val
+				}
+
+				resCounter := &Counter{
+					val:  counterValue,
+					name: registerName,
+					path: path,
+					key:  riakRequest,
+				}
+
+				f.Set(reflect.ValueOf(resCounter))
+
+			} else {
+				return errors.New("Unexpected ptr type: " + f.Type().String())
 			}
 
 		default:
