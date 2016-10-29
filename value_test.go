@@ -179,6 +179,8 @@ func TestRawWithIndex(t *testing.T) {
 
 	ops := &Options{}
 	ops.AddToIndex("raw_index_bin", "indexvalue")
+	ops.AddToIndex("raw_index_bin", "indexvalue2")
+	ops.AddToIndex("raw_index_bin", "indexvalue3")
 
 	err := con.SetRaw("testsuite", "tests", key, rawData, ops)
 
@@ -197,6 +199,20 @@ func TestRawWithIndex(t *testing.T) {
 	}
 
 	keys, err := con.KeysInIndex("testsuite", "tests", "raw_index_bin", "indexvalue", 10)
+
+	if err != nil {
+		t.Error(err)
+	}
+
+	if len(keys) != 1 {
+		t.Error("Unexpected count")
+	}
+
+	if keys[0] != key {
+		t.Error("Key was not in index")
+	}
+
+	keys, err = con.KeysInIndex("testsuite", "tests", "raw_index_bin", "indexvalue2", 10)
 
 	if err != nil {
 		t.Error(err)

@@ -106,11 +106,11 @@ func (o *Options) AddToIndex(key, value string) *Options {
 	// Add to existing slice
 	if _, ok := o.indexes[key]; ok {
 		o.indexes[key] = append(o.indexes[key], value)
+		return o
 	}
 
 	// Create new slice
 	o.indexes[key] = []string{value}
-
 	return o
 }
 
