@@ -76,6 +76,32 @@ goriak.MapOperation("bucket-name", "bucket-type", "key", operation)
 Supported key types: `int`, `int8`, `int16`, `int32`, `int64`, `string`.  
 Supported value types: `string`, `[]byte`.
 
+## Counters
+
+Riak Counters is supported with the special `goriak.Counter` type.
+
+Example:
+
+```go
+type Article struct {
+    Title string
+    Views *goriak.Counter
+}
+
+// Get our object
+var article Article
+con.GetMap("articles", "map", "1-hello-world", &article)
+
+// Increase views by 1
+err := article.Views.Increase(1).Exec(con)
+
+// check err
+```
+
+`Counter.Exec(con)` will make a lightweight request to Riak, and the counter is the only object that will be updated.
+
+You can also save the changes to your counter with `SetMap()`, this is useful if you want to change multiple counters at the same time.
+
 # Values
 
 Values are automatically JSON encoded and decoded.
