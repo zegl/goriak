@@ -46,14 +46,27 @@ goriak.GetMap("bucket-name", "bucket-type", "key", &res)
 
 ## MapOperation
 
-There are ofcourse times where you want to perform Riak Map Operations.
+There is a time in everyones life where you need to perform raw MapOperations.
+
+Some operations, such as `RemoveFromSet` requires a Context to perform the operation.
+A Context can be retreived from `GetMap` by setting a special context type.
+
 
 ```go
+type ourType struct {
+    Aliases []string
+
+    // The context from Riak will be added if the tag goriakcontext is provided
+    Context []byte `goriak:"goriakcontext"`
+}
+
+// ... GetMap()
+
 // Works with MapOperation from github.com/basho/riak-go-client
 operation := goriak.NewMapOperation()
 operation.AddToSet("Aliases", []byte("Baz"))
 
-goriak.MapOperation("bucket-name", "bucket-type", "key", operation)
+goriak.MapOperation("bucket-name", "bucket-type", "key", operation, val.Context)
 ```
 
 ## Supported Go types

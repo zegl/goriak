@@ -13,6 +13,19 @@ type requestData struct {
 	key        string
 }
 
+// SetMap automatically converts your Go datatype to the equivalent type in Riak
+//
+// |  Go Type   | Riak Type |
+// |------------|-----------|
+// | `struct`   | map       |
+// | `string`   | register  |
+// | `[n]byte`  | register  |
+// | `[]byte`   | register  |
+// | `[]slice`  | set       |
+// | `[]slice`  | set       |
+// | `[][]byte` | set       |
+// | `map`      | map       |
+//
 func (c *Client) SetMap(bucket, bucketType, key string, input interface{}) error {
 	op, err := encodeInterface(input)
 
@@ -40,6 +53,8 @@ func (c *Client) SetMap(bucket, bucketType, key string, input interface{}) error
 	return nil
 }
 
+// GetMap fetches data from Riak and decodes the result into your Go datatype.
+// See SetMap for more info.
 func (c *Client) GetMap(bucket, bucketType, key string, output interface{}) (err error, isNotFound bool) {
 
 	// Type check
@@ -120,17 +135,7 @@ func (c *Client) MapOperation(bucket, bucketType, key string, op riak.MapOperati
 	return nil
 }
 
+// NewMapOperation returns a new riak.MapOperation that you can for advanced Riak operations
 func NewMapOperation() riak.MapOperation {
 	return riak.MapOperation{}
 }
-
-/*type MapOperation struct {
-	op *riak.MapOperation
-}
-
-
-
-func (mo *MapOperation) SetRegister(key name, value interface{}) {
-	mo.op.SetRegister(key, )
-}
-*/
