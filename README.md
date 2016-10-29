@@ -1,21 +1,21 @@
 # goriak [![Build Status](https://circleci.com/gh/zegl/goriak.svg?style=svg)](https://circleci.com/gh/zegl/goriak) [![codecov](https://codecov.io/gh/zegl/goriak/branch/master/graph/badge.svg)](https://codecov.io/gh/zegl/goriak)
 
-
-Everything is currenly in alfa status, stay tuned. :)
+Current version: `v1.0.0`.
+Riak KV version: 2.0 or higher, the latest version of Riak KV is always recommended. 
 
 # What is goriak?
 
-goriak is a wrapper around [riak-go-client](https://github.com/basho/riak-go-client) to make it easier and more friendly for developers to user Riak.
+goriak is a wrapper around [riak-go-client](https://github.com/basho/riak-go-client) to make it easier and more friendly for developers to use Riak KV.
 
 # Installation
 
 ```bash
-go get -u github.com/zegl/goriak
+go get -u gopkg.in/zegl/goriak.v1
 ```
 
 # Maps
 
-goriak can automatically create [Riak maps](http://docs.basho.com/riak/kv/2.1.4/developing/data-types/) from your Go types.
+The main feature of goriak is that goriak automatically can marshal/unmarshal your Go types into [Riak data types](http://docs.basho.com/riak/kv/2.1.4/developing/data-types/).
 
 ## SetMap
 
