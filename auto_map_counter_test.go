@@ -117,3 +117,53 @@ func TestMapCounterError2(t *testing.T) {
 		t.Error(err)
 	}
 }
+
+func TestMapCounterNestedMap(t *testing.T) {
+
+	type subTestType struct {
+		Visits *Counter
+	}
+
+	type testType struct {
+		Counts subTestType
+	}
+
+	key := randomKey()
+	con, _ := NewGoriak("127.0.0.1")
+
+	testVal := testType{
+		Counts: subTestType{
+			Visits: NewCounter(),
+		},
+	}
+
+	errset := con.SetMap("testsuitemap", "maps", key, &testVal)
+
+	if errset != nil {
+		t.Error("Set:", errset)
+	}
+
+	var res testType
+	errget, _ := con.GetMap("testsuitemap", "maps", key, &res)
+
+	if errget != nil {
+		t.Error("Get:", errget)
+	}
+
+	err := res.Counts.Visits.Increase(17).Exec(con)
+
+	if err != nil {
+		t.Error("Increase:", err)
+	}
+
+	var res2 testType
+	errget2, _ := con.GetMap("testsuitemap", "maps", key, &res2)
+
+	if errget2 != nil {
+		t.Error("Get2:", errget2)
+	}
+
+	if res2.Counts.Visits.Value() != 17 {
+		t.Error("Unexpected value")
+	}
+}

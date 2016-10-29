@@ -47,14 +47,21 @@ func (c *Counter) Exec(client *Client) error {
 		return errors.New("Unknown path to counter. Retreive counter with GetMap before updating the counter")
 	}
 
-	op := riak.MapOperation{}
+	op := &riak.MapOperation{}
+	outerOp := op
+
+	// Traverse c.path so that we increment the correct counter in nested maps
+	for _, subMapName := range c.path {
+		op = op.Map(subMapName)
+	}
+
 	op.IncrementCounter(c.name, c.increaseBy)
 
 	cmd, err := riak.NewUpdateMapCommandBuilder().
 		WithBucket(c.key.bucket).
 		WithBucketType(c.key.bucketType).
 		WithKey(c.key.key).
-		WithMapOperation(&op).
+		WithMapOperation(outerOp).
 		Build()
 
 	if err != nil {
