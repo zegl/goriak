@@ -75,3 +75,45 @@ func TestMapCounter(t *testing.T) {
 		t.Error("c: Unexpected value:", res3.Foos.Value())
 	}
 }
+
+func TestMapCounterError(t *testing.T) {
+	type testType struct {
+		Foos *Counter
+	}
+
+	con, _ := NewGoriak("127.0.0.1")
+
+	testVal := testType{
+		Foos: NewCounter(),
+	}
+
+	err := testVal.Foos.Increase(4).Exec(con)
+
+	if err == nil {
+		t.Error("No error")
+	}
+
+	if err != nil && err.Error() != "Unknown path to counter. Retreive counter with GetMap before updating the counter" {
+		t.Error(err)
+	}
+}
+
+func TestMapCounterError2(t *testing.T) {
+	type testType struct {
+		Foos *Counter
+	}
+
+	con, _ := NewGoriak("127.0.0.1")
+
+	testVal := testType{}
+
+	err := testVal.Foos.Increase(4).Exec(con)
+
+	if err == nil {
+		t.Error("No error")
+	}
+
+	if err != nil && err.Error() != "Nil Counter" {
+		t.Error(err)
+	}
+}
