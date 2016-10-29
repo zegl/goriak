@@ -101,7 +101,10 @@ func encodeValue(op *riak.MapOperation, itemKey string, f reflect.Value) error {
 	case reflect.Ptr:
 
 		if f.Type().String() == "*goriak.Counter" {
+
 			if f.IsNil() {
+				// Increase by 0 to create the counter if it doesn't already exist
+				op.IncrementCounter(itemKey, 0)
 				return nil
 			}
 
