@@ -796,6 +796,45 @@ func TestDecodeUnsupportedTypes(t *testing.T) {
 	if err.Error() != `strconv.ParseInt: parsing "a": invalid syntax` {
 		t.Error("Unexpected error", err)
 	}
+
+	// ---------
+
+	key = randomKey()
+
+	type writeType9 struct {
+		A *string
+	}
+
+	s := "ptr string"
+
+	err = con.SetMap("testsuitemap", "maps", key, writeType9{
+		A: &s,
+	})
+
+	if err == nil || err.Error() != "Unexpected ptr type: *string" {
+		t.Error(err)
+	}
+
+	key = randomKey()
+	err = con.SetMap("testsuitemap", "maps", key, writeType{
+		A: "not a pointer",
+	})
+
+	if err != nil {
+		t.Error(err)
+	}
+
+	var res9 writeType9
+	err, _ = con.GetMap("testsuitemap", "maps", key, &res9)
+
+	if err == nil {
+		t.Error("No error")
+		return
+	}
+
+	if err.Error() != `Unexpected ptr type: *string` {
+		t.Error("Unexpected error", err)
+	}
 }
 
 func TestEncodeErrors(t *testing.T) {
