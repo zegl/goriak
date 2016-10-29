@@ -6,6 +6,9 @@ import (
 	riak "github.com/basho/riak-go-client"
 )
 
+// NewCounter returns a partial Counter
+// Counters returned by NewCounter() can only be updated with SetMap().
+// Counter.Exec() will not work on counters returned by NewCounter()
 func NewCounter() *Counter {
 	return &Counter{
 		val:        0,
@@ -13,6 +16,8 @@ func NewCounter() *Counter {
 	}
 }
 
+// Counter is a wapper to handle Riak Counters
+// Counter needs to be initialized by GetMap() to fully function
 type Counter struct {
 	path []string    // Path to the counter (can be a map in a map in a map, etc..)
 	name string      // Name of the counter
@@ -22,6 +27,9 @@ type Counter struct {
 	increaseBy int64
 }
 
+// Increase the value in the Counter by i
+// The value in Counter.Value() will be updated directly
+// Increase() will not save the changes to Riak directly
 func (c *Counter) Increase(i int64) *Counter {
 	if c == nil {
 		return nil
@@ -33,10 +41,13 @@ func (c *Counter) Increase(i int64) *Counter {
 	return c
 }
 
+// Value returns the value in the Counter
 func (c *Counter) Value() int64 {
 	return c.val
 }
 
+// Exec saves changes made to the Counter to Riak
+// Exec only works on Counters initialized by GetMap()
 func (c *Counter) Exec(client *Client) error {
 
 	if c == nil {
