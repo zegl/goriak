@@ -113,7 +113,9 @@ func mapToStruct(data *riak.Map, rValue reflect.Value, rType reflect.Type, riakC
 		case reflect.Ptr:
 
 			f := rValue.Field(i)
-			if f.Type().String() == "*goriak.Counter" {
+
+			switch f.Type().String() {
+			case "*goriak.Counter":
 				var counterValue int64
 
 				if val, ok := data.Counters[registerName]; ok {
@@ -121,15 +123,35 @@ func mapToStruct(data *riak.Map, rValue reflect.Value, rType reflect.Type, riakC
 				}
 
 				resCounter := &Counter{
-					val:  counterValue,
 					name: registerName,
 					path: path,
 					key:  riakRequest,
+
+					val: counterValue,
 				}
 
 				f.Set(reflect.ValueOf(resCounter))
 
-			} else {
+			case "*goriak.Set":
+
+				var setValue [][]byte
+
+				if val, ok := data.Sets[registerName]; ok {
+					setValue = val
+				}
+
+				resSet := &Set{
+					name:    registerName,
+					path:    path,
+					key:     riakRequest,
+					context: riakContext,
+
+					value: setValue,
+				}
+
+				f.Set(reflect.ValueOf(resSet))
+
+			default:
 				return errors.New("Unexpected ptr type: " + f.Type().String())
 			}
 

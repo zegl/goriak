@@ -27,18 +27,23 @@ type requestData struct {
 // | `map`      | map       |
 //
 func (c *Client) SetMap(bucket, bucketType, key string, input interface{}) error {
-	op, err := encodeInterface(input)
+	riakContext, op, err := encodeInterface(input)
 
 	if err != nil {
 		return err
 	}
 
-	cmd, err := riak.NewUpdateMapCommandBuilder().
+	builder := riak.NewUpdateMapCommandBuilder().
 		WithBucket(bucket).
 		WithKey(key).
 		WithBucketType(bucketType).
-		WithMapOperation(op).
-		Build()
+		WithMapOperation(op)
+
+	if len(riakContext) > 0 {
+		builder.WithContext(riakContext)
+	}
+
+	cmd, err := builder.Build()
 
 	if err != nil {
 		return err

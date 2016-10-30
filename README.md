@@ -89,7 +89,13 @@ goriak.MapOperation("bucket-name", "bucket-type", "key", operation, val.Context)
 Supported key types: `int`, `int8`, `int16`, `int32`, `int64`, `string`.  
 Supported value types: `string`, `[]byte`.
 
-## Counters
+## Helper types
+
+Some actions are more complicated then neccesary with the use of the default Go types and `MapOperations`.
+
+This is why goriak contains the types `goriak.Counter` and `goriak.Set`. Both of these types will help you performing actions such as incrementing a value, or adding/removing items.
+
+### Counters
 
 Riak Counters is supported with the special `goriak.Counter` type.
 
@@ -114,6 +120,32 @@ err := article.Views.Increase(1).Exec(con)
 `Counter.Exec(con)` will make a lightweight request to Riak, and the counter is the only object that will be updated.
 
 You can also save the changes to your counter with `SetMap()`, this is useful if you want to change multiple counters at the same time.
+
+Check [godoc](https://godoc.org/github.com/zegl/goriak) for more information.
+
+### Sets
+
+You can chose to use `goriak.Set` to help you with Set related actions, such as adding and removing items. `goriak.Set` also has support for sending incremental actions to Riak so that you don't have to build that functionality yourself.
+
+Example:
+
+```go
+type Article struct {
+    Title string
+    Tags *goriak.Set
+}
+
+// Get our object
+var article Article
+con.GetMap("articles", "map", "1-hello-world", &article)
+
+// Add the tag "animals"
+err := article.Tags.AddString("animals").Exec(con)
+
+// check err
+```
+
+Check [godoc](https://godoc.org/github.com/zegl/goriak) for more information.
 
 # Values
 
