@@ -2,6 +2,7 @@ package goriak
 
 import (
 	"reflect"
+	"sort"
 	"testing"
 )
 
@@ -175,4 +176,85 @@ func TestAutoMapMultipleSet(t *testing.T) {
 	if !reflect.DeepEqual(expectedAdds, set.adds) {
 		t.Error("Unexpected adds")
 	}
+}
+
+func TestAutoMapSetAddRemoveSetMap(t *testing.T) {
+
+	type ourTestType struct {
+		Tags *Set
+
+		Context []byte `goriak:"goriakcontext"`
+	}
+
+	testVal := ourTestType{
+		Tags: NewSet(),
+	}
+
+	testVal.Tags.AddString("one")
+	testVal.Tags.AddString("two")
+	testVal.Tags.AddString("three")
+	testVal.Tags.AddString("four")
+
+	key := randomKey()
+	con, _ := NewGoriak("127.0.0.1")
+
+	errset := con.SetMap("testsuitemap", "maps", key, &testVal)
+
+	if errset != nil {
+		t.Error("Set 1: ", errset)
+	}
+
+	// Get it back
+	var resVal ourTestType
+	errget, _ := con.GetMap("testsuitemap", "maps", key, &resVal)
+
+	if errget != nil {
+		t.Error("Get: ", errget)
+	}
+
+	expected := []string{"one", "two", "three", "four"}
+	sort.Strings(expected)
+
+	val := resVal.Tags.Strings()
+	sort.Strings(val)
+
+	if !reflect.DeepEqual(expected, val) {
+		t.Logf("Expected: %+v\n", expected)
+		t.Logf("Got: %+v\n", val)
+		t.Error("Unexpected value 1")
+	}
+
+	// Remove from fetched
+	resVal.Tags.RemoveString("two")
+
+	if errset != nil {
+		t.Error("Set 2: ", resVal)
+	}
+
+	errset = con.SetMap("testsuitemap", "maps", key, &resVal)
+
+	if errset != nil {
+		t.Error("Set 2: ", errset)
+	}
+
+	// Get it back
+	var resVal2 ourTestType
+	errget, _ = con.GetMap("testsuitemap", "maps", key, &resVal2)
+
+	if errget != nil {
+		t.Error("Get 2: ", errget)
+	}
+
+	expected = []string{"one", "three", "four"}
+	sort.Strings(expected)
+
+	val2 := resVal2.Tags.Strings()
+	sort.Strings(val2)
+
+	if !reflect.DeepEqual(expected, val2) {
+		t.Logf("Expected: %+v\n", expected)
+		t.Logf("Got: %+v\n", val2)
+		t.Error("Unexpected value 2")
+	}
+
 }

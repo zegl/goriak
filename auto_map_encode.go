@@ -8,7 +8,7 @@ import (
 	riak "github.com/basho/riak-go-client"
 )
 
-func encodeInterface(input interface{}) (*riak.MapOperation, error) {
+func encodeInterface(input interface{}) ([]byte, *riak.MapOperation, error) {
 	op := &riak.MapOperation{}
 
 	var rValue reflect.Value
@@ -18,22 +18,24 @@ func encodeInterface(input interface{}) (*riak.MapOperation, error) {
 	} else if reflect.ValueOf(input).Kind() == reflect.Ptr {
 		rValue = reflect.ValueOf(input).Elem()
 	} else {
-		return nil, errors.New("Could not parse value. Needs to be struct or pointer to struct")
+		return []byte{}, nil, errors.New("Could not parse value. Needs to be struct or pointer to struct")
 	}
 
-	err := encodeStruct(rValue, op)
+	riakContext, err := encodeStruct(rValue, op)
 
 	if err != nil {
-		return nil, err
+		return []byte{}, nil, err
 	}
 
-	return op, nil
+	return riakContext, op, nil
 }
 
-func encodeStruct(rValue reflect.Value, op *riak.MapOperation) error {
+func encodeStruct(rValue reflect.Value, op *riak.MapOperation) ([]byte, error) {
 	rType := rValue.Type()
 
 	num := rType.NumField()
+
+	riakContext := []byte{}
 
 	for i := 0; i < num; i++ {
 		field := rType.Field(i)
@@ -44,16 +46,21 @@ func encodeStruct(rValue reflect.Value, op *riak.MapOperation) error {
 
 		if len(tag) > 0 {
 			itemKey = tag
+
+			// Use as context
+			if tag == "goriakcontext" {
+				riakContext = rValue.Field(i).Bytes()
+			}
 		}
 
 		err := encodeValue(op, itemKey, rValue.Field(i))
 
 		if err != nil {
-			return err
+			return []byte{}, err
 		}
 	}
 
-	return nil
+	return riakContext, nil
 }
 
 func encodeValue(op *riak.MapOperation, itemKey string, f reflect.Value) error {
@@ -120,9 +127,7 @@ func encodeValue(op *riak.MapOperation, itemKey string, f reflect.Value) error {
 				return nil
 			}
 
-			iface := f.Elem().Interface()
-
-			if s, ok := iface.(*Set); ok {
+			if s, ok := f.Interface().(*Set); ok {
 				for _, add := range s.adds {
 					op.AddToSet(itemKey, add)
 				}
@@ -130,6 +135,7 @@ func encodeValue(op *riak.MapOperation, itemKey string, f reflect.Value) error {
 				for _, remove := range s.removes {
 					op.RemoveFromSet(itemKey, remove)
 				}
+
 			} else {
 				return errors.New("Could not convert to *Set?")
 			}
