@@ -156,3 +156,23 @@ func TestAutoMapSetAddRemove(t *testing.T) {
 		t.Error("Unexpected removes 3")
 	}
 }
+
+func TestAutoMapMultipleSet(t *testing.T) {
+	set := NewSet()
+
+	set.AddString("hello")
+	set.AddString("hello")
+	set.AddString("hello")
+	set.AddString("hello")
+
+	expectedVal := []string{"hello"}
+	expectedAdds := [][]byte{[]byte("hello")}
+
+	if !reflect.DeepEqual(expectedVal, set.Strings()) {
+		t.Error("Unexpected value")
+	}
+
+	if !reflect.DeepEqual(expectedAdds, set.adds) {
+		t.Error("Unexpected adds")
+	}
+}
