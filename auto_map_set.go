@@ -7,10 +7,13 @@ import (
 	riak "github.com/basho/riak-go-client"
 )
 
+// NewSet returnes a new and empty Set.
+// Sets returned from NewSet() can not be used with Set.Exec()
 func NewSet() *Set {
 	return &Set{}
 }
 
+// Set is a special type to make it easier to work with Riak Sets in Go.
 type Set struct {
 	path    []string    // Path to the counter (can be a map in a map in a map, etc..)
 	name    string      // Name of the counter
@@ -22,6 +25,7 @@ type Set struct {
 	removes [][]byte // Same as adds, but for removal of items
 }
 
+// Value returnes the raw values from the Set
 func (s *Set) Value() [][]byte {
 	r := make([][]byte, 0)
 
@@ -35,6 +39,7 @@ func (s *Set) Value() [][]byte {
 	return r
 }
 
+// Strings returns the same data as Value(), but encoded as strings
 func (s *Set) Strings() []string {
 	all := s.Value()
 
@@ -47,6 +52,8 @@ func (s *Set) Strings() []string {
 	return r
 }
 
+// Add adds an item to the direct value of the Set.
+// Save the changes to Riak with Set.Exec() or SetMap().
 func (s *Set) Add(add []byte) *Set {
 	// Make sure that our set doesn't already contain this value
 	for _, item := range s.value {
@@ -74,6 +81,8 @@ func (s *Set) Add(add []byte) *Set {
 	return s
 }
 
+// Remove deletes an item to the direct value of the Set.
+// Save the changes to Riak with Set.Exec() or SetMap().
 func (s *Set) Remove(remove []byte) *Set {
 
 	// Remove from s.value
@@ -102,14 +111,17 @@ func (s *Set) Remove(remove []byte) *Set {
 	return s
 }
 
+// AddString is a shortcut to Add
 func (s *Set) AddString(add string) *Set {
 	return s.Add([]byte(add))
 }
 
+// RemoveString is a shortcut to Remove
 func (s *Set) RemoveString(remove string) *Set {
 	return s.Remove([]byte(remove))
 }
 
+// Exec executes the diff created by Add() and Remove(), and saves the data to Riak
 func (s *Set) Exec(client *Client) error {
 	if s == nil {
 		return errors.New("Nil Set")
