@@ -55,11 +55,21 @@ func (s *Set) Add(add []byte) *Set {
 		}
 	}
 
-	// Add to value
+	// Add to s.value
 	s.value = append(s.value, add)
 
-	// Add to adds (Riak actions not yet saved)
-	s.adds = append(s.value, add)
+	// Add to s.adds (Riak actions not yet saved)
+	s.adds = append(s.adds, add)
+
+	// Remove from s.removes
+	for i, item := range s.removes {
+		if bytes.Equal(item, add) {
+
+			// https://github.com/golang/go/wiki/SliceTricks
+			s.removes[i] = s.removes[len(s.removes)-1]
+			s.removes = s.removes[:len(s.removes)-1]
+		}
+	}
 
 	return s
 }

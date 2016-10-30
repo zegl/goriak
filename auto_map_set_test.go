@@ -86,3 +86,73 @@ func TestAutoMapSet(t *testing.T) {
 		t.Error("Not deep equal after get 2")
 	}
 }
+
+func TestAutoMapSetAddRemove(t *testing.T) {
+	set := NewSet()
+
+	set.AddString("1")
+	set.AddString("2")
+	set.AddString("3")
+
+	expected := []string{"1", "2", "3"}
+
+	if !reflect.DeepEqual(expected, set.Strings()) {
+		t.Log(expected)
+		t.Log(set.Strings())
+		t.Error("Unexpected 1")
+	}
+
+	set.RemoveString("2")
+
+	expected = []string{"1", "3"}
+
+	if !reflect.DeepEqual(expected, set.Strings()) {
+		t.Log(expected)
+		t.Log(set.Strings())
+		t.Error("Unexpected 2")
+	}
+
+	expectedAdds := [][]byte{[]byte("1"), []byte("3")}
+
+	if !reflect.DeepEqual(expectedAdds, set.adds) {
+		t.Log(expectedAdds)
+		t.Log(set.adds)
+		t.Error("Unexpected adds 1")
+	}
+
+	expectedRemoves := [][]byte{[]byte("2")}
+
+	if !reflect.DeepEqual(expectedRemoves, set.removes) {
+		t.Log(expectedRemoves)
+		t.Log(set.removes)
+		t.Error("Unexpected removes 1")
+	}
+
+	set.RemoveString("4")
+
+	expectedRemoves = [][]byte{[]byte("2"), []byte("4")}
+
+	if !reflect.DeepEqual(expectedRemoves, set.removes) {
+		t.Log(expectedRemoves)
+		t.Log(set.removes)
+		t.Error("Unexpected removes 2")
+	}
+
+	set.AddString("4")
+
+	expectedAdds = [][]byte{[]byte("1"), []byte("3"), []byte("4")}
+
+	if !reflect.DeepEqual(expectedAdds, set.adds) {
+		t.Log(expectedAdds)
+		t.Log(set.adds)
+		t.Error("Unexpected adds 2")
+	}
+
+	expectedRemoves = [][]byte{[]byte("2")}
+
+	if !reflect.DeepEqual(expectedRemoves, set.removes) {
+		t.Log(expectedRemoves)
+		t.Log(set.removes)
+		t.Error("Unexpected removes 3")
+	}
+}
