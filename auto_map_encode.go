@@ -100,8 +100,9 @@ func encodeValue(op *riak.MapOperation, itemKey string, f reflect.Value) error {
 
 	case reflect.Ptr:
 
-		if f.Type().String() == "*goriak.Counter" {
+		switch f.Type().String() {
 
+		case "*goriak.Counter": // Counters
 			if f.IsNil() {
 				// Increase by 0 to create the counter if it doesn't already exist
 				op.IncrementCounter(itemKey, 0)
@@ -110,7 +111,30 @@ func encodeValue(op *riak.MapOperation, itemKey string, f reflect.Value) error {
 
 			counterValue := f.Elem().FieldByName("increaseBy").Int()
 			op.IncrementCounter(itemKey, counterValue)
-		} else {
+
+		case "*goriak.Set": // Set
+
+			// Add an empty item
+			if f.IsNil() {
+				op.AddToSet(itemKey, []byte{})
+				return nil
+			}
+
+			iface := f.Elem().Interface()
+
+			if s, ok := iface.(*Set); ok {
+				for _, add := range s.adds {
+					op.AddToSet(itemKey, add)
+				}
+
+				for _, remove := range s.removes {
+					op.RemoveFromSet(itemKey, remove)
+				}
+			} else {
+				return errors.New("Could not convert to *Set?")
+			}
+
+		default:
 			return errors.New("Unexpected ptr type: " + f.Type().String())
 		}
 
