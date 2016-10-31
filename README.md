@@ -145,7 +145,7 @@ err := article.Tags.AddString("animals").Exec(con)
 // check err
 ```
 
-Check [godoc](https://godoc.org/github.com/zegl/goriak) for more information.
+Check [godoc](https://godoc.org/github.com/zegl/goriak#Set) for more information.
 
 # Values
 
