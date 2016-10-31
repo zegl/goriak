@@ -4,13 +4,26 @@ import (
 	riak "github.com/basho/riak-go-client"
 )
 
-type Client struct {
+// Session holds the connection to Riak
+type Session struct {
 	riak *riak.Client
+	opts ConnectOpts
 }
 
-func NewGoriak(host string) (*Client, error) {
-	client := Client{}
-	err := client.connect(host)
+// ConnectOpts are the available options for connecting to your Riak instance
+type ConnectOpts struct {
+	// Both Adress and Addresses should be on the form HOST|IP[:PORT]
+	Address   string   // Address to a single Riak host. Will be used in case Addresses is empty
+	Addresses []string // Addresses to all Riak hosts.
+}
+
+// Connect creates a new Riak connection. See ConnectOpts for the available options.
+func Connect(opts ConnectOpts) (*Session, error) {
+	client := Session{
+		opts: opts,
+	}
+
+	err := client.connect()
 
 	if err != nil {
 		return nil, err
@@ -19,9 +32,13 @@ func NewGoriak(host string) (*Client, error) {
 	return &client, nil
 }
 
-func (c *Client) connect(host string) error {
+func (c *Session) connect() error {
+	if len(c.opts.Addresses) == 0 {
+		c.opts.Addresses = []string{c.opts.Address}
+	}
+
 	con, err := riak.NewClient(&riak.NewClientOptions{
-		RemoteAddresses: []string{host},
+		RemoteAddresses: c.opts.Addresses,
 	})
 
 	if err != nil {

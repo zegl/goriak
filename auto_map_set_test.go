@@ -11,12 +11,8 @@ func TestAutoMapSet(t *testing.T) {
 		Items *Set
 	}
 
-	// Initialize
-	key := randomKey()
-	con, _ := NewGoriak("127.0.0.1")
-
 	testVal := ourTestType{}
-	errset := con.SetMap("testsuitemap", "maps", key, &testVal)
+	result, errset := bucket().Insert(testVal).Run(con())
 
 	if errset != nil {
 		t.Error("Set:", errset)
@@ -24,7 +20,7 @@ func TestAutoMapSet(t *testing.T) {
 
 	// Get when empty
 	var res ourTestType
-	errget, _ := con.GetMap("testsuitemap", "maps", key, &res)
+	_, errget := bucket().Get(result.Key, &res).Run(con())
 
 	if errget != nil {
 		t.Error("Get:", errget)
@@ -48,7 +44,7 @@ func TestAutoMapSet(t *testing.T) {
 		t.Error("Not deep equal first")
 	}
 
-	err := res.Items.Exec(con)
+	err := res.Items.Exec(con())
 
 	if err != nil {
 		t.Error("Exec1: ", err)
@@ -56,7 +52,7 @@ func TestAutoMapSet(t *testing.T) {
 
 	// Get after save
 	var res2 ourTestType
-	errget, _ = con.GetMap("testsuitemap", "maps", key, &res2)
+	_, errget = bucket().Get(result.Key, &res2).Run(con())
 
 	if errget != nil {
 		t.Error("Get:", errget)
@@ -67,7 +63,7 @@ func TestAutoMapSet(t *testing.T) {
 	}
 
 	// Remove
-	err = res2.Items.RemoveString("bbb").Exec(con)
+	err = res2.Items.RemoveString("bbb").Exec(con())
 
 	if err != nil {
 		t.Error("Exec2: ", err)
@@ -75,7 +71,7 @@ func TestAutoMapSet(t *testing.T) {
 
 	// Get after remove
 	var res3 ourTestType
-	errget, _ = con.GetMap("testsuitemap", "maps", key, &res3)
+	_, errget = bucket().Get(result.Key, &res3).Run(con())
 
 	if errget != nil {
 		t.Error("Get:", errget)
@@ -195,10 +191,7 @@ func TestAutoMapSetAddRemoveSetMap(t *testing.T) {
 	testVal.Tags.AddString("three")
 	testVal.Tags.AddString("four")
 
-	key := randomKey()
-	con, _ := NewGoriak("127.0.0.1")
-
-	errset := con.SetMap("testsuitemap", "maps", key, &testVal)
+	result, errset := bucket().Insert(testVal).Run(con())
 
 	if errset != nil {
 		t.Error("Set 1: ", errset)
@@ -206,7 +199,7 @@ func TestAutoMapSetAddRemoveSetMap(t *testing.T) {
 
 	// Get it back
 	var resVal ourTestType
-	errget, _ := con.GetMap("testsuitemap", "maps", key, &resVal)
+	_, errget := bucket().Get(result.Key, &resVal).Run(con())
 
 	if errget != nil {
 		t.Error("Get: ", errget)
@@ -231,7 +224,7 @@ func TestAutoMapSetAddRemoveSetMap(t *testing.T) {
 		t.Error("Set 2: ", resVal)
 	}
 
-	errset = con.SetMap("testsuitemap", "maps", key, &resVal)
+	_, errset = bucket().Key(result.Key).Insert(resVal).Run(con())
 
 	if errset != nil {
 		t.Error("Set 2: ", errset)
@@ -239,7 +232,7 @@ func TestAutoMapSetAddRemoveSetMap(t *testing.T) {
 
 	// Get it back
 	var resVal2 ourTestType
-	errget, _ = con.GetMap("testsuitemap", "maps", key, &resVal2)
+	_, errget = bucket().Get(result.Key, &resVal2).Run(con())
 
 	if errget != nil {
 		t.Error("Get 2: ", errget)
@@ -260,6 +253,11 @@ func TestAutoMapSetAddRemoveSetMap(t *testing.T) {
 }
 
 func ExampleSet() {
+
+	session, _ := Connect(ConnectOpts{
+		Address: "127.0.0.1",
+	})
+
 	type Article struct {
 		Tags *Set
 
@@ -277,10 +275,7 @@ func ExampleSet() {
 	art.Tags.AddString("one")
 	art.Tags.AddString("two")
 
-	con, _ := NewGoriak("127.0.0.1")
-
-	// Saving to Riak
-	err := con.SetMap("bucket", "bucketType", riakKey, &art)
+	_, err := Bucket("bucket", "bucketType").Key(riakKey).Insert(art).Run(session)
 
 	if err != nil {
 		// ..
@@ -288,7 +283,7 @@ func ExampleSet() {
 
 	// Retreiving from Riak
 	var getArt Article
-	err, _ = con.GetMap("bucket", "bucketType", riakKey, &getArt)
+	_, err = Bucket("bucket", "bucketType").Get(riakKey, &getArt).Run(session)
 
 	if err != nil {
 		// ..
@@ -296,7 +291,7 @@ func ExampleSet() {
 
 	// Adding one extra tag.
 	// Multiple AddString() and RemoveString() can be chained together before calling Exec().
-	err = getArt.Tags.AddString("three").Exec(con)
+	err = getArt.Tags.AddString("three").Exec(session)
 
 	if err != nil {
 		// ..

@@ -5,3 +5,12 @@ Goriaks speciallity is dealing with Riak KV Data Types (http://docs.basho.com/ri
 allowing Marshal/Unmarshal of Go structs into Riak Maps.
 */
 package goriak
+
+import (
+	riak "github.com/basho/riak-go-client"
+)
+
+// For backwards compability reasons while refactoring
+type Client struct {
+	riak *riak.Client
+}

@@ -48,7 +48,7 @@ func (c *Counter) Value() int64 {
 
 // Exec saves changes made to the Counter to Riak
 // Exec only works on Counters initialized by GetMap()
-func (c *Counter) Exec(client *Client) error {
+func (c *Counter) Exec(client *Session) error {
 
 	if c == nil {
 		return errors.New("Nil Counter")

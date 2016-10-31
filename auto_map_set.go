@@ -122,7 +122,7 @@ func (s *Set) RemoveString(remove string) *Set {
 }
 
 // Exec executes the diff created by Add() and Remove(), and saves the data to Riak
-func (s *Set) Exec(client *Client) error {
+func (s *Set) Exec(client *Session) error {
 	if s == nil {
 		return errors.New("Nil Set")
 	}

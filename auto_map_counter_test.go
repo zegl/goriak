@@ -4,27 +4,37 @@ import (
 	"testing"
 )
 
+func con() *Session {
+	c, _ := Connect(ConnectOpts{
+		Address: "127.0.0.1",
+	})
+
+	return c
+}
+
+func bucket() Command {
+
+	return Bucket("testsuitemap", "maps")
+}
+
 func TestMapCounter(t *testing.T) {
 
 	type testType struct {
 		Foos *Counter
 	}
 
-	key := randomKey()
-	con, _ := NewGoriak("127.0.0.1")
-
 	testVal := testType{
 		Foos: NewCounter(),
 	}
 
-	errset := con.SetMap("testsuitemap", "maps", key, &testVal)
+	queryRes, errset := bucket().Insert(testVal).Run(con())
 
 	if errset != nil {
 		t.Error("Set:", errset)
 	}
 
 	var res testType
-	errget, _ := con.GetMap("testsuitemap", "maps", key, &res)
+	queryRes, errget := bucket().Get(queryRes.Key, &res).Run(con())
 
 	if errget != nil {
 		t.Error("Get:", errget)
@@ -35,7 +45,7 @@ func TestMapCounter(t *testing.T) {
 	}
 
 	// Increase by one
-	err := res.Foos.Increase(1).Exec(con)
+	err := res.Foos.Increase(1).Exec(con())
 
 	if err != nil {
 		t.Error("Error Increase: ", err.Error())
@@ -47,7 +57,7 @@ func TestMapCounter(t *testing.T) {
 
 	// Get from Raik
 	var res2 testType
-	errget, _ = con.GetMap("testsuitemap", "maps", key, &res2)
+	_, errget = bucket().Get(queryRes.Key, &res2).Run(con())
 
 	if errget != nil {
 		t.Error("Get:", errget)
@@ -57,7 +67,7 @@ func TestMapCounter(t *testing.T) {
 		t.Error("b: Unexpected value:", res2.Foos.Value())
 	}
 
-	err = res2.Foos.Increase(3).Exec(con)
+	err = res2.Foos.Increase(3).Exec(con())
 
 	if err != nil {
 		t.Error("Error Increase: ", err.Error())
@@ -65,7 +75,7 @@ func TestMapCounter(t *testing.T) {
 
 	// Get from Raik
 	var res3 testType
-	errget, _ = con.GetMap("testsuitemap", "maps", key, &res3)
+	_, errget = bucket().Get(queryRes.Key, &res3).Run(con())
 
 	if errget != nil {
 		t.Error("Get:", errget)
@@ -81,13 +91,11 @@ func TestMapCounterError(t *testing.T) {
 		Foos *Counter
 	}
 
-	con, _ := NewGoriak("127.0.0.1")
-
 	testVal := testType{
 		Foos: NewCounter(),
 	}
 
-	err := testVal.Foos.Increase(4).Exec(con)
+	err := testVal.Foos.Increase(4).Exec(con())
 
 	if err == nil {
 		t.Error("No error")
@@ -103,11 +111,9 @@ func TestMapCounterError2(t *testing.T) {
 		Foos *Counter
 	}
 
-	con, _ := NewGoriak("127.0.0.1")
-
 	testVal := testType{}
 
-	err := testVal.Foos.Increase(4).Exec(con)
+	err := testVal.Foos.Increase(4).Exec(con())
 
 	if err == nil {
 		t.Error("No error")
@@ -128,36 +134,35 @@ func TestMapCounterNestedMap(t *testing.T) {
 		Counts subTestType
 	}
 
-	key := randomKey()
-	con, _ := NewGoriak("127.0.0.1")
-
 	testVal := testType{
 		Counts: subTestType{
 			Visits: NewCounter(),
 		},
 	}
 
-	errset := con.SetMap("testsuitemap", "maps", key, &testVal)
+	result, errset := bucket().Insert(testVal).Run(con())
+
+	// errset := con.SetMap("testsuitemap", "maps", key, &testVal)
 
 	if errset != nil {
 		t.Error("Set:", errset)
 	}
 
 	var res testType
-	errget, _ := con.GetMap("testsuitemap", "maps", key, &res)
+	_, errget := bucket().Get(result.Key, &res).Run(con())
 
 	if errget != nil {
 		t.Error("Get:", errget)
 	}
 
-	err := res.Counts.Visits.Increase(17).Exec(con)
+	err := res.Counts.Visits.Increase(17).Exec(con())
 
 	if err != nil {
 		t.Error("Increase:", err)
 	}
 
 	var res2 testType
-	errget2, _ := con.GetMap("testsuitemap", "maps", key, &res2)
+	_, errget2 := bucket().Get(result.Key, &res2).Run(con())
 
 	if errget2 != nil {
 		t.Error("Get2:", errget2)
@@ -173,19 +178,16 @@ func TestNilCounter(t *testing.T) {
 		Foos *Counter
 	}
 
-	key := randomKey()
-	con, _ := NewGoriak("127.0.0.1")
-
 	testVal := testType{}
 
-	errset := con.SetMap("testsuitemap", "maps", key, &testVal)
+	result, errset := bucket().Insert(testVal).Run(con())
 
 	if errset != nil {
 		t.Error("Set:", errset)
 	}
 
 	var res testType
-	errget, _ := con.GetMap("testsuitemap", "maps", key, &res)
+	_, errget := bucket().Get(result.Key, &res).Run(con())
 
 	if errget != nil {
 		t.Error("Get:", errget)

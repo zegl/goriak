@@ -1,10 +1,10 @@
 package goriak
 
 import (
-	"errors"
-	"reflect"
+//"errors"
+//"reflect"
 
-	riak "github.com/basho/riak-go-client"
+//riak "github.com/basho/riak-go-client"
 )
 
 type requestData struct {
@@ -27,7 +27,7 @@ SetMap automatically converts your Go datatype to the equivalent type in Riak
 	| [][]byte   | set       |
 	| map        | map       |
 */
-func (c *Client) SetMap(bucket, bucketType, key string, input interface{}) error {
+/*func (c *Client) SetMap(bucket, bucketType, key string, input interface{}) error {
 	riakContext, op, err := encodeInterface(input)
 
 	if err != nil {
@@ -145,3 +145,4 @@ func (c *Client) MapOperation(bucket, bucketType, key string, op riak.MapOperati
 func NewMapOperation() riak.MapOperation {
 	return riak.MapOperation{}
 }
+*/
