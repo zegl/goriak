@@ -13,33 +13,25 @@ type testmapobject struct {
 }
 
 func TestAutoMapSetAndGet(t *testing.T) {
-	key := randomKey()
 
-	con, _ := NewGoriak("127.0.0.1")
-
-	err := con.Delete("testsuitemap", "maps", key)
-
-	if err != nil {
-		t.Error("Could not delete: " + err.Error())
-	}
-
-	errset := con.SetMap("testsuitemap", "maps", key, &testmapobject{
+	result, errset := bucket().Insert(&testmapobject{
 		A:   "Hello",
 		Set: []string{"One", "Two"},
-	})
+	}).Run(con())
 
 	if errset != nil {
 		t.Error("Set:", errset)
 	}
 
 	var res testmapobject
-	errget, isNotFound := con.GetMap("testsuitemap", "maps", key, &res)
+
+	result2, errget := bucket().Get(result.Key, &res).Run(con())
 
 	if errget != nil {
 		t.Error("Set:", errset)
 	}
 
-	if isNotFound {
+	if result2.NotFound {
 		t.Error("Not found")
 	}
 
@@ -70,26 +62,18 @@ func TestAutoMapSetAndGet(t *testing.T) {
 }
 
 func TestMapOperation(t *testing.T) {
-	key := randomKey()
 
-	con, _ := NewGoriak("127.0.0.1")
-	err := con.Delete("testsuitemap", "maps", key)
-
-	if err != nil {
-		t.Error("Could not delete: " + err.Error())
-	}
-
-	errset := con.SetMap("testsuitemap", "maps", key, &testmapobject{
+	result, errset := bucket().Insert(&testmapobject{
 		A:   "Hello",
 		Set: []string{"One", "Two"},
-	})
+	}).Run(con())
 
 	if errset != nil {
 		t.Error("Set:", errset)
 	}
 
 	var res testmapobject
-	con.GetMap("testsuitemap", "maps", key, &res)
+	bucket().Get(result.Key, &res).Run(con())
 
 	if len(res.Set) != 2 {
 		t.Error("Unexpected length. Should be 2, got ", len(res.Set))
@@ -98,14 +82,14 @@ func TestMapOperation(t *testing.T) {
 	op := NewMapOperation()
 	op.AddToSet("Set", []byte("Three"))
 
-	mapoperr := con.MapOperation("testsuitemap", "maps", key, op, res.RiakContext)
+	mapoperr := con().MapOperation("testsuitemap", "maps", result.Key, op, res.RiakContext)
 
 	if mapoperr != nil {
 		t.Error("MapOperr:", mapoperr)
 	}
 
 	var res2 testmapobject
-	errget, _ := con.GetMap("testsuitemap", "maps", key, &res2)
+	_, errget := bucket().Get(result.Key, &res2).Run(con())
 
 	if errget != nil {
 		t.Error("ErrGet:", errget)
@@ -118,12 +102,10 @@ func TestMapOperation(t *testing.T) {
 }
 
 func TestIsNotFound(t *testing.T) {
-	con, _ := NewGoriak("127.0.0.1")
-
 	var res testmapobject
-	err, isNotFound := con.GetMap("testsuitemap", "maps", randomKey(), &res)
+	result, err := bucket().Get("unknown-key", &res).Run(con())
 
-	if !isNotFound {
+	if !result.NotFound {
 		t.Error("not marked as not found")
 	}
 
@@ -137,19 +119,16 @@ func TestSetNonPointer(t *testing.T) {
 		A: "I am passed as Value",
 	}
 
-	key := randomKey()
-	con, _ := NewGoriak("127.0.0.1")
-
-	err := con.SetMap("testsuitemap", "maps", key, input)
+	result, err := bucket().Insert(input).Run(con())
 
 	if err != nil {
 		t.Error("Error: ", err.Error())
 	}
 
 	var res testmapobject
-	err, isNotFound := con.GetMap("testsuitemap", "maps", key, &res)
+	result, err = bucket().Get(result.Key, &res).Run(con())
 
-	if isNotFound {
+	if result.NotFound {
 		t.Error("Not found")
 	}
 
@@ -190,23 +169,20 @@ func TestAbunchOfTypes(t *testing.T) {
 		CustomByteArraySlice: []customByteArray{customByteArray{1, 2, 3}, customByteArray{4, 5, 6}},
 	}
 
-	key := randomKey()
-	con, _ := NewGoriak("127.0.0.1")
-
-	err := con.SetMap("testsuitemap", "maps", key, o)
+	result, err := bucket().Insert(o).Run(con())
 
 	if err != nil {
 		t.Error("Set", err)
 	}
 
 	var res aBunchOfTypes
-	errGet, isNotFound := con.GetMap("testsuitemap", "maps", key, &res)
+	result, errGet := bucket().Get(result.Key, &res).Run(con())
 
 	if errGet != nil {
 		t.Error("Get", errGet)
 	}
 
-	if isNotFound {
+	if result.NotFound {
 		t.Error("Not found")
 	}
 
@@ -219,8 +195,7 @@ func TestAbunchOfTypes(t *testing.T) {
 }
 
 func TestFailNonMapType(t *testing.T) {
-	con, _ := NewGoriak("127.0.0.1")
-	err := con.SetMap("testsuitemap", "maps", randomKey(), 500)
+	_, err := bucket().Insert(500).Run(con())
 
 	if err == nil {
 		t.Error("Did not receive error")
@@ -234,19 +209,16 @@ func TestFailEmptyArray(t *testing.T) {
 
 	o := testType{}
 
-	key := randomKey()
-	con, _ := NewGoriak("127.0.0.1")
-
-	err := con.SetMap("testsuitemap", "maps", key, o)
+	result, err := bucket().Insert(o).Run(con())
 
 	if err != nil {
 		t.Error(err)
 	}
 
 	var res testType
-	getErr, isNotFound := con.GetMap("testsuitemap", "maps", key, &res)
+	result, getErr := bucket().Get(result.Key, &res).Run(con())
 
-	if isNotFound {
+	if result.NotFound {
 		t.Error("not found")
 	}
 
@@ -262,10 +234,7 @@ func TestUnsupportedArrayType(t *testing.T) {
 
 	o := testType{}
 
-	key := randomKey()
-	con, _ := NewGoriak("127.0.0.1")
-
-	err := con.SetMap("testsuitemap", "maps", key, o)
+	_, err := bucket().Insert(o).Run(con())
 
 	if err == nil {
 		t.Error("Did not get error")
@@ -286,10 +255,7 @@ func TestUnsupportedSliceType(t *testing.T) {
 		A: []bool{false, true, true, true, false, true},
 	}
 
-	key := randomKey()
-	con, _ := NewGoriak("127.0.0.1")
-
-	err := con.SetMap("testsuitemap", "maps", key, o)
+	_, err := bucket().Insert(o).Run(con())
 
 	if err == nil {
 		t.Error("Did not get error")
@@ -311,10 +277,7 @@ func TestUnsupportedType(t *testing.T) {
 		A: [][]bool{[]bool{true, false, true}},
 	}
 
-	key := randomKey()
-	con, _ := NewGoriak("127.0.0.1")
-
-	err := con.SetMap("testsuitemap", "maps", key, o)
+	_, err := bucket().Insert(o).Run(con())
 
 	if err == nil {
 		t.Error("Did not get error")
@@ -338,10 +301,7 @@ func TestMapBool(t *testing.T) {
 		B: false,
 	}
 
-	key := randomKey()
-	con, _ := NewGoriak("127.0.0.1")
-
-	err := con.SetMap("testsuitemap", "maps", key, o)
+	result, err := bucket().Insert(o).Run(con())
 
 	if err != nil {
 		t.Error(err)
@@ -349,13 +309,13 @@ func TestMapBool(t *testing.T) {
 	}
 
 	var res testType
-	err, isNotFound := con.GetMap("testsuitemap", "maps", key, &res)
+	result, err = bucket().Get(result.Key, &res).Run(con())
 
 	if err != nil {
 		t.Error(err)
 	}
 
-	if isNotFound {
+	if result.NotFound {
 		t.Error("Not Found")
 	}
 
@@ -376,9 +336,8 @@ func TestUnknownTypeFloat(t *testing.T) {
 	item := ourTestType{
 		foo: 12.34,
 	}
-	key := randomKey()
-	con, _ := NewGoriak("127.0.0.1")
-	err := con.SetMap("testsuitemap", "maps", key, item)
+
+	_, err := bucket().Insert(item).Run(con())
 
 	if err == nil {
 		t.Error("Did not get error")
@@ -403,9 +362,7 @@ func TestEmptyStruct(t *testing.T) {
 
 	item := aBunchOfTypes{}
 
-	key := randomKey()
-	con, _ := NewGoriak("127.0.0.1")
-	err := con.SetMap("testsuitemap", "maps", key, item)
+	_, err := bucket().Insert(item).Run(con())
 
 	if err != nil {
 		t.Error(err)
@@ -458,16 +415,14 @@ func TestMapInStruct(t *testing.T) {
 		},
 	}
 
-	key := randomKey()
-	con, _ := NewGoriak("127.0.0.1")
-	err := con.SetMap("testsuitemap", "maps", key, item)
+	result, err := bucket().Insert(item).Run(con())
 
 	if err != nil {
 		t.Error("Set", err)
 	}
 
 	var res ourTestType
-	err, _ = con.GetMap("testsuitemap", "maps", key, &res)
+	_, err = bucket().Get(result.Key, &res).Run(con())
 
 	if err != nil {
 		t.Error("Get", err)
@@ -510,16 +465,14 @@ func TestSubStructs(t *testing.T) {
 		},
 	}
 
-	key := randomKey()
-	con, _ := NewGoriak("127.0.0.1")
-	err := con.SetMap("testsuitemap", "maps", key, item)
+	result, err := bucket().Insert(item).Run(con())
 
 	if err != nil {
 		t.Error(err)
 	}
 
 	var res ourTestType
-	err, _ = con.GetMap("testsuitemap", "maps", key, &res)
+	_, err = bucket().Get(result.Key, &res).Run(con())
 
 	if err != nil {
 		t.Error("Get", err)
@@ -537,12 +490,9 @@ func TestDecodeUnsupportedTypes(t *testing.T) {
 		A string
 	}
 
-	key := randomKey()
-	con, _ := NewGoriak("127.0.0.1")
-
-	err := con.SetMap("testsuitemap", "maps", key, writeType{
+	result, err := bucket().Insert(writeType{
 		A: "aaaa",
-	})
+	}).Run(con())
 
 	if err != nil {
 		t.Error(err)
@@ -554,7 +504,7 @@ func TestDecodeUnsupportedTypes(t *testing.T) {
 	}
 
 	var res readType
-	err, _ = con.GetMap("testsuitemap", "maps", key, &res)
+	_, err = bucket().Get(result.Key, &res).Run(con())
 
 	if err == nil {
 		t.Error("No error")
@@ -573,7 +523,7 @@ func TestDecodeUnsupportedTypes(t *testing.T) {
 	}
 
 	var res2 readType2
-	err, _ = con.GetMap("testsuitemap", "maps", key, &res2)
+	_, err = bucket().Get(result.Key, &res2).Run(con())
 
 	if err == nil {
 		t.Error("No error")
@@ -592,7 +542,7 @@ func TestDecodeUnsupportedTypes(t *testing.T) {
 	}
 
 	var res3 readType3
-	err, _ = con.GetMap("testsuitemap", "maps", key, &res3)
+	_, err = bucket().Get(result.Key, &res3).Run(con())
 
 	if err == nil {
 		t.Error("No error")
@@ -611,7 +561,7 @@ func TestDecodeUnsupportedTypes(t *testing.T) {
 	}
 
 	var res4 readType4
-	err, _ = con.GetMap("testsuitemap", "maps", key, &res4)
+	_, err = bucket().Get(result.Key, &res4).Run(con())
 
 	if err == nil {
 		t.Error("No error")
@@ -624,20 +574,18 @@ func TestDecodeUnsupportedTypes(t *testing.T) {
 
 	// ---------
 
-	key = randomKey()
-
 	type writeType5 struct {
 		A string
 		B map[string]string
 	}
 
-	err = con.SetMap("testsuitemap", "maps", key, writeType5{
+	result, err = bucket().Insert(writeType5{
 		A: "aaaa",
 		B: map[string]string{
 			"AA": "BB",
 			"CC": "DD",
 		},
-	})
+	}).Run(con())
 
 	if err != nil {
 		t.Error(err)
@@ -649,7 +597,7 @@ func TestDecodeUnsupportedTypes(t *testing.T) {
 	}
 
 	var res5 readType5
-	err, _ = con.GetMap("testsuitemap", "maps", key, &res5)
+	_, err = bucket().Get(result.Key, &res5).Run(con())
 
 	if err == nil {
 		t.Error("No error")
@@ -662,8 +610,6 @@ func TestDecodeUnsupportedTypes(t *testing.T) {
 
 	// ---------
 
-	key = randomKey()
-
 	type writeType6sub struct {
 		AA string
 	}
@@ -673,12 +619,12 @@ func TestDecodeUnsupportedTypes(t *testing.T) {
 		B writeType6sub
 	}
 
-	err = con.SetMap("testsuitemap", "maps", key, writeType6{
+	result, err = bucket().Insert(writeType6{
 		A: "aaaa",
 		B: writeType6sub{
 			AA: "bbbb",
 		},
-	})
+	}).Run(con())
 
 	if err != nil {
 		t.Error(err)
@@ -694,7 +640,7 @@ func TestDecodeUnsupportedTypes(t *testing.T) {
 	}
 
 	var res6 readType6
-	err, _ = con.GetMap("testsuitemap", "maps", key, &res6)
+	_, err = bucket().Get(result.Key, &res6).Run(con())
 
 	if err == nil {
 		t.Error("No error")
@@ -707,20 +653,18 @@ func TestDecodeUnsupportedTypes(t *testing.T) {
 
 	// ---------
 
-	key = randomKey()
-
 	type writeType7 struct {
 		A string
 		B map[string]string
 	}
 
-	err = con.SetMap("testsuitemap", "maps", key, writeType5{
+	result, err = bucket().Insert(writeType5{
 		A: "aaaa",
 		B: map[string]string{
 			"AA": "BB",
 			"CC": "DD",
 		},
-	})
+	}).Run(con())
 
 	if err != nil {
 		t.Error(err)
@@ -732,7 +676,7 @@ func TestDecodeUnsupportedTypes(t *testing.T) {
 	}
 
 	var res7 readType7
-	err, _ = con.GetMap("testsuitemap", "maps", key, &res7)
+	_, err = bucket().Get(result.Key, &res7).Run(con())
 
 	if err == nil {
 		t.Error("No error")
@@ -751,7 +695,7 @@ func TestDecodeUnsupportedTypes(t *testing.T) {
 	}
 
 	var res7b readType7b
-	err, _ = con.GetMap("testsuitemap", "maps", key, &res7b)
+	_, err = bucket().Get(result.Key, &res7b).Run(con())
 
 	if err == nil {
 		t.Error("No error")
@@ -764,17 +708,15 @@ func TestDecodeUnsupportedTypes(t *testing.T) {
 
 	// ---------
 
-	key = randomKey()
-
 	type writeType8 struct {
 		A string
 		B []string
 	}
 
-	err = con.SetMap("testsuitemap", "maps", key, writeType8{
+	result, err = bucket().Insert(writeType8{
 		A: "aaaa",
 		B: []string{"a", "b"},
-	})
+	}).Run(con())
 
 	if err != nil {
 		t.Error(err)
@@ -786,7 +728,7 @@ func TestDecodeUnsupportedTypes(t *testing.T) {
 	}
 
 	var res8 readType8
-	err, _ = con.GetMap("testsuitemap", "maps", key, &res8)
+	_, err = bucket().Get(result.Key, &res8).Run(con())
 
 	if err == nil {
 		t.Error("No error")
@@ -799,33 +741,30 @@ func TestDecodeUnsupportedTypes(t *testing.T) {
 
 	// ---------
 
-	key = randomKey()
-
 	type writeType9 struct {
 		A *string
 	}
 
 	s := "ptr string"
 
-	err = con.SetMap("testsuitemap", "maps", key, writeType9{
+	result, err = bucket().Insert(writeType9{
 		A: &s,
-	})
+	}).Run(con())
 
 	if err == nil || err.Error() != "Unexpected ptr type: *string" {
 		t.Error(err)
 	}
 
-	key = randomKey()
-	err = con.SetMap("testsuitemap", "maps", key, writeType{
+	result, err = bucket().Insert(writeType{
 		A: "not a pointer",
-	})
+	}).Run(con())
 
 	if err != nil {
 		t.Error(err)
 	}
 
 	var res9 writeType9
-	err, _ = con.GetMap("testsuitemap", "maps", key, &res9)
+	_, err = bucket().Get(result.Key, &res9).Run(con())
 
 	if err == nil {
 		t.Error("No error")
@@ -842,15 +781,12 @@ func TestEncodeErrors(t *testing.T) {
 		A map[float64]string
 	}
 
-	key := randomKey()
-	con, _ := NewGoriak("127.0.0.1")
-
-	err := con.SetMap("testsuitemap", "maps", key, writeType1{
+	_, err := bucket().Insert(writeType1{
 		A: map[float64]string{
 			2.0: "2",
 			3.0: "3",
 		},
-	})
+	}).Run(con())
 
 	if err == nil {
 		t.Error("no error")
@@ -866,12 +802,12 @@ func TestEncodeErrors(t *testing.T) {
 		A map[int]float64
 	}
 
-	err = con.SetMap("testsuitemap", "maps", key, writeType2{
+	_, err = bucket().Insert(writeType2{
 		A: map[int]float64{
 			2: 2.0,
 			3: 3.0,
 		},
-	})
+	}).Run(con())
 
 	if err == nil {
 		t.Error("no error")

@@ -1,10 +1,10 @@
 package goriak
 
 import (
-//"errors"
-//"reflect"
+	"errors"
+	//"reflect"
 
-//riak "github.com/basho/riak-go-client"
+	riak "github.com/basho/riak-go-client"
 )
 
 type requestData struct {
@@ -107,9 +107,9 @@ func (c *Client) GetMap(bucket, bucketType, key string, output interface{}) (err
 	}
 
 	return nil, false
-}
+}*/
 
-func (c *Client) MapOperation(bucket, bucketType, key string, op riak.MapOperation, context []byte) error {
+func (c *Session) MapOperation(bucket, bucketType, key string, op riak.MapOperation, context []byte) error {
 	cmd, err := riak.NewUpdateMapCommandBuilder().
 		WithBucket(bucket).
 		WithBucketType(bucketType).
@@ -145,4 +145,3 @@ func (c *Client) MapOperation(bucket, bucketType, key string, op riak.MapOperati
 func NewMapOperation() riak.MapOperation {
 	return riak.MapOperation{}
 }
-*/
