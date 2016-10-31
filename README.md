@@ -1,4 +1,4 @@
-# goriak [![Build Status](https://circleci.com/gh/zegl/goriak.svg?style=svg)](https://circleci.com/gh/zegl/goriak) [![codecov](https://codecov.io/gh/zegl/goriak/branch/v1/graph/badge.svg)](https://codecov.io/gh/zegl/goriak)
+# goriak [![Build Status](https://circleci.com/gh/zegl/goriak.svg?style=svg)](https://circleci.com/gh/zegl/goriak) [![codecov](https://codecov.io/gh/zegl/goriak/branch/v1/graph/badge.svg)](https://codecov.io/gh/zegl/goriak/branch/v1)
 
 Current version: `v1.1.0`.  
 Riak KV version: 2.0 or higher, the latest version of Riak KV is always recommended. 
