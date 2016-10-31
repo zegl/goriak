@@ -13,19 +13,20 @@ type requestData struct {
 	key        string
 }
 
-// SetMap automatically converts your Go datatype to the equivalent type in Riak
-//
-// |  Go Type   | Riak Type |
-// |------------|-----------|
-// | `struct`   | map       |
-// | `string`   | register  |
-// | `[n]byte`  | register  |
-// | `[]byte`   | register  |
-// | `[]slice`  | set       |
-// | `[]slice`  | set       |
-// | `[][]byte` | set       |
-// | `map`      | map       |
-//
+/*
+SetMap automatically converts your Go datatype to the equivalent type in Riak
+
+	|  Go Type   | Riak Type |
+	|------------|-----------|
+	| struct     | map       |
+	| string     | register  |
+	| [n]byte    | register  |
+	| []byte     | register  |
+	| []slice    | set       |
+	| []slice    | set       |
+	| [][]byte   | set       |
+	| map        | map       |
+*/
 func (c *Client) SetMap(bucket, bucketType, key string, input interface{}) error {
 	riakContext, op, err := encodeInterface(input)
 

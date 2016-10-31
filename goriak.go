@@ -1,34 +1,7 @@
+/*
+Package goriak is a Golang driver for Riak KV. Goriak offers simple ways of binding your Go datatypes and values to Riak.
+
+Goriaks speciallity is dealing with Riak KV Data Types (http://docs.basho.com/riak/kv/2.1.4/developing/data-types/) and
+allowing Marshal/Unmarshal of Go structs into Riak Maps.
+*/
 package goriak
-
-import (
-	riak "github.com/basho/riak-go-client"
-)
-
-type Client struct {
-	riak *riak.Client
-}
-
-func NewGoriak(host string) (*Client, error) {
-	client := Client{}
-	err := client.connect(host)
-
-	if err != nil {
-		return nil, err
-	}
-
-	return &client, nil
-}
-
-func (c *Client) connect(host string) error {
-	con, err := riak.NewClient(&riak.NewClientOptions{
-		RemoteAddresses: []string{host},
-	})
-
-	if err != nil {
-		return err
-	}
-
-	c.riak = con
-
-	return nil
-}

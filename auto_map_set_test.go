@@ -258,3 +258,47 @@ func TestAutoMapSetAddRemoveSetMap(t *testing.T) {
 	}
 
 }
+
+func ExampleSet() {
+	type Article struct {
+		Tags *Set
+
+		Context []byte `goriak:"goriakcontext"`
+	}
+
+	// Initializing a new Article and the Set within
+	art := Article{
+		Tags: NewSet(),
+	}
+
+	riakKey := "article-1"
+
+	// Adding the tags "one" and "two"
+	art.Tags.AddString("one")
+	art.Tags.AddString("two")
+
+	con, _ := NewGoriak("127.0.0.1")
+
+	// Saving to Riak
+	err := con.SetMap("bucket", "bucketType", riakKey, &art)
+
+	if err != nil {
+		// ..
+	}
+
+	// Retreiving from Riak
+	var getArt Article
+	err, _ = con.GetMap("bucket", "bucketType", riakKey, &getArt)
+
+	if err != nil {
+		// ..
+	}
+
+	// Adding one extra tag.
+	// Multiple AddString() and RemoveString() can be chained together before calling Exec().
+	err = getArt.Tags.AddString("three").Exec(con)
+
+	if err != nil {
+		// ..
+	}
+}
