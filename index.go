@@ -1,6 +1,6 @@
 package goriak
 
-import (
+/*import (
 	"errors"
 
 	riak "github.com/basho/riak-go-client"
@@ -45,3 +45,4 @@ func (c *Client) KeysInIndex(bucket, bucketType, indexName, indexValue string, l
 
 	return result, nil
 }
+*/
