@@ -1,6 +1,7 @@
 package goriak
 
 import (
+	"encoding/json"
 	"errors"
 
 	riak "github.com/basho/riak-go-client"
@@ -12,6 +13,8 @@ const (
 	riakUnknownCommand riakCommandType = iota
 	riakFetchMapCommand
 	riakUpdateMapCommand
+	riakStoreValueCommand
+	riakFetchValueCommand
 )
 
 type Command struct {
@@ -146,6 +149,14 @@ func (c Command) Run(session *Session) (*Result, error) {
 		cmd := c.riakCommand.(*riak.UpdateMapCommand)
 		return c.resultUpdateMapCommand(cmd)
 
+	case riakStoreValueCommand:
+		cmd := c.riakCommand.(*riak.StoreValueCommand)
+		return c.resultStoreValueCommand(cmd)
+
+	case riakFetchValueCommand:
+		cmd := c.riakCommand.(*riak.FetchValueCommand)
+		return c.resultFetchValueCommand(cmd)
+
 	default:
 		return nil, errors.New("Unknown response?")
 	}
@@ -192,5 +203,43 @@ func (c Command) resultUpdateMapCommand(cmd *riak.UpdateMapCommand) (*Result, er
 
 	return &Result{
 		Key: cmd.Response.GeneratedKey,
+	}, nil
+}
+
+func (c Command) resultStoreValueCommand(cmd *riak.StoreValueCommand) (*Result, error) {
+	if !cmd.Success() {
+		return nil, errors.New("Not successful")
+	}
+
+	if c.key != "" {
+		return &Result{
+			Key: c.key,
+		}, nil
+	}
+
+	return &Result{
+		Key: cmd.Response.GeneratedKey,
+	}, nil
+}
+
+func (c Command) resultFetchValueCommand(cmd *riak.FetchValueCommand) (*Result, error) {
+	if !cmd.Success() {
+		return nil, errors.New("Not successful")
+	}
+
+	if cmd.Response.IsNotFound {
+		return &Result{
+			NotFound: true,
+		}, errors.New("Not found")
+	}
+
+	err := json.Unmarshal(cmd.Response.Values[0].Value, c.output)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &Result{
+		Key: c.key,
 	}, nil
 }
