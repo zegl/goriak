@@ -14,7 +14,8 @@ const (
 	riakFetchMapCommand
 	riakUpdateMapCommand
 	riakStoreValueCommand
-	riakFetchValueCommand
+	riakFetchValueCommandJSON
+	riakFetchValueCommandRaw
 )
 
 type Command struct {
@@ -26,7 +27,8 @@ type Command struct {
 	riakCommand riak.Command
 	commandType riakCommandType
 
-	output interface{}
+	output      interface{}
+	outputBytes *[]byte
 }
 
 type Result struct {
@@ -153,9 +155,13 @@ func (c Command) Run(session *Session) (*Result, error) {
 		cmd := c.riakCommand.(*riak.StoreValueCommand)
 		return c.resultStoreValueCommand(cmd)
 
-	case riakFetchValueCommand:
+	case riakFetchValueCommandJSON:
 		cmd := c.riakCommand.(*riak.FetchValueCommand)
-		return c.resultFetchValueCommand(cmd)
+		return c.resultFetchValueCommandJSON(cmd)
+
+	case riakFetchValueCommandRaw:
+		cmd := c.riakCommand.(*riak.FetchValueCommand)
+		return c.resultFetchValueCommandRaw(cmd)
 
 	default:
 		return nil, errors.New("Unknown response?")
@@ -222,7 +228,7 @@ func (c Command) resultStoreValueCommand(cmd *riak.StoreValueCommand) (*Result, 
 	}, nil
 }
 
-func (c Command) resultFetchValueCommand(cmd *riak.FetchValueCommand) (*Result, error) {
+func (c Command) resultFetchValueCommandJSON(cmd *riak.FetchValueCommand) (*Result, error) {
 	if !cmd.Success() {
 		return nil, errors.New("Not successful")
 	}
@@ -238,6 +244,24 @@ func (c Command) resultFetchValueCommand(cmd *riak.FetchValueCommand) (*Result, 
 	if err != nil {
 		return nil, err
 	}
+
+	return &Result{
+		Key: c.key,
+	}, nil
+}
+
+func (c Command) resultFetchValueCommandRaw(cmd *riak.FetchValueCommand) (*Result, error) {
+	if !cmd.Success() {
+		return nil, errors.New("Not successful")
+	}
+
+	if cmd.Response.IsNotFound {
+		return &Result{
+			NotFound: true,
+		}, errors.New("Not found")
+	}
+
+	*c.outputBytes = cmd.Response.Values[0].Value
 
 	return &Result{
 		Key: c.key,
