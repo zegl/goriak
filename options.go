@@ -1,6 +1,6 @@
 package goriak
 
-type Options struct {
+/*type Options struct {
 	indexes map[string][]string
 }
 
@@ -19,4 +19,4 @@ func (o *Options) AddToIndex(key, value string) *Options {
 	// Create new slice
 	o.indexes[key] = []string{value}
 	return o
-}
+}*/
