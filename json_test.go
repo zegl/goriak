@@ -123,3 +123,57 @@ func TestJSONWithIndexLimits(t *testing.T) {
 		t.Error("Expected 4 results, got: ", foundCount)
 	}
 }
+
+func TestJSONSetIndex(t *testing.T) {
+	type testType struct {
+		User string
+		Age  string
+	}
+
+	users := []testType{
+		{"A", "10"},
+		{"B", "10"},
+		{"C", "10"},
+		{"D", "10"},
+		{"E", "13"},
+		{"F", "13"},
+		{"G", "13"},
+		{"H", "13"},
+	}
+
+	for _, u := range users {
+		_, err := Bucket("json", "default").
+			AddToIndex("ageC_bin", u.Age).
+			SetJSON(u).
+			Run(con())
+
+		if err != nil {
+			t.Error(err)
+			return
+		}
+	}
+
+	foundCount := 0
+
+	cb := func(key SecondaryIndexQueryResult) {
+		if !key.IsComplete {
+			foundCount++
+		}
+	}
+
+	// With limit
+	Bucket("json", "default").Limit(2).KeysInIndex("ageC_bin", "10", cb).Run(con())
+
+	if foundCount != 2 {
+		t.Error("Expected 2 results, got: ", foundCount)
+	}
+
+	foundCount = 0
+
+	// Unlimited
+	Bucket("json", "default").KeysInIndex("ageC_bin", "10", cb).Run(con())
+
+	if foundCount != 4 {
+		t.Error("Expected 4 results, got: ", foundCount)
+	}
+}
