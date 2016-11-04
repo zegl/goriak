@@ -135,9 +135,6 @@ func encodeValue(op *riak.MapOperation, itemKey string, f reflect.Value) error {
 				for _, remove := range s.removes {
 					op.RemoveFromSet(itemKey, remove)
 				}
-
-			} else {
-				return errors.New("Could not convert to *Set?")
 			}
 
 		default:
