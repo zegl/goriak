@@ -61,6 +61,16 @@ func TestAllKeys(t *testing.T) {
 	}
 }
 
+func TestAllKeysNoBucket(t *testing.T) {
+	_, err := Command{}.AllKeys(func(res []string) error {
+		return nil
+	}).Run(con())
+
+	if err.Error() != "ClientError|Bucket is required" {
+		t.Error("Unexpected error")
+	}
+}
+
 func TestDelete(t *testing.T) {
 	res, err := Bucket("testdelete", "default").SetRaw([]byte{1, 2, 3, 4}).Run(con())
 
@@ -88,5 +98,13 @@ func TestDelete(t *testing.T) {
 
 	if err.Error() != "Not found" {
 		t.Error("Unexpected error:", err)
+	}
+}
+
+func TestDeleteNoKey(t *testing.T) {
+	_, err := Bucket("testdelete", "default").Delete().Run(con())
+
+	if err.Error() != "ClientError|Key is required" {
+		t.Error("Unexpected error")
 	}
 }
