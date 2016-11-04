@@ -30,8 +30,6 @@ func deleteAllIn(bucket, bucketType string) {
 			log.Println("Delete: " + key)
 		}
 
-		log.Println(res)
-
 		return nil
 	}
 

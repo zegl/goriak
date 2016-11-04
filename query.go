@@ -18,12 +18,15 @@ const (
 	riakFetchValueCommandRaw
 	riakListKeysCommand
 	riakDeleteValueCommand
+	riakSecondaryIndexQueryCommand
 )
 
 type Command struct {
 	bucket     string
 	bucketType string
 	key        string
+
+	limit uint32
 
 	err         error
 	riakCommand riak.Command
@@ -68,6 +71,13 @@ func (c Command) Get(key string, output interface{}) Command {
 
 func (c Command) Key(key string) Command {
 	c.key = key
+	return c
+}
+
+// Limit sets the limit returned in KeysInIndex
+// A limit of 0 means unlimited
+func (c Command) Limit(limit uint32) Command {
+	c.limit = limit
 	return c
 }
 
@@ -172,6 +182,10 @@ func (c Command) Run(session *Session) (*Result, error) {
 	case riakDeleteValueCommand:
 		cmd := c.riakCommand.(*riak.DeleteValueCommand)
 		return c.resultDeleteValueCommand(cmd)
+
+	case riakSecondaryIndexQueryCommand:
+		cmd := c.riakCommand.(*riak.SecondaryIndexQueryCommand)
+		return c.resultSecondaryIndexQueryCommand(cmd)
 
 	default:
 		return nil, errors.New("Unknown response?")
@@ -287,6 +301,14 @@ func (c Command) resultListKeysCommand(cmd *riak.ListKeysCommand) (*Result, erro
 }
 
 func (c Command) resultDeleteValueCommand(cmd *riak.DeleteValueCommand) (*Result, error) {
+	if !cmd.Success() {
+		return nil, errors.New("Not successful")
+	}
+
+	return &Result{}, nil
+}
+
+func (c Command) resultSecondaryIndexQueryCommand(cmd *riak.SecondaryIndexQueryCommand) (*Result, error) {
 	if !cmd.Success() {
 		return nil, errors.New("Not successful")
 	}

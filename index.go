@@ -1,48 +1,55 @@
 package goriak
 
-/*import (
-	"errors"
-
+import (
 	riak "github.com/basho/riak-go-client"
 )
 
-func (c *Client) KeysInIndex(bucket, bucketType, indexName, indexValue string, limit uint32) ([]string, error) {
-	result := []string{}
+type SecondaryIndexQueryResult struct {
+	Key        string
+	IsComplete bool
+}
 
-	cmd, err := riak.NewSecondaryIndexQueryCommandBuilder().
-		WithBucket(bucket).
-		WithBucketType(bucketType).
+func (c Command) KeysInIndex(indexName, indexValue string, callback func(SecondaryIndexQueryResult)) Command {
+
+	cb := func(res []*riak.SecondaryIndexQueryResult) error {
+		if len(res) == 0 {
+			callback(SecondaryIndexQueryResult{
+				Key:        "",
+				IsComplete: true,
+			})
+		}
+
+		for _, i := range res {
+			callback(SecondaryIndexQueryResult{
+				Key:        string(i.ObjectKey),
+				IsComplete: false,
+			})
+		}
+
+		return nil
+	}
+
+	builder := riak.NewSecondaryIndexQueryCommandBuilder().
+		WithBucket(c.bucket).
+		WithBucketType(c.bucketType).
 		WithIndexName(indexName).
 		WithIndexKey(indexValue).
-		WithMaxResults(limit).
-		Build()
+		WithStreaming(true).
+		WithCallback(cb)
+
+	if c.limit != 0 {
+		builder.WithMaxResults(c.limit)
+	}
+
+	cmd, err := builder.Build()
 
 	if err != nil {
-		return result, err
+		c.err = err
+		return c
 	}
 
-	err = c.riak.Execute(cmd)
+	c.commandType = riakSecondaryIndexQueryCommand
+	c.riakCommand = cmd
 
-	if err != nil {
-		return result, err
-	}
-
-	res, ok := cmd.(*riak.SecondaryIndexQueryCommand)
-
-	if !ok {
-		return result, errors.New("Could not convert")
-	}
-
-	if !res.Success() {
-		return result, errors.New("Not successful")
-	}
-
-	result = make([]string, len(res.Response.Results))
-
-	for i, v := range res.Response.Results {
-		result[i] = string(v.ObjectKey)
-	}
-
-	return result, nil
+	return c
 }
-*/
