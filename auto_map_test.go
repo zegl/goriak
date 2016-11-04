@@ -14,7 +14,7 @@ type testmapobject struct {
 
 func TestAutoMapSetAndGet(t *testing.T) {
 
-	result, errset := bucket().Insert(&testmapobject{
+	result, errset := bucket().Set(&testmapobject{
 		A:   "Hello",
 		Set: []string{"One", "Two"},
 	}).Run(con())
@@ -63,7 +63,7 @@ func TestAutoMapSetAndGet(t *testing.T) {
 
 func TestMapOperation(t *testing.T) {
 
-	result, errset := bucket().Insert(&testmapobject{
+	result, errset := bucket().Set(&testmapobject{
 		A:   "Hello",
 		Set: []string{"One", "Two"},
 	}).Run(con())
@@ -119,7 +119,7 @@ func TestSetNonPointer(t *testing.T) {
 		A: "I am passed as Value",
 	}
 
-	result, err := bucket().Insert(input).Run(con())
+	result, err := bucket().Set(input).Run(con())
 
 	if err != nil {
 		t.Error("Error: ", err.Error())
@@ -169,7 +169,7 @@ func TestAbunchOfTypes(t *testing.T) {
 		CustomByteArraySlice: []customByteArray{customByteArray{1, 2, 3}, customByteArray{4, 5, 6}},
 	}
 
-	result, err := bucket().Insert(o).Run(con())
+	result, err := bucket().Set(o).Run(con())
 
 	if err != nil {
 		t.Error("Set", err)
@@ -195,7 +195,7 @@ func TestAbunchOfTypes(t *testing.T) {
 }
 
 func TestFailNonMapType(t *testing.T) {
-	_, err := bucket().Insert(500).Run(con())
+	_, err := bucket().Set(500).Run(con())
 
 	if err == nil {
 		t.Error("Did not receive error")
@@ -209,7 +209,7 @@ func TestFailEmptyArray(t *testing.T) {
 
 	o := testType{}
 
-	result, err := bucket().Insert(o).Run(con())
+	result, err := bucket().Set(o).Run(con())
 
 	if err != nil {
 		t.Error(err)
@@ -234,7 +234,7 @@ func TestUnsupportedArrayType(t *testing.T) {
 
 	o := testType{}
 
-	_, err := bucket().Insert(o).Run(con())
+	_, err := bucket().Set(o).Run(con())
 
 	if err == nil {
 		t.Error("Did not get error")
@@ -255,7 +255,7 @@ func TestUnsupportedSliceType(t *testing.T) {
 		A: []bool{false, true, true, true, false, true},
 	}
 
-	_, err := bucket().Insert(o).Run(con())
+	_, err := bucket().Set(o).Run(con())
 
 	if err == nil {
 		t.Error("Did not get error")
@@ -277,7 +277,7 @@ func TestUnsupportedType(t *testing.T) {
 		A: [][]bool{[]bool{true, false, true}},
 	}
 
-	_, err := bucket().Insert(o).Run(con())
+	_, err := bucket().Set(o).Run(con())
 
 	if err == nil {
 		t.Error("Did not get error")
@@ -301,7 +301,7 @@ func TestMapBool(t *testing.T) {
 		B: false,
 	}
 
-	result, err := bucket().Insert(o).Run(con())
+	result, err := bucket().Set(o).Run(con())
 
 	if err != nil {
 		t.Error(err)
@@ -337,7 +337,7 @@ func TestUnknownTypeFloat(t *testing.T) {
 		foo: 12.34,
 	}
 
-	_, err := bucket().Insert(item).Run(con())
+	_, err := bucket().Set(item).Run(con())
 
 	if err == nil {
 		t.Error("Did not get error")
@@ -362,7 +362,7 @@ func TestEmptyStruct(t *testing.T) {
 
 	item := aBunchOfTypes{}
 
-	_, err := bucket().Insert(item).Run(con())
+	_, err := bucket().Set(item).Run(con())
 
 	if err != nil {
 		t.Error(err)
@@ -415,7 +415,7 @@ func TestMapInStruct(t *testing.T) {
 		},
 	}
 
-	result, err := bucket().Insert(item).Run(con())
+	result, err := bucket().Set(item).Run(con())
 
 	if err != nil {
 		t.Error("Set", err)
@@ -465,7 +465,7 @@ func TestSubStructs(t *testing.T) {
 		},
 	}
 
-	result, err := bucket().Insert(item).Run(con())
+	result, err := bucket().Set(item).Run(con())
 
 	if err != nil {
 		t.Error(err)
@@ -490,7 +490,7 @@ func TestDecodeUnsupportedTypes(t *testing.T) {
 		A string
 	}
 
-	result, err := bucket().Insert(writeType{
+	result, err := bucket().Set(writeType{
 		A: "aaaa",
 	}).Run(con())
 
@@ -579,7 +579,7 @@ func TestDecodeUnsupportedTypes(t *testing.T) {
 		B map[string]string
 	}
 
-	result, err = bucket().Insert(writeType5{
+	result, err = bucket().Set(writeType5{
 		A: "aaaa",
 		B: map[string]string{
 			"AA": "BB",
@@ -619,7 +619,7 @@ func TestDecodeUnsupportedTypes(t *testing.T) {
 		B writeType6sub
 	}
 
-	result, err = bucket().Insert(writeType6{
+	result, err = bucket().Set(writeType6{
 		A: "aaaa",
 		B: writeType6sub{
 			AA: "bbbb",
@@ -658,7 +658,7 @@ func TestDecodeUnsupportedTypes(t *testing.T) {
 		B map[string]string
 	}
 
-	result, err = bucket().Insert(writeType5{
+	result, err = bucket().Set(writeType5{
 		A: "aaaa",
 		B: map[string]string{
 			"AA": "BB",
@@ -713,7 +713,7 @@ func TestDecodeUnsupportedTypes(t *testing.T) {
 		B []string
 	}
 
-	result, err = bucket().Insert(writeType8{
+	result, err = bucket().Set(writeType8{
 		A: "aaaa",
 		B: []string{"a", "b"},
 	}).Run(con())
@@ -747,7 +747,7 @@ func TestDecodeUnsupportedTypes(t *testing.T) {
 
 	s := "ptr string"
 
-	result, err = bucket().Insert(writeType9{
+	result, err = bucket().Set(writeType9{
 		A: &s,
 	}).Run(con())
 
@@ -755,7 +755,7 @@ func TestDecodeUnsupportedTypes(t *testing.T) {
 		t.Error(err)
 	}
 
-	result, err = bucket().Insert(writeType{
+	result, err = bucket().Set(writeType{
 		A: "not a pointer",
 	}).Run(con())
 
@@ -781,7 +781,7 @@ func TestEncodeErrors(t *testing.T) {
 		A map[float64]string
 	}
 
-	_, err := bucket().Insert(writeType1{
+	_, err := bucket().Set(writeType1{
 		A: map[float64]string{
 			2.0: "2",
 			3.0: "3",
@@ -802,7 +802,7 @@ func TestEncodeErrors(t *testing.T) {
 		A map[int]float64
 	}
 
-	_, err = bucket().Insert(writeType2{
+	_, err = bucket().Set(writeType2{
 		A: map[int]float64{
 			2: 2.0,
 			3: 3.0,

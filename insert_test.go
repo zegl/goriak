@@ -20,7 +20,7 @@ func TestInsertAndGet(t *testing.T) {
 		B: []string{"B", "BB", "BBB"},
 	}
 
-	res, err := Bucket("testsuitemap", "maps").Insert(val).Run(c)
+	res, err := Bucket("testsuitemap", "maps").Set(val).Run(c)
 
 	if err != nil {
 		t.Error("Insert:", err)

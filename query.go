@@ -102,7 +102,7 @@ Insert automatically converts your Go datatype to the equivalent type in Riak
 	| [][]byte   | set       |
 	| map        | map       |
 */
-func (c Command) Insert(val interface{}) Command {
+func (c Command) Set(val interface{}) Command {
 	riakContext, op, err := encodeInterface(val)
 
 	if err != nil {

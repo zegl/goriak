@@ -19,7 +19,7 @@ func TestCustomType(t *testing.T) {
 		Val: "Custom1",
 	}
 
-	result, err := bucket().Insert(o).Run(con())
+	result, err := bucket().Set(o).Run(con())
 
 	if err != nil {
 		t.Error("Set:", err)
@@ -59,7 +59,7 @@ func TestAutoMapByteSlice(t *testing.T) {
 		Val: "Byte Slice",
 	}
 
-	result, err := bucket().Insert(o).Run(con())
+	result, err := bucket().Set(o).Run(con())
 
 	if err != nil {
 		t.Error("Set", err)

@@ -12,7 +12,7 @@ func TestAutoMapSet(t *testing.T) {
 	}
 
 	testVal := ourTestType{}
-	result, errset := bucket().Insert(testVal).Run(con())
+	result, errset := bucket().Set(testVal).Run(con())
 
 	if errset != nil {
 		t.Error("Set:", errset)
@@ -191,7 +191,7 @@ func TestAutoMapSetAddRemoveSetMap(t *testing.T) {
 	testVal.Tags.AddString("three")
 	testVal.Tags.AddString("four")
 
-	result, errset := bucket().Insert(testVal).Run(con())
+	result, errset := bucket().Set(testVal).Run(con())
 
 	if errset != nil {
 		t.Error("Set 1: ", errset)
@@ -224,7 +224,7 @@ func TestAutoMapSetAddRemoveSetMap(t *testing.T) {
 		t.Error("Set 2: ", resVal)
 	}
 
-	_, errset = bucket().Key(result.Key).Insert(resVal).Run(con())
+	_, errset = bucket().Key(result.Key).Set(resVal).Run(con())
 
 	if errset != nil {
 		t.Error("Set 2: ", errset)
@@ -275,7 +275,7 @@ func ExampleSet() {
 	art.Tags.AddString("one")
 	art.Tags.AddString("two")
 
-	_, err := Bucket("bucket", "bucketType").Key(riakKey).Insert(art).Run(session)
+	_, err := Bucket("bucket", "bucketType").Key(riakKey).Set(art).Run(session)
 
 	if err != nil {
 		// ..

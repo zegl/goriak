@@ -27,7 +27,7 @@ func TestMapCounter(t *testing.T) {
 		Foos: NewCounter(),
 	}
 
-	queryRes, errset := bucket().Insert(testVal).Run(con())
+	queryRes, errset := bucket().Set(testVal).Run(con())
 
 	if errset != nil {
 		t.Error("Set:", errset)
@@ -140,7 +140,7 @@ func TestMapCounterNestedMap(t *testing.T) {
 		},
 	}
 
-	result, errset := bucket().Insert(testVal).Run(con())
+	result, errset := bucket().Set(testVal).Run(con())
 
 	// errset := con.SetMap("testsuitemap", "maps", key, &testVal)
 
@@ -180,7 +180,7 @@ func TestNilCounter(t *testing.T) {
 
 	testVal := testType{}
 
-	result, errset := bucket().Insert(testVal).Run(con())
+	result, errset := bucket().Set(testVal).Run(con())
 
 	if errset != nil {
 		t.Error("Set:", errset)
