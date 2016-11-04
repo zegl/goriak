@@ -4,28 +4,7 @@ import (
 	riak "github.com/basho/riak-go-client"
 )
 
-type Options struct {
-	indexes map[string][]string
-}
-
-func (o *Options) AddToIndex(key, value string) *Options {
-
-	// Create map if needed
-	if o.indexes == nil {
-		o.indexes = make(map[string][]string)
-	}
-
-	// Add to existing slice
-	if _, ok := o.indexes[key]; ok {
-		o.indexes[key] = append(o.indexes[key], value)
-		return o
-	}
-
-	// Create new slice
-	o.indexes[key] = []string{value}
-	return o
-}
-
+// Delete deletes the value set by Key()
 func (c Command) Delete() Command {
 	cmd, err := riak.NewDeleteValueCommandBuilder().
 		WithBucket(c.bucket).
@@ -44,6 +23,8 @@ func (c Command) Delete() Command {
 	return c
 }
 
+// AllKeys returns all keys in the set bucket.
+// The response will be sent in multiple batches to callback
 func (c Command) AllKeys(callback func([]string) error) Command {
 	cmd, err := riak.NewListKeysCommandBuilder().
 		WithBucket(c.bucket).
