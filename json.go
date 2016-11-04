@@ -22,9 +22,17 @@ func (c Command) SetJSON(value interface{}) Command {
 		Value: by,
 	}
 
+	// Indexes from Command.AddToIndex()
+	for indexName, values := range c.indexes {
+		for _, val := range values {
+			object.AddToIndex(indexName, val)
+		}
+	}
+
 	refType := reflect.TypeOf(value)
 	refValue := reflect.ValueOf(value)
 
+	// Indexes from struct value
 	if refType.Kind() == reflect.Struct {
 
 		// Set indexes

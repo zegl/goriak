@@ -22,18 +22,25 @@ const (
 )
 
 type Command struct {
+	// Key information
 	bucket     string
 	bucketType string
 	key        string
 
+	// Limit result for SecondaryIndex queries
 	limit uint32
 
+	// Temporary information used by Run()
 	err         error
 	riakCommand riak.Command
 	commandType riakCommandType
 
+	// Output variables
 	output      interface{}
 	outputBytes *[]byte
+
+	// Indexes used by SetJSON() and SetRaw()
+	indexes map[string][]string
 }
 
 type Result struct {

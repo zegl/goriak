@@ -1,22 +1,18 @@
 package goriak
 
-/*type Options struct {
-	indexes map[string][]string
-}
-
-func (o *Options) AddToIndex(key, value string) *Options {
+func (c Command) AddToIndex(key, value string) Command {
 	// Create map if needed
-	if o.indexes == nil {
-		o.indexes = make(map[string][]string)
+	if c.indexes == nil {
+		c.indexes = make(map[string][]string)
 	}
 
 	// Add to existing slice
-	if _, ok := o.indexes[key]; ok {
-		o.indexes[key] = append(o.indexes[key], value)
-		return o
+	if _, ok := c.indexes[key]; ok {
+		c.indexes[key] = append(c.indexes[key], value)
+		return c
 	}
 
 	// Create new slice
-	o.indexes[key] = []string{value}
-	return o
-}*/
+	c.indexes[key] = []string{value}
+	return c
+}
