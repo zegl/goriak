@@ -1,9 +1,7 @@
 package goriak
 
 import (
-// "errors"
-
-//riak "github.com/basho/riak-go-client"
+	riak "github.com/basho/riak-go-client"
 )
 
 type Options struct {
@@ -28,59 +26,39 @@ func (o *Options) AddToIndex(key, value string) *Options {
 	return o
 }
 
-/*
-func (c *Client) Delete(bucket, bucketType, key string) error {
+func (c Command) Delete() Command {
 	cmd, err := riak.NewDeleteValueCommandBuilder().
-		WithBucket(bucket).
-		WithBucketType(bucketType).
-		WithKey(key).
+		WithBucket(c.bucket).
+		WithBucketType(c.bucketType).
+		WithKey(c.key).
 		Build()
 
 	if err != nil {
-		return err
+		c.err = err
+		return c
 	}
 
-	err = c.riak.Execute(cmd)
+	c.commandType = riakDeleteValueCommand
+	c.riakCommand = cmd
 
-	if err != nil {
-		return err
-	}
-
-	res, ok := cmd.(*riak.DeleteValueCommand)
-
-	if !ok {
-		return errors.New("Could not convert")
-	}
-
-	if !res.Success() {
-		return errors.New("Command was not successful")
-	}
-
-	return nil
+	return c
 }
 
-func (c *Client) AllKeys(bucket, bucketType string) ([]string, error) {
+func (c Command) AllKeys(callback func([]string) error) Command {
 	cmd, err := riak.NewListKeysCommandBuilder().
-		WithBucket(bucket).
-		WithBucketType(bucketType).
+		WithBucket(c.bucket).
+		WithBucketType(c.bucketType).
+		WithCallback(callback).
+		WithStreaming(true).
 		Build()
 
 	if err != nil {
-		return []string{}, err
+		c.err = err
+		return c
 	}
 
-	err = c.riak.Execute(cmd)
+	c.commandType = riakListKeysCommand
+	c.riakCommand = cmd
 
-	if err != nil {
-		return []string{}, err
-	}
-
-	res, ok := cmd.(*riak.ListKeysCommand)
-
-	if !ok {
-		return []string{}, errors.New("Could not convert")
-	}
-
-	return res.Response.Keys, nil
+	return c
 }
-*/

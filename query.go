@@ -16,6 +16,8 @@ const (
 	riakStoreValueCommand
 	riakFetchValueCommandJSON
 	riakFetchValueCommandRaw
+	riakListKeysCommand
+	riakDeleteValueCommand
 )
 
 type Command struct {
@@ -163,6 +165,14 @@ func (c Command) Run(session *Session) (*Result, error) {
 		cmd := c.riakCommand.(*riak.FetchValueCommand)
 		return c.resultFetchValueCommandRaw(cmd)
 
+	case riakListKeysCommand:
+		cmd := c.riakCommand.(*riak.ListKeysCommand)
+		return c.resultListKeysCommand(cmd)
+
+	case riakDeleteValueCommand:
+		cmd := c.riakCommand.(*riak.DeleteValueCommand)
+		return c.resultDeleteValueCommand(cmd)
+
 	default:
 		return nil, errors.New("Unknown response?")
 	}
@@ -266,4 +276,20 @@ func (c Command) resultFetchValueCommandRaw(cmd *riak.FetchValueCommand) (*Resul
 	return &Result{
 		Key: c.key,
 	}, nil
+}
+
+func (c Command) resultListKeysCommand(cmd *riak.ListKeysCommand) (*Result, error) {
+	if !cmd.Success() {
+		return nil, errors.New("Not successful")
+	}
+
+	return &Result{}, nil
+}
+
+func (c Command) resultDeleteValueCommand(cmd *riak.DeleteValueCommand) (*Result, error) {
+	if !cmd.Success() {
+		return nil, errors.New("Not successful")
+	}
+
+	return &Result{}, nil
 }
