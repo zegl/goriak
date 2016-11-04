@@ -1,6 +1,8 @@
 # goriak [![Build Status](https://circleci.com/gh/zegl/goriak.svg?style=svg)](https://circleci.com/gh/zegl/goriak) [![codecov](https://codecov.io/gh/zegl/goriak/branch/v1/graph/badge.svg)](https://codecov.io/gh/zegl/goriak/branch/v1)
 
-Current version: `v1.1.0`.  
+Goriak v2 is currently in Beta, and the API can still change. Use v1 if you want a stable API.
+
+Current version: `v2.0.0-beta`.  
 Riak KV version: 2.0 or higher, the latest version of Riak KV is always recommended. 
 
 # What is goriak?
@@ -10,14 +12,14 @@ goriak is a wrapper around [riak-go-client](https://github.com/basho/riak-go-cli
 # Installation
 
 ```bash
-go get -u gopkg.in/zegl/goriak.v1
+go get -u gopkg.in/zegl/goriak.v2
 ```
 
-# Maps
+# Maps (Riak Data Types)
 
 The main feature of goriak is that goriak automatically can marshal/unmarshal your Go types into [Riak data types](http://docs.basho.com/riak/kv/2.1.4/developing/data-types/).
 
-## SetMap
+## Set (Riak Data Types)
 
 In the example below `Name` will be saved as a register, and `Aliases` will be a set.
 
@@ -32,41 +34,16 @@ user := User {
     Alises: []string{"Foo", "Bar"},
 }
 
-goriak.SetMap("bucket-name", "bucket-type", "key", user)
+goriak.Bucket("bucket-name", "bucket-type").Key("key").Set(user).Run(c)
 ```
 
-## GetMap
+## Get (Riak Data Types)
 
 The map can later be retreived as a whole:
 
 ```go
 var res User
-goriak.GetMap("bucket-name", "bucket-type", "key", &res)
-```
-
-## MapOperation
-
-There is a time in everyones life where you need to perform raw MapOperations.
-
-Some operations, such as `RemoveFromSet` requires a Context to perform the operation.
-A Context can be retreived from `GetMap` by setting a special context type.
-
-
-```go
-type ourType struct {
-    Aliases []string
-
-    // The context from Riak will be added if the tag goriakcontext is provided
-    Context []byte `goriak:"goriakcontext"`
-}
-
-// ... GetMap()
-
-// Works with MapOperation from github.com/basho/riak-go-client
-operation := goriak.NewMapOperation()
-operation.AddToSet("Aliases", []byte("Baz"))
-
-goriak.MapOperation("bucket-name", "bucket-type", "key", operation, val.Context)
+goriak.Bucket("bucket-name", "bucket-type").Key("key").Get(&res).Run(c)
 ```
 
 ## Supported Go types
@@ -109,7 +86,7 @@ type Article struct {
 
 // Get our object
 var article Article
-con.GetMap("articles", "map", "1-hello-world", &article)
+goriak.Bucket("articles", "map").Key("1-hello-world").Get(&article).Run(con)
 
 // Increase views by 1
 err := article.Views.Increase(1).Exec(con)
@@ -137,7 +114,7 @@ type Article struct {
 
 // Get our object
 var article Article
-con.GetMap("articles", "map", "1-hello-world", &article)
+goriak.Bucket("articles", "map").Key("1-hello-world").Get(&article).Run(con)
 
 // Add the tag "animals"
 err := article.Tags.AddString("animals").Exec(con)
@@ -149,23 +126,50 @@ Check [godoc](https://godoc.org/github.com/zegl/goriak#Set) for more information
 
 # Values
 
-Values are automatically JSON encoded and decoded.
+Values can be automatically JSON Marshalled/Unmarshalled by using `SetJSON()` and `GetJSON()`.
+There is also `SetRaw()` and `GetRaw()` that works directly on `[]byte`s.
 
-## SetValue
-
-```go
-goriak.SetValue("bucket-name", "bucket-type", "key", obj)
-```
-
-## GetValue
+## SetJSON
 
 ```go
-goriak.GetValue("bucket-name", "bucket-type", "key", &obj)
+goriak.Bucket("bucket-name", "bucket-type").Key("key").SetJSON(obj).Run(con)
 ```
+
+## GetJSON
+
+```go
+goriak.Bucket("bucket-name", "bucket-type").Key("key").GetJSON(&obj).Run(con)
+```
+
+## MapOperation
+
+There is a time in everyones life where you need to perform raw MapOperations on your Riak Data Values.
+
+Some operations, such as `RemoveFromSet` requires a Context to perform the operation.
+A Context can be retreived from `Get` by setting a special context type.
+
+
+```go
+type ourType struct {
+    Aliases []string
+
+    // The context from Riak will be added if the tag goriakcontext is provided
+    Context []byte `goriak:"goriakcontext"`
+}
+
+// ... GetMap()
+
+// Works with MapOperation from github.com/basho/riak-go-client
+operation := goriak.NewMapOperation()
+operation.AddToSet("Aliases", []byte("Baz"))
+
+goriak.MapOperation("bucket-name", "bucket-type", "key", operation, val.Context)
+```
+
 
 # Secondary Indexes
 
-You can set secondary indexes on Values with `SetValue` by using struct tags.
+You can set secondary indexes automatically with `SetJSON()` by using struct tags.
 
 ```go
 type User struct {
@@ -174,18 +178,38 @@ type User struct {
 }
 ```
 
-When saved the next time the index will be updated.
-
-Keys in a particular index can be retreived with `KeysInIndex`.
-
-```go
-goriak.KeysInIndex("bucket-name", "bucket-type", "nameindex_bin", "Value")
-```
-
 Indexes can also be used in slices. If you are using a slice every value in the slice will be added to the index.
 
 ```go
 type User struct {
     Aliases []string `goriakindex:"aliasesindex_bin"`
 }
+```
+
+
+When saved the next time the index will be updated.
+
+## KeysInIndex
+
+Keys in a particular index can be retreived with `KeysInIndex`.
+
+```go
+callback := func(item goriak.SecondaryIndexQueryResult) {
+    // use item
+}
+
+goriak.Bucket("bucket-name", "bucket-type").
+    KeysInIndex("nameindex_bin", "Value", callback).
+    Run(con)
+```
+
+## AddToIndex
+
+An alternative way of setting Secondary Indexes is by using `AddToIndex()`.
+
+```go
+goriak.Bucket("bucket-name", "bucket-type").
+    AddToIndex("indexname_bin", "value").
+    SetRaw(data).
+    Run(con)
 ```
