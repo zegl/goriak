@@ -12,7 +12,7 @@ type User struct {
 }
 
 func main() {
-	r, err := goriak.NewGoriak("127.0.0.1")
+	con, err := goriak.Connect(goriak.ConnectOpts{Address: "127.0.0.1"})
 
 	if err != nil {
 		panic(err)
@@ -24,7 +24,10 @@ func main() {
 	}
 
 	// Save our User object to Riak
-	err = r.SetMap("bucket", "bucketType", "user-400", user)
+	_, err = goriak.Bucket("bucket", "bucketType").
+		Key("user-400").
+		Set(user).
+		Run(con)
 
 	if err != nil {
 		panic(err)
@@ -32,13 +35,16 @@ func main() {
 
 	// Retreive the same object from Riak
 	var getUser User
-	err, isNotFound := r.GetMap("bucket", "bucketType", "user-400", &getUser)
+
+	resp, err := goriak.Bucket("bucket", "bucketType").
+		Get("user-400", &getUser).
+		Run(con)
 
 	if err != nil {
 		panic(err)
 	}
 
-	if isNotFound {
+	if resp.NotFound {
 		panic("Not found")
 	}
 
