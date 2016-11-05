@@ -46,8 +46,9 @@ type Command struct {
 
 // Result contains your query result data from Run()
 type Result struct {
-	NotFound bool
-	Key      string
+	NotFound bool   // Wether or not the item was not found when using Get, GetJSON, or GetRaw.
+	Key      string // Returns your automatically generated key when using Set, SetJSON, or SetRaw.
+	Context  []byte // Returns the Riak Context used in map operations. Is set when using Get.
 }
 
 // Bucket specifies the bucket and bucket type that your following command will be performed on.
@@ -143,6 +144,7 @@ func (c Command) Set(val interface{}) Command {
 	return c
 }
 
+// Run performs the action built in Command and runs it agains the Riak connection specified by Session.
 func (c Command) Run(session *Session) (*Result, error) {
 
 	if session == nil {
@@ -230,7 +232,8 @@ func (c Command) resultFetchMapCommand(cmd *riak.FetchMapCommand) (*Result, erro
 	}
 
 	return &Result{
-		Key: c.key,
+		Key:     c.key,
+		Context: cmd.Response.Context,
 	}, nil
 }
 
