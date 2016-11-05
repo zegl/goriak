@@ -21,6 +21,7 @@ const (
 	riakSecondaryIndexQueryCommand
 )
 
+// Command is the main query builder object
 type Command struct {
 	// Key information
 	bucket     string
@@ -43,11 +44,13 @@ type Command struct {
 	indexes map[string][]string
 }
 
+// Result contains your query result data from Run()
 type Result struct {
 	NotFound bool
 	Key      string
 }
 
+// Bucket specifies the bucket and bucket type that your following command will be performed on.
 func Bucket(bucket, bucketType string) Command {
 	return Command{
 		bucket:     bucket,
@@ -55,6 +58,9 @@ func Bucket(bucket, bucketType string) Command {
 	}
 }
 
+// Get retreives a Map from Riak.
+// Get performes automatic convertion from Riak Maps to your Go datatype.
+// See Set() for more information.
 func (c Command) Get(key string, output interface{}) Command {
 	c.key = key
 	c.output = output
@@ -76,6 +82,7 @@ func (c Command) Get(key string, output interface{}) Command {
 	return c
 }
 
+// Key specifies the Riak key that following commands such as Get() and MapOperation()
 func (c Command) Key(key string) Command {
 	c.key = key
 	return c
@@ -89,7 +96,7 @@ func (c Command) Limit(limit uint32) Command {
 }
 
 /*
-Insert automatically converts your Go datatype to the equivalent type in Riak
+Set automatically converts your Go datatype to the equivalent type in Riak
 
 	|  Go Type   | Riak Type |
 	|------------|-----------|
