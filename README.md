@@ -1,6 +1,6 @@
-# goriak [![Build Status](https://circleci.com/gh/zegl/goriak.svg?style=svg)](https://circleci.com/gh/zegl/goriak) [![codecov](https://codecov.io/gh/zegl/goriak/branch/v1/graph/badge.svg)](https://codecov.io/gh/zegl/goriak/branch/v1)
+# goriak [![Build Status](https://circleci.com/gh/zegl/goriak.svg?style=svg)](https://circleci.com/gh/zegl/goriak) [![codecov](https://codecov.io/gh/zegl/goriak/branch/v1/graph/badge.svg)](https://codecov.io/gh/zegl/goriak/branch/v1) [![Go Report Card](https://goreportcard.com/badge/gopkg.in/zegl/goriak.v2)](https://goreportcard.com/report/gopkg.in/zegl/goriak.v2)
 
-Goriak v2 is currently in Beta, and the API can still change. Use v1 if you want a stable API.
+Warning: Goriak v2 is currently in Beta, and the API can still change. Use v1 if you want a stable API.
 
 Current version: `v2.0.0-beta`.  
 Riak KV version: 2.0 or higher, the latest version of Riak KV is always recommended. 
