@@ -124,9 +124,9 @@ func TestAbunchOfTypes(t *testing.T) {
 		ByteSlice:            []byte{50, 60, 70},
 		StringSlice:          []string{"H", "e", "l", "o"},
 		IntSlice:             []int{4000, 5000, 6000},
-		ByteSliceSlice:       [][]byte{[]byte{10, 11, 12}, []byte{100, 110, 120}},
-		ByteArraySlice:       [][4]byte{[4]byte{1, 2, 3, 4}, [4]byte{6, 6, 6, 6}},
-		CustomByteArraySlice: []customByteArray{customByteArray{1, 2, 3}, customByteArray{4, 5, 6}},
+		ByteSliceSlice:       [][]byte{{10, 11, 12}, {100, 110, 120}},
+		ByteArraySlice:       [][4]byte{{1, 2, 3, 4}, {6, 6, 6, 6}},
+		CustomByteArraySlice: []customByteArray{{1, 2, 3}, {4, 5, 6}},
 	}
 
 	result, err := bucket().Set(o).Run(con())
@@ -234,7 +234,7 @@ func TestUnsupportedType(t *testing.T) {
 	}
 
 	o := testType{
-		A: [][]bool{[]bool{true, false, true}},
+		A: [][]bool{{true, false, true}},
 	}
 
 	_, err := bucket().Set(o).Run(con())
@@ -365,8 +365,8 @@ func TestMapInStruct(t *testing.T) {
 		},
 
 		BarByte: map[int64][]byte{
-			4000:  []byte{1, 2, 3, 4, 5},
-			10000: []byte{50, 60, 70, 80},
+			4000:  {1, 2, 3, 4, 5},
+			10000: {50, 60, 70, 80},
 		},
 
 		BarString: map[string]string{
