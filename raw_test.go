@@ -79,3 +79,62 @@ func TestSetRawWithIndex(t *testing.T) {
 		t.Error("Not equal 2")
 	}
 }
+
+func TestSetRawAddToMultipleIndexes(t *testing.T) {
+	c := con()
+
+	res, err := Bucket("json", "default").
+		AddToIndex("testC_bin", "foo").
+		AddToIndex("testC_bin", "bar").
+		SetRaw([]byte("fooooobar")).
+		Run(c)
+
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	foundCount := 0
+	foundCorrect := false
+
+	cb := func(r SecondaryIndexQueryResult) {
+		if !r.IsComplete {
+			foundCount++
+			if r.Key == res.Key {
+				foundCorrect = true
+			}
+		}
+	}
+
+	_, err = Bucket("json", "default").KeysInIndex("testC_bin", "foo", cb).Run(c)
+
+	if err != nil {
+		t.Error(err)
+	}
+
+	if foundCount != 1 {
+		t.Error("Unexpected count 1. Expected 1, got ", foundCount)
+	}
+
+	if !foundCorrect {
+		t.Error("Did not find the correct value 1")
+	}
+
+	foundCount = 0
+	foundCorrect = false
+
+	Bucket("json", "default").KeysInIndex("testC_bin", "bar", cb).Run(c)
+
+	if err != nil {
+		t.Error(err)
+	}
+
+	if foundCount != 1 {
+		t.Error("Unexpected count 2. Expected 1, got ", foundCount)
+	}
+
+	if !foundCorrect {
+		t.Error("Did not find the correct value 2")
+	}
+
+}
