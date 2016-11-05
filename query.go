@@ -60,7 +60,7 @@ func Bucket(bucket, bucketType string) Command {
 }
 
 // Get retreives a Map from Riak.
-// Get performes automatic conversion from Riak Maps to your Go datatype.
+// Get performs automatic conversion from Riak Maps to your Go datatype.
 // See Set() for more information.
 func (c Command) Get(key string, output interface{}) Command {
 	c.key = key
