@@ -216,7 +216,16 @@ func TestJSONWithSliceIndex(t *testing.T) {
 	Bucket("json", "default").Limit(2).KeysInIndex("ageslice_bin", "10", cb).Run(con())
 
 	if foundCount != 2 {
-		t.Error("Expected 2 results, got: ", foundCount)
+		t.Error("1: Expected 2 results, got: ", foundCount)
+	}
+
+	foundCount = 0
+
+	// With limit other order
+	Bucket("json", "default").KeysInIndex("ageslice_bin", "10", cb).Limit(2).Run(con())
+
+	if foundCount != 2 {
+		t.Error("2: Expected 2 results, got: ", foundCount)
 	}
 
 	foundCount = 0
@@ -225,7 +234,7 @@ func TestJSONWithSliceIndex(t *testing.T) {
 	Bucket("json", "default").KeysInIndex("ageslice_bin", "10", cb).Run(con())
 
 	if foundCount != 4 {
-		t.Error("Expected 4 results, got: ", foundCount)
+		t.Error("3: Expected 4 results, got: ", foundCount)
 	}
 }
 

@@ -48,6 +48,9 @@ type Command struct {
 	// SetJSON and SetRaw will populate these values instead
 	storeValueCommandBuilder *riak.StoreValueCommandBuilder
 	storeValueObject         *riak.Object
+
+	// Riak builder type for KeysInIndex
+	secondaryIndexQueryCommandBuilder *riak.SecondaryIndexQueryCommandBuilder
 }
 
 // Result contains your query result data from Run()
@@ -157,9 +160,12 @@ func (c Command) Run(session *Session) (*Result, error) {
 		return nil, errors.New("No session provided")
 	}
 
-	// riakStoreValueCommand needs to finnish the builder step first
-	if c.commandType == riakStoreValueCommand {
+	// Commands that hasn't been built yet
+	switch c.commandType {
+	case riakStoreValueCommand:
 		c = c.buildStoreValueCommand()
+	case riakSecondaryIndexQueryCommand:
+		c = c.buildSecondaryIndexQueryCommand()
 	}
 
 	// Error from previous steps
@@ -364,5 +370,17 @@ func (c Command) buildStoreValueCommand() Command {
 
 	// Build it!
 	c.riakCommand, c.err = c.storeValueCommandBuilder.Build()
+	return c
+}
+
+// buildSecondaryIndexQueryCommand completes the buildinf of the SecondaryIndexQueryCommand used by KeysInIndex
+func (c Command) buildSecondaryIndexQueryCommand() Command {
+	// Set limit
+	if c.limit != 0 {
+		c.secondaryIndexQueryCommandBuilder.WithMaxResults(c.limit)
+	}
+
+	// Build it!
+	c.riakCommand, c.err = c.secondaryIndexQueryCommandBuilder.Build()
 	return c
 }

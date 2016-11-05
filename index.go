@@ -42,19 +42,8 @@ func (c Command) KeysInIndex(indexName, indexValue string, callback func(Seconda
 		WithStreaming(true).
 		WithCallback(cb)
 
-	if c.limit != 0 {
-		builder.WithMaxResults(c.limit)
-	}
-
-	cmd, err := builder.Build()
-
-	if err != nil {
-		c.err = err
-		return c
-	}
-
+	c.secondaryIndexQueryCommandBuilder = builder
 	c.commandType = riakSecondaryIndexQueryCommand
-	c.riakCommand = cmd
 
 	return c
 }
