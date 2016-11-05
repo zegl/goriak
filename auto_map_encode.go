@@ -68,7 +68,15 @@ func encodeValue(op *riak.MapOperation, itemKey string, f reflect.Value) error {
 
 	// Ints are saved as Registers
 	case reflect.Int:
-		op.SetRegister(itemKey, []byte(strconv.Itoa(int(f.Int()))))
+		fallthrough
+	case reflect.Int8:
+		fallthrough
+	case reflect.Int16:
+		fallthrough
+	case reflect.Int32:
+		fallthrough
+	case reflect.Int64:
+		op.SetRegister(itemKey, []byte(strconv.FormatInt(f.Int(), 10)))
 
 	// Strings are saved as Registers
 	case reflect.String:
