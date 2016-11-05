@@ -22,13 +22,6 @@ func (c Command) SetJSON(value interface{}) Command {
 		Value: by,
 	}
 
-	// Indexes from Command.AddToIndex()
-	for indexName, values := range c.indexes {
-		for _, val := range values {
-			object.AddToIndex(indexName, val)
-		}
-	}
-
 	refType := reflect.TypeOf(value)
 	refValue := reflect.ValueOf(value)
 
@@ -74,21 +67,12 @@ func (c Command) SetJSON(value interface{}) Command {
 
 	builder := riak.NewStoreValueCommandBuilder().
 		WithBucket(c.bucket).
-		WithBucketType(c.bucketType).
-		WithContent(&object)
+		WithBucketType(c.bucketType)
 
-	if c.key != "" {
-		builder = builder.WithKey(c.key)
-	}
+	c.storeValueObject = &object
+	c.storeValueCommandBuilder = builder
 
-	cmd, err := builder.Build()
-
-	if err != nil {
-		c.err = err
-		return c
-	}
-
-	c.riakCommand = cmd
+	// c.riakCommand = cmd
 	c.commandType = riakStoreValueCommand
 
 	return c

@@ -15,14 +15,14 @@ func TestSetJSON(t *testing.T) {
 	res, err := Bucket("json", "default").SetJSON(data).Run(con())
 
 	if err != nil {
-		t.Error(err)
+		t.Error("Set:", err)
 	}
 
 	var v map[string]string
 	res, err = Bucket("json", "default").GetJSON(res.Key, &v).Run(con())
 
 	if err != nil {
-		t.Error(err)
+		t.Error("Get:", err)
 	}
 
 	if !reflect.DeepEqual(data, v) {
@@ -226,5 +226,34 @@ func TestJSONWithSliceIndex(t *testing.T) {
 
 	if foundCount != 4 {
 		t.Error("Expected 4 results, got: ", foundCount)
+	}
+}
+
+func TestSetJSONKeyAfterSet(t *testing.T) {
+	c := con()
+
+	res, err := Bucket("json", "default").SetJSON(123).Key("json-set-test").Run(c)
+
+	if res.Key != "json-set-test" {
+		t.Error("Unknown key (1)")
+	}
+
+	if err != nil {
+		t.Error(err)
+	}
+
+	var output int
+	res, err = Bucket("json", "default").GetJSON("json-set-test", &output).Run(c)
+
+	if output != 123 {
+		t.Error("Output was not set to 123")
+	}
+
+	if res.Key != "json-set-test" {
+		t.Error("Unknown key (2)")
+	}
+
+	if err != nil {
+		t.Error(err)
 	}
 }

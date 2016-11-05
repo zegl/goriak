@@ -42,6 +42,12 @@ type Command struct {
 
 	// Indexes used by SetJSON() and SetRaw()
 	indexes map[string][]string
+
+	// Riak builder type for SetValue
+	// Other commands populate riakComand directly
+	// SetJSON and SetRaw will populate these values instead
+	storeValueCommandBuilder *riak.StoreValueCommandBuilder
+	storeValueObject         *riak.Object
 }
 
 // Result contains your query result data from Run()
@@ -149,6 +155,11 @@ func (c Command) Run(session *Session) (*Result, error) {
 
 	if session == nil {
 		return nil, errors.New("No session provided")
+	}
+
+	// riakStoreValueCommand needs to finnish the builder step first
+	if c.commandType == riakStoreValueCommand {
+		c = c.buildStoreValueCommand()
 	}
 
 	// Error from previous steps
@@ -331,4 +342,27 @@ func (c Command) resultSecondaryIndexQueryCommand(cmd *riak.SecondaryIndexQueryC
 	}
 
 	return &Result{}, nil
+}
+
+// buildStoreValueCommand completes the building if the StoreValueCommand used by SetRaw and SetJSON
+func (c Command) buildStoreValueCommand() Command {
+	// Set key
+	if c.key != "" {
+		c.storeValueCommandBuilder.WithKey(c.key)
+	}
+
+	// Add indexes to object if needed
+	// Indexes from Command.AddToIndex()
+	for indexName, values := range c.indexes {
+		for _, val := range values {
+			c.storeValueObject.AddToIndex(indexName, val)
+		}
+	}
+
+	// Set object
+	c.storeValueCommandBuilder.WithContent(c.storeValueObject)
+
+	// Build it!
+	c.riakCommand, c.err = c.storeValueCommandBuilder.Build()
+	return c
 }

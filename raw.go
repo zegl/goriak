@@ -11,30 +11,12 @@ func (c Command) SetRaw(value []byte) Command {
 		Value: value,
 	}
 
-	// Add to indexes
-	for indexName, values := range c.indexes {
-		for _, val := range values {
-			object.AddToIndex(indexName, val)
-		}
-	}
-
 	builder := riak.NewStoreValueCommandBuilder().
 		WithBucket(c.bucket).
-		WithBucketType(c.bucketType).
-		WithContent(&object)
+		WithBucketType(c.bucketType)
 
-	if c.key != "" {
-		builder = builder.WithKey(c.key)
-	}
-
-	cmd, err := builder.Build()
-
-	if err != nil {
-		c.err = err
-		return c
-	}
-
-	c.riakCommand = cmd
+	c.storeValueObject = &object
+	c.storeValueCommandBuilder = builder
 	c.commandType = riakStoreValueCommand
 
 	return c
