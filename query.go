@@ -60,7 +60,7 @@ func Bucket(bucket, bucketType string) Command {
 }
 
 // Get retreives a Map from Riak.
-// Get performes automatic convertion from Riak Maps to your Go datatype.
+// Get performes automatic conversion from Riak Maps to your Go datatype.
 // See Set() for more information.
 func (c Command) Get(key string, output interface{}) Command {
 	c.key = key
@@ -144,7 +144,7 @@ func (c Command) Set(val interface{}) Command {
 	return c
 }
 
-// Run performs the action built in Command and runs it agains the Riak connection specified by Session.
+// Run performs the action built in Command and runs it against the Riak connection specified by Session.
 func (c Command) Run(session *Session) (*Result, error) {
 
 	if session == nil {

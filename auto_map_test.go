@@ -97,7 +97,7 @@ func TestSetNonPointer(t *testing.T) {
 	}
 
 	if res.A != "I am passed as Value" {
-		t.Error("Unkown response")
+		t.Error("Unknown response")
 	}
 }
 
@@ -200,8 +200,8 @@ func TestUnsupportedArrayType(t *testing.T) {
 		t.Error("Did not get error")
 	}
 
-	if err.Error() != "Unkown Array type: string" {
-		t.Error("Unkown error")
+	if err.Error() != "Unknown Array type: string" {
+		t.Error("Unknown error")
 		t.Error(err)
 	}
 }
@@ -223,7 +223,7 @@ func TestUnsupportedSliceType(t *testing.T) {
 	}
 
 	if err.Error() != "Unknown slice type: bool" {
-		t.Error("Unkown error")
+		t.Error("Unknown error")
 		t.Error(err)
 	}
 }
@@ -245,7 +245,7 @@ func TestUnsupportedType(t *testing.T) {
 	}
 
 	if err.Error() != "Unknown slice slice type: bool" {
-		t.Error("Unkown error")
+		t.Error("Unknown error")
 		t.Error(err)
 	}
 }

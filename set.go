@@ -128,7 +128,7 @@ func (s *Set) Exec(client *Session) error {
 	}
 
 	if s.name == "" {
-		return errors.New("Unknown path to Set. Retreive Set with GetMap before updating the Set")
+		return errors.New("Unknown path to Set. Retrieve Set with GetMap before updating the Set")
 	}
 
 	op := &riak.MapOperation{}

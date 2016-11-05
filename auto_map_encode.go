@@ -170,7 +170,7 @@ func encodeArray(op *riak.MapOperation, itemKey string, f reflect.Value) error {
 		return nil
 	}
 
-	return errors.New("Unkown Array type: " + f.Index(0).Kind().String())
+	return errors.New("Unknown Array type: " + f.Index(0).Kind().String())
 }
 
 // Slices are saved as Sets

@@ -29,7 +29,7 @@ func mapToStruct(data *riak.Map, rValue reflect.Value, rType reflect.Type, riakC
 		tag := field.Tag.Get("goriak")
 
 		// goriakcontext is a reserved keyword.
-		// Use the tag `goriak:"goriakcontext"` to get the Riak context neccesary for certaion Riak operations,
+		// Use the tag `goriak:"goriakcontext"` to get the Riak context necessary for certaion Riak operations,
 		// such as removing items from a Set.
 		if tag == "goriakcontext" {
 			rValue.Field(i).SetBytes(riakContext)

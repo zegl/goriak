@@ -55,7 +55,7 @@ func (c *Counter) Exec(client *Session) error {
 	}
 
 	if c.name == "" {
-		return errors.New("Unknown path to counter. Retreive counter with GetMap before updating the counter")
+		return errors.New("Unknown path to counter. Retrieve counter with GetMap before updating the counter")
 	}
 
 	op := &riak.MapOperation{}

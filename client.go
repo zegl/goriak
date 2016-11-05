@@ -12,7 +12,7 @@ type Session struct {
 
 // ConnectOpts are the available options for connecting to your Riak instance
 type ConnectOpts struct {
-	// Both Adress and Addresses should be on the form HOST|IP[:PORT]
+	// Both Address and Addresses should be on the form HOST|IP[:PORT]
 	Address   string   // Address to a single Riak host. Will be used in case Addresses is empty
 	Addresses []string // Addresses to all Riak hosts.
 }

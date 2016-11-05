@@ -101,7 +101,7 @@ func TestMapCounterError(t *testing.T) {
 		t.Error("No error")
 	}
 
-	if err != nil && err.Error() != "Unknown path to counter. Retreive counter with GetMap before updating the counter" {
+	if err != nil && err.Error() != "Unknown path to counter. Retrieve counter with GetMap before updating the counter" {
 		t.Error(err)
 	}
 }

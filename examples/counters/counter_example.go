@@ -34,7 +34,7 @@ func main() {
 		panic(err)
 	}
 
-	// Retreive the same object from Riak
+	// Retrieve the same object from Riak
 	var getUser User
 
 	resp, err := goriak.Bucket("bucket", "bucketType").
