@@ -26,7 +26,7 @@ func deleteAllIn(bucket, bucketType string) {
 	cb := func(res []string) error {
 
 		for _, key := range res {
-			Bucket(bucket, bucketType).Key(key).Delete().Run(con())
+			Bucket(bucket, bucketType).Delete(key).Run(con())
 			log.Println("Delete: " + key)
 		}
 
@@ -78,14 +78,14 @@ func TestDelete(t *testing.T) {
 		t.Error(err)
 	}
 
-	_, err = Bucket("testdelete", "default").Key(res.Key).Delete().Run(con())
+	_, err = Bucket("testdelete", "default").Delete(res.Key).Run(con())
 
 	if err != nil {
 		t.Error(err)
 	}
 
 	var out []byte
-	res, err = Bucket("testdelete", "default").Key(res.Key).GetRaw(&out).Run(con())
+	res, err = Bucket("testdelete", "default").GetRaw(res.Key, &out).Run(con())
 
 	if !res.NotFound {
 		t.Error("Found after delete")
@@ -102,7 +102,7 @@ func TestDelete(t *testing.T) {
 }
 
 func TestDeleteNoKey(t *testing.T) {
-	_, err := Bucket("testdelete", "default").Delete().Run(con())
+	_, err := Bucket("testdelete", "default").Delete("").Run(con())
 
 	if err.Error() != "ClientError|Key is required" {
 		t.Error("Unexpected error")

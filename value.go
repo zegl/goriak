@@ -4,12 +4,12 @@ import (
 	riak "github.com/basho/riak-go-client"
 )
 
-// Delete deletes the value set by Key()
-func (c Command) Delete() Command {
+// Delete deletes the value stored as key
+func (c Command) Delete(key string) Command {
 	cmd, err := riak.NewDeleteValueCommandBuilder().
 		WithBucket(c.bucket).
 		WithBucketType(c.bucketType).
-		WithKey(c.key).
+		WithKey(key).
 		Build()
 
 	if err != nil {
@@ -17,6 +17,7 @@ func (c Command) Delete() Command {
 		return c
 	}
 
+	c.key = key
 	c.commandType = riakDeleteValueCommand
 	c.riakCommand = cmd
 

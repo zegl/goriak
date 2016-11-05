@@ -19,7 +19,7 @@ func TestSetJSON(t *testing.T) {
 	}
 
 	var v map[string]string
-	res, err = Bucket("json", "default").Key(res.Key).GetJSON(&v).Run(con())
+	res, err = Bucket("json", "default").GetJSON(res.Key, &v).Run(con())
 
 	if err != nil {
 		t.Error(err)

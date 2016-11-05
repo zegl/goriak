@@ -16,7 +16,7 @@ func TestSetRaw(t *testing.T) {
 	}
 
 	var v []byte
-	res, err = Bucket("json", "default").Key(res.Key).GetRaw(&v).Run(con())
+	res, err = Bucket("json", "default").GetRaw(res.Key, &v).Run(con())
 
 	if err != nil {
 		t.Error(err)
