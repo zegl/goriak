@@ -51,6 +51,9 @@ type Command struct {
 
 	// Riak builder type for KeysInIndex
 	secondaryIndexQueryCommandBuilder *riak.SecondaryIndexQueryCommandBuilder
+
+	// Riak builder type for MapOperation
+	updateMapCommandBuilder *riak.UpdateMapCommandBuilder
 }
 
 // Result contains your query result data from Run()
@@ -68,30 +71,6 @@ func Bucket(bucket, bucketType string) Command {
 	}
 }
 
-// Get retreives a Map from Riak.
-// Get performs automatic conversion from Riak Maps to your Go datatype.
-// See Set() for more information.
-func (c Command) Get(key string, output interface{}) Command {
-	c.key = key
-	c.output = output
-
-	cmd, err := riak.NewFetchMapCommandBuilder().
-		WithBucket(c.bucket).
-		WithBucketType(c.bucketType).
-		WithKey(c.key).
-		Build()
-
-	if err != nil {
-		c.err = err
-		return c
-	}
-
-	c.riakCommand = cmd
-	c.commandType = riakFetchMapCommand
-
-	return c
-}
-
 // Key specifies the Riak key that following commands such as Get() and MapOperation()
 func (c Command) Key(key string) Command {
 	c.key = key
@@ -102,54 +81,6 @@ func (c Command) Key(key string) Command {
 // A limit of 0 means unlimited
 func (c Command) Limit(limit uint32) Command {
 	c.limit = limit
-	return c
-}
-
-/*
-Set automatically converts your Go datatype to the equivalent type in Riak
-
-	|  Go Type   | Riak Type |
-	|------------|-----------|
-	| struct     | map       |
-	| string     | register  |
-	| [n]byte    | register  |
-	| []byte     | register  |
-	| []slice    | set       |
-	| []slice    | set       |
-	| [][]byte   | set       |
-	| map        | map       |
-*/
-func (c Command) Set(val interface{}) Command {
-	riakContext, op, err := encodeInterface(val)
-
-	if err != nil {
-		c.err = err
-		return c
-	}
-
-	builder := riak.NewUpdateMapCommandBuilder().
-		WithBucket(c.bucket).
-		WithBucketType(c.bucketType).
-		WithMapOperation(op)
-
-	if c.key != "" {
-		builder.WithKey(c.key)
-	}
-
-	if len(riakContext) > 0 {
-		builder.WithContext(riakContext)
-	}
-
-	cmd, err := builder.Build()
-
-	if err != nil {
-		c.err = err
-		return c
-	}
-
-	c.riakCommand = cmd
-	c.commandType = riakUpdateMapCommand
-
 	return c
 }
 
@@ -166,6 +97,8 @@ func (c Command) Run(session *Session) (*Result, error) {
 		c = c.buildStoreValueCommand()
 	case riakSecondaryIndexQueryCommand:
 		c = c.buildSecondaryIndexQueryCommand()
+	case riakUpdateMapCommand:
+		c = c.buildUpdateMapQueryCommand()
 	}
 
 	// Error from previous steps
@@ -382,5 +315,15 @@ func (c Command) buildSecondaryIndexQueryCommand() Command {
 
 	// Build it!
 	c.riakCommand, c.err = c.secondaryIndexQueryCommandBuilder.Build()
+	return c
+}
+
+func (c Command) buildUpdateMapQueryCommand() Command {
+	if c.key != "" {
+		c.updateMapCommandBuilder.WithKey(c.key)
+	}
+
+	// Build it!
+	c.riakCommand, c.err = c.updateMapCommandBuilder.Build()
 	return c
 }

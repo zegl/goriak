@@ -6,20 +6,13 @@ import (
 
 // MapOperation takes a riak.MapOperation so that you can run custom commands on your Riak Maps
 func (c Command) MapOperation(op riak.MapOperation, context []byte) Command {
-	cmd, err := riak.NewUpdateMapCommandBuilder().
+	builder := riak.NewUpdateMapCommandBuilder().
 		WithBucket(c.bucket).
 		WithBucketType(c.bucketType).
-		WithKey(c.key).
 		WithMapOperation(&op).
-		WithContext(context).
-		Build()
+		WithContext(context)
 
-	if err != nil {
-		c.err = err
-		return c
-	}
-
-	c.riakCommand = cmd
+	c.updateMapCommandBuilder = builder
 	c.commandType = riakUpdateMapCommand
 
 	return c
