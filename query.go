@@ -54,6 +54,14 @@ type Command struct {
 
 	// Riak builder type for MapOperation
 	updateMapCommandBuilder *riak.UpdateMapCommandBuilder
+
+	// Riak Consistency options
+	riakPW uint32 // Primary nodes during write
+	riakDW uint32 // Nodes that successfully can write to backend storage
+	riakW  uint32 // Nodes during write
+	riakRW uint32 // Nodes that successfully deleted item from backend storage
+	riakPR uint32 // Primary nodes during read
+	riakR  uint32 // Nodes during read
 }
 
 // Result contains your query result data from Run()
@@ -321,6 +329,21 @@ func (c Command) buildSecondaryIndexQueryCommand() Command {
 func (c Command) buildUpdateMapQueryCommand() Command {
 	if c.key != "" {
 		c.updateMapCommandBuilder.WithKey(c.key)
+	}
+
+	// Durable writes (to backend storage)
+	if c.riakDW > 0 {
+		c.updateMapCommandBuilder.WithDw(c.riakDW)
+	}
+
+	// Primary node writes
+	if c.riakPW > 0 {
+		c.updateMapCommandBuilder.WithPw(c.riakPW)
+	}
+
+	// Node writes
+	if c.riakW > 0 {
+		c.updateMapCommandBuilder.WithW(c.riakW)
 	}
 
 	// Build it!
