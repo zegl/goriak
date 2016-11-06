@@ -306,6 +306,21 @@ func (c Command) buildStoreValueCommand() Command {
 		}
 	}
 
+	// Durable writes (to backend storage)
+	if c.riakDW > 0 {
+		c.updateMapCommandBuilder.WithDw(c.riakDW)
+	}
+
+	// Primary node writes
+	if c.riakPW > 0 {
+		c.updateMapCommandBuilder.WithPw(c.riakPW)
+	}
+
+	// Node writes
+	if c.riakW > 0 {
+		c.updateMapCommandBuilder.WithW(c.riakW)
+	}
+
 	// Set object
 	c.storeValueCommandBuilder.WithContent(c.storeValueObject)
 
