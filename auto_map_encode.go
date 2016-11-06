@@ -51,6 +51,11 @@ func encodeStruct(rValue reflect.Value, op *riak.MapOperation) ([]byte, error) {
 			if tag == "goriakcontext" {
 				riakContext = rValue.Field(i).Bytes()
 			}
+
+			// Ignore. Do not save this value.
+			if tag == "-" {
+				continue
+			}
 		}
 
 		err := encodeValue(op, itemKey, rValue.Field(i))

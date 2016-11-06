@@ -778,3 +778,42 @@ func TestEncodeErrors(t *testing.T) {
 	}
 
 }
+
+func TestAutoMapIgnore(t *testing.T) {
+	type ourTestType struct {
+		SaveA   string `goriak:"save_a"`
+		SaveB   string `goriak:"save_b"`
+		IgnoreC string `goriak:"-"`
+	}
+
+	val := ourTestType{
+		SaveA:   "SaveA",
+		SaveB:   "SaveB",
+		IgnoreC: "IgnoreC",
+	}
+
+	c := con()
+
+	res, err := bucket().Set(val).Run(c)
+
+	if err != nil {
+		t.Error(err)
+	}
+
+	var output ourTestType
+	_, err = bucket().Get(res.Key, &output).Run(c)
+
+	if err != nil {
+		t.Error(err)
+	}
+
+	if output.IgnoreC != "" {
+		t.Error("IgnoreC had a value:", output.IgnoreC)
+	}
+
+	if output.SaveA != "SaveA" || output.SaveB != "SaveB" {
+		t.Error("Unepxected output content")
+		t.Logf("%+v", output)
+	}
+
+}
