@@ -22,20 +22,21 @@ func (c Command) WithW(w uint32) Command {
 }
 
 // WithRr sets the amount fo nodes required to report successfull deletes from backend storage.
+// Used with Delete().
 func (c Command) WithRr(rw uint32) Command {
 	c.riakRW = rw
 	return c
 }
 
 // WithPr sets the amount of primary nodes required to report back during reads.
-// Used with Get(), GetRaw(), and GetJSON().
+// Used with Get(), GetRaw(), GetJSON(), and Delete().
 func (c Command) WithPr(pr uint32) Command {
 	c.riakPR = pr
 	return c
 }
 
 // WithR sets the amount of nodes required to report back during reads.
-// Used with Get(), GetRaw(), and GetJSON().
+// Used with Get(), GetRaw(), GetJSON(), and Delete().
 func (c Command) WithR(r uint32) Command {
 	c.riakR = r
 	return c
