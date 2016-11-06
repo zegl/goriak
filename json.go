@@ -80,20 +80,13 @@ func (c Command) SetJSON(value interface{}) Command {
 
 // GetJSON is the same as GetRaw, but with automatic JSON unmarshalling
 func (c Command) GetJSON(key string, output interface{}) Command {
-	cmd, err := riak.NewFetchValueCommandBuilder().
+	builder := riak.NewFetchValueCommandBuilder().
 		WithBucket(c.bucket).
 		WithBucketType(c.bucketType).
-		WithKey(key).
-		Build()
+		WithKey(key)
 
 	c.key = key
-
-	if err != nil {
-		c.err = err
-		return c
-	}
-
-	c.riakCommand = cmd
+	c.fetchValueCommandBuilder = builder
 	c.commandType = riakFetchValueCommandJSON
 	c.output = output
 

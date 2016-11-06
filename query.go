@@ -54,6 +54,20 @@ type Command struct {
 
 	// Riak builder type for MapOperation
 	updateMapCommandBuilder *riak.UpdateMapCommandBuilder
+
+	// Riak builder type for GetRaw() and GetJSON()
+	fetchValueCommandBuilder *riak.FetchValueCommandBuilder
+
+	// Riak builder type for Delete()
+	deleteValueCommandBuilder *riak.DeleteValueCommandBuilder
+
+	// Riak Consistency options
+	riakPW uint32 // Primary nodes during write
+	riakDW uint32 // Nodes that successfully can write to backend storage
+	riakW  uint32 // Nodes during write
+	riakRW uint32 // Nodes that successfully deleted item from backend storage
+	riakPR uint32 // Primary nodes during read
+	riakR  uint32 // Nodes during read
 }
 
 // Result contains your query result data from Run()
@@ -99,6 +113,12 @@ func (c Command) Run(session *Session) (*Result, error) {
 		c = c.buildSecondaryIndexQueryCommand()
 	case riakUpdateMapCommand:
 		c = c.buildUpdateMapQueryCommand()
+	case riakFetchValueCommandJSON:
+		fallthrough
+	case riakFetchValueCommandRaw:
+		c = c.buildFetchValueCommand()
+	case riakDeleteValueCommand:
+		c = c.buildDeleteValueCommand()
 	}
 
 	// Error from previous steps
@@ -281,49 +301,4 @@ func (c Command) resultSecondaryIndexQueryCommand(cmd *riak.SecondaryIndexQueryC
 	}
 
 	return &Result{}, nil
-}
-
-// buildStoreValueCommand completes the building if the StoreValueCommand used by SetRaw and SetJSON
-func (c Command) buildStoreValueCommand() Command {
-	// Set key
-	if c.key != "" {
-		c.storeValueCommandBuilder.WithKey(c.key)
-	}
-
-	// Add indexes to object if needed
-	// Indexes from Command.AddToIndex()
-	for indexName, values := range c.indexes {
-		for _, val := range values {
-			c.storeValueObject.AddToIndex(indexName, val)
-		}
-	}
-
-	// Set object
-	c.storeValueCommandBuilder.WithContent(c.storeValueObject)
-
-	// Build it!
-	c.riakCommand, c.err = c.storeValueCommandBuilder.Build()
-	return c
-}
-
-// buildSecondaryIndexQueryCommand completes the buildinf of the SecondaryIndexQueryCommand used by KeysInIndex
-func (c Command) buildSecondaryIndexQueryCommand() Command {
-	// Set limit
-	if c.limit != 0 {
-		c.secondaryIndexQueryCommandBuilder.WithMaxResults(c.limit)
-	}
-
-	// Build it!
-	c.riakCommand, c.err = c.secondaryIndexQueryCommandBuilder.Build()
-	return c
-}
-
-func (c Command) buildUpdateMapQueryCommand() Command {
-	if c.key != "" {
-		c.updateMapCommandBuilder.WithKey(c.key)
-	}
-
-	// Build it!
-	c.riakCommand, c.err = c.updateMapCommandBuilder.Build()
-	return c
 }

@@ -25,20 +25,13 @@ func (c Command) SetRaw(value []byte) Command {
 // GetRaw retreives key as a []byte.
 // The output will be written to output by Run().
 func (c Command) GetRaw(key string, output *[]byte) Command {
-	cmd, err := riak.NewFetchValueCommandBuilder().
+	builder := riak.NewFetchValueCommandBuilder().
 		WithBucket(c.bucket).
 		WithBucketType(c.bucketType).
-		WithKey(key).
-		Build()
+		WithKey(key)
 
-	if err != nil {
-		c.err = err
-		return c
-	}
-
+	c.fetchValueCommandBuilder = builder
 	c.key = key
-
-	c.riakCommand = cmd
 	c.commandType = riakFetchValueCommandRaw
 	c.outputBytes = output
 
