@@ -1,6 +1,6 @@
 # goriak [![Build Status](https://circleci.com/gh/zegl/goriak.svg?style=svg)](https://circleci.com/gh/zegl/goriak) [![codecov](https://codecov.io/gh/zegl/goriak/branch/v2/graph/badge.svg)](https://codecov.io/gh/zegl/goriak/branch/v2) [![Go Report Card](https://goreportcard.com/badge/gopkg.in/zegl/goriak.v2)](https://goreportcard.com/report/gopkg.in/zegl/goriak.v2)
 
-Current version: `v2.0.0`.  
+Current version: `v2.1.0`.  
 Riak KV version: 2.0 or higher, the latest version of Riak KV is always recommended. 
 
 # What is goriak?
@@ -57,7 +57,9 @@ goriak.Bucket("bucket-name", "bucket-type").Key("key").Get(&res).Run(c)
 | `[]slice`  | set       |
 | `[][]byte` | set       |
 | `map`      | map       |
+| `int` [1]  | register  |
 
+1: All signed integer types are supported.
 
 ### Golang map types
 
