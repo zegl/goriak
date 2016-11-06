@@ -6,20 +6,14 @@ import (
 
 // Delete deletes the value stored as key
 func (c Command) Delete(key string) Command {
-	cmd, err := riak.NewDeleteValueCommandBuilder().
+	builder := riak.NewDeleteValueCommandBuilder().
 		WithBucket(c.bucket).
 		WithBucketType(c.bucketType).
-		WithKey(key).
-		Build()
-
-	if err != nil {
-		c.err = err
-		return c
-	}
+		WithKey(key)
 
 	c.key = key
+	c.deleteValueCommandBuilder = builder
 	c.commandType = riakDeleteValueCommand
-	c.riakCommand = cmd
 
 	return c
 }

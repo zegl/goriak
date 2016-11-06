@@ -58,6 +58,9 @@ type Command struct {
 	// Riak builder type for GetRaw() and GetJSON()
 	fetchValueCommandBuilder *riak.FetchValueCommandBuilder
 
+	// Riak builder type for Delete()
+	deleteValueCommandBuilder *riak.DeleteValueCommandBuilder
+
 	// Riak Consistency options
 	riakPW uint32 // Primary nodes during write
 	riakDW uint32 // Nodes that successfully can write to backend storage
@@ -114,6 +117,8 @@ func (c Command) Run(session *Session) (*Result, error) {
 		fallthrough
 	case riakFetchValueCommandRaw:
 		c = c.buildFetchValueCommand()
+	case riakDeleteValueCommand:
+		c = c.buildDeleteValueCommand()
 	}
 
 	// Error from previous steps
