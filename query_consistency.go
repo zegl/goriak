@@ -21,9 +21,9 @@ func (c Command) WithW(w uint32) Command {
 	return c
 }
 
-// WithRr sets the amount fo nodes required to report successfull deletes from backend storage.
+// WithRw sets the amount fo nodes required to report successfull deletes from backend storage.
 // Used with Delete().
-func (c Command) WithRr(rw uint32) Command {
+func (c Command) WithRw(rw uint32) Command {
 	c.riakRW = rw
 	return c
 }
