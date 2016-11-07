@@ -1,6 +1,6 @@
 # goriak [![Build Status](https://circleci.com/gh/zegl/goriak.svg?style=svg)](https://circleci.com/gh/zegl/goriak) [![codecov](https://codecov.io/gh/zegl/goriak/branch/v2/graph/badge.svg)](https://codecov.io/gh/zegl/goriak/branch/v2) [![Go Report Card](https://goreportcard.com/badge/gopkg.in/zegl/goriak.v2)](https://goreportcard.com/report/gopkg.in/zegl/goriak.v2)
 
-Current version: `v2.1.0`.  
+Current version: `v2.1.1`.  
 Riak KV version: 2.0 or higher, the latest version of Riak KV is always recommended. 
 
 # What is goriak?
