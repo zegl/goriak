@@ -297,3 +297,22 @@ func ExampleSet() {
 		// ..
 	}
 }
+
+func TestSetHas(t *testing.T) {
+	s := NewSet()
+	s.AddString("hello")
+	s.AddString("it's")
+	s.AddString("me")
+
+	if !s.HasString("hello") {
+		t.Error("Did not have hello")
+	}
+
+	if !s.HasString("it's") {
+		t.Error("Did not have it's")
+	}
+
+	if s.HasString("i") {
+		t.Error("Had i")
+	}
+}

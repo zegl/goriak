@@ -121,6 +121,22 @@ func (s *Set) RemoveString(remove string) *Set {
 	return s.Remove([]byte(remove))
 }
 
+// HasString returns true if search is a value in the set
+func (s *Set) HasString(search string) bool {
+	return s.Has([]byte(search))
+}
+
+// Has returns true if search is a value in the set
+func (s *Set) Has(search []byte) bool {
+	for _, item := range s.value {
+		if bytes.Equal(item, search) {
+			return true
+		}
+	}
+
+	return false
+}
+
 // Exec executes the diff created by Add() and Remove(), and saves the data to Riak
 func (s *Set) Exec(client *Session) error {
 	if s == nil {
