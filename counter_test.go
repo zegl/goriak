@@ -193,3 +193,63 @@ func TestNilCounter(t *testing.T) {
 		t.Error("Get:", errget)
 	}
 }
+
+func TestCounterParalell(t *testing.T) {
+	type testType struct {
+		Foos *Counter
+	}
+
+	testVal := testType{
+		Foos: NewCounter(),
+	}
+
+	res, err := bucket().Set(testVal).Run(con())
+
+	if err != nil {
+		t.Error(err)
+	}
+
+	var getVal1 testType
+	_, err = bucket().Get(res.Key, &getVal1).Run(con())
+
+	if err != nil {
+		t.Error(err)
+	}
+
+	var getVal2 testType
+	_, err = bucket().Get(res.Key, &getVal2).Run(con())
+
+	if err != nil {
+		t.Error(err)
+	}
+
+	err = getVal1.Foos.Increase(1).Exec(con())
+
+	if err != nil {
+		t.Error(err)
+	}
+
+	err = getVal2.Foos.Increase(1).Exec(con())
+
+	if err != nil {
+		t.Error(err)
+	}
+
+	if getVal1.Foos.Value() != 1 {
+		t.Error("GetVal1 was not 1")
+	}
+
+	if getVal2.Foos.Value() != 2 {
+		t.Error("GetVal2 was not 2")
+	}
+
+	err = getVal1.Foos.Increase(1).Exec(con())
+
+	if err != nil {
+		t.Error(err)
+	}
+
+	if getVal1.Foos.Value() != 3 {
+		t.Error("GetVal1 was not 3")
+	}
+}

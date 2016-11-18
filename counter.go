@@ -48,6 +48,7 @@ func (c *Counter) Value() int64 {
 
 // Exec saves changes made to the Counter to Riak
 // Exec only works on Counters initialized by GetMap()
+// If the commad succeeds the counter will be updated with the value in the response from Riak
 func (c *Counter) Exec(client *Session) error {
 
 	if c == nil {
@@ -73,6 +74,7 @@ func (c *Counter) Exec(client *Session) error {
 		WithBucketType(c.key.bucketType).
 		WithKey(c.key.key).
 		WithMapOperation(outerOp).
+		WithReturnBody(true).
 		Build()
 
 	if err != nil {
@@ -94,6 +96,22 @@ func (c *Counter) Exec(client *Session) error {
 	if !res.Success() {
 		return errors.New("Not successful")
 	}
+
+	// Update c.val from the response
+	m := res.Response.Map
+
+	for _, subMapName := range c.path {
+		if _, ok := m.Maps[subMapName]; ok {
+			m = m.Maps[subMapName]
+		}
+	}
+
+	if resVal, ok := m.Counters[c.name]; ok {
+		c.val = resVal
+	}
+
+	// Reset increase counter
+	c.increaseBy = 0
 
 	return nil
 }
