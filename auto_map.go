@@ -49,7 +49,11 @@ Set automatically converts your Go datatype to the equivalent type in Riak
 	| map        | map       |
 */
 func (c Command) Set(val interface{}) Command {
-	riakContext, op, err := encodeInterface(val)
+
+	riakContext, op, err := encodeInterface(val, requestData{
+		bucket:     c.bucket,
+		bucketType: c.bucketType,
+	})
 
 	if err != nil {
 		c.err = err

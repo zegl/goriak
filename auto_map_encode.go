@@ -8,20 +8,31 @@ import (
 	riak "github.com/basho/riak-go-client"
 )
 
-func encodeInterface(input interface{}) ([]byte, *riak.MapOperation, error) {
+type mapEncoder struct {
+	isModifyable bool
+	riakRequest  requestData
+}
+
+func encodeInterface(input interface{}, riakRequest requestData) ([]byte, *riak.MapOperation, error) {
 	op := &riak.MapOperation{}
 
 	var rValue reflect.Value
+
+	// Initialize encoder
+	encoder := &mapEncoder{
+		riakRequest: riakRequest,
+	}
 
 	if reflect.ValueOf(input).Kind() == reflect.Struct {
 		rValue = reflect.ValueOf(input)
 	} else if reflect.ValueOf(input).Kind() == reflect.Ptr {
 		rValue = reflect.ValueOf(input).Elem()
+		encoder.isModifyable = true
 	} else {
 		return []byte{}, nil, errors.New("Could not parse value. Needs to be struct or pointer to struct")
 	}
 
-	riakContext, err := encodeStruct(rValue, op)
+	riakContext, err := encoder.encodeStruct(rValue, op, []string{})
 
 	if err != nil {
 		return []byte{}, nil, err
@@ -30,7 +41,7 @@ func encodeInterface(input interface{}) ([]byte, *riak.MapOperation, error) {
 	return riakContext, op, nil
 }
 
-func encodeStruct(rValue reflect.Value, op *riak.MapOperation) ([]byte, error) {
+func (e *mapEncoder) encodeStruct(rValue reflect.Value, op *riak.MapOperation, path []string) ([]byte, error) {
 	rType := rValue.Type()
 
 	num := rType.NumField()
@@ -58,7 +69,7 @@ func encodeStruct(rValue reflect.Value, op *riak.MapOperation) ([]byte, error) {
 			}
 		}
 
-		err := encodeValue(op, itemKey, rValue.Field(i))
+		err := e.encodeValue(op, itemKey, rValue.Field(i), path)
 
 		if err != nil {
 			return []byte{}, err
@@ -68,7 +79,7 @@ func encodeStruct(rValue reflect.Value, op *riak.MapOperation) ([]byte, error) {
 	return riakContext, nil
 }
 
-func encodeValue(op *riak.MapOperation, itemKey string, f reflect.Value) error {
+func (e *mapEncoder) encodeValue(op *riak.MapOperation, itemKey string, f reflect.Value, path []string) error {
 	switch f.Kind() {
 
 	// Ints are saved as Registers
@@ -93,7 +104,7 @@ func encodeValue(op *riak.MapOperation, itemKey string, f reflect.Value) error {
 
 	// Arrays are saved as Registers
 	case reflect.Array:
-		err := encodeArray(op, itemKey, f)
+		err := e.encodeArray(op, itemKey, f)
 
 		if err != nil {
 			return err
@@ -102,13 +113,18 @@ func encodeValue(op *riak.MapOperation, itemKey string, f reflect.Value) error {
 	// Slices are saved as Sets
 	// []byte and []uint8 are saved as Registers
 	case reflect.Slice:
-		err := encodeSlice(op, itemKey, f)
+		err := e.encodeSlice(op, itemKey, f)
+
 		if err != nil {
 			return err
 		}
 
 	case reflect.Map:
-		err := encodeMap(op, itemKey, f)
+
+		subPath := path
+		subPath = append(subPath, itemKey)
+
+		err := e.encodeMap(op, itemKey, f, subPath)
 
 		if err != nil {
 			return err
@@ -116,7 +132,11 @@ func encodeValue(op *riak.MapOperation, itemKey string, f reflect.Value) error {
 
 	case reflect.Struct:
 		subOp := op.Map(itemKey)
-		encodeStruct(f, subOp)
+
+		subPath := path
+		subPath = append(subPath, itemKey)
+
+		e.encodeStruct(f, subOp, subPath)
 
 	case reflect.Ptr:
 
@@ -126,6 +146,19 @@ func encodeValue(op *riak.MapOperation, itemKey string, f reflect.Value) error {
 			if f.IsNil() {
 				// Increase by 0 to create the counter if it doesn't already exist
 				op.IncrementCounter(itemKey, 0)
+
+				// Initialize counter if Set() was given a struct pointer
+				if e.isModifyable {
+					resCounter := &Counter{
+						name: itemKey,
+						path: path,
+						key:  e.riakRequest,
+						val:  0,
+					}
+
+					f.Set(reflect.ValueOf(resCounter))
+				}
+
 				return nil
 			}
 
@@ -137,6 +170,18 @@ func encodeValue(op *riak.MapOperation, itemKey string, f reflect.Value) error {
 			// Add an empty item
 			if f.IsNil() {
 				op.AddToSet(itemKey, []byte{})
+
+				// Initialize counter if Set() was given a struct pointer
+				if e.isModifyable {
+					resSet := &Set{
+						name: itemKey,
+						path: path,
+						key:  e.riakRequest,
+					}
+
+					f.Set(reflect.ValueOf(resSet))
+				}
+
 				return nil
 			}
 
@@ -162,7 +207,7 @@ func encodeValue(op *riak.MapOperation, itemKey string, f reflect.Value) error {
 }
 
 // Arrays are saved as Registers
-func encodeArray(op *riak.MapOperation, itemKey string, f reflect.Value) error {
+func (e *mapEncoder) encodeArray(op *riak.MapOperation, itemKey string, f reflect.Value) error {
 
 	// Empty
 	if f.Len() == 0 {
@@ -188,7 +233,7 @@ func encodeArray(op *riak.MapOperation, itemKey string, f reflect.Value) error {
 
 // Slices are saved as Sets
 // []byte and []uint8 are saved as Registers
-func encodeSlice(op *riak.MapOperation, itemKey string, f reflect.Value) error {
+func (e *mapEncoder) encodeSlice(op *riak.MapOperation, itemKey string, f reflect.Value) error {
 	sliceType := f.Type().Elem().Kind()
 	sliceLength := f.Len()
 	sliceVal := f.Slice(0, sliceLength)
@@ -261,7 +306,7 @@ func encodeSlice(op *riak.MapOperation, itemKey string, f reflect.Value) error {
 	return nil
 }
 
-func encodeMap(op *riak.MapOperation, itemKey string, f reflect.Value) error {
+func (e *mapEncoder) encodeMap(op *riak.MapOperation, itemKey string, f reflect.Value, path []string) error {
 	keys := f.MapKeys()
 
 	subOp := op.Map(itemKey)
@@ -290,7 +335,10 @@ func encodeMap(op *riak.MapOperation, itemKey string, f reflect.Value) error {
 			return errors.New("Unknown map key type")
 		}
 
-		err := encodeValue(subOp, keyString, f.MapIndex(key))
+		subPath := path
+		subPath = append(subPath, itemKey)
+
+		err := e.encodeValue(subOp, keyString, f.MapIndex(key), subPath)
 
 		if err != nil {
 			return err
