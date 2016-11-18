@@ -316,3 +316,33 @@ func TestSetHas(t *testing.T) {
 		t.Error("Had i")
 	}
 }
+
+func TestSetInitializeSet(t *testing.T) {
+	type testType struct {
+		Foos *Set
+	}
+
+	// Pointer
+	var testVal1 testType
+	_, err := bucket().Set(&testVal1).Run(con())
+
+	if err != nil {
+		t.Error(err)
+	}
+
+	if testVal1.Foos == nil {
+		t.Error("testVal1: Foos is not initialized")
+	}
+
+	// Non pointer
+	var testVal2 testType
+	_, err = bucket().Set(testVal2).Run(con())
+
+	if err != nil {
+		t.Error(err)
+	}
+
+	if testVal2.Foos != nil {
+		t.Error("testVal2: Foos is not initialized")
+	}
+}
