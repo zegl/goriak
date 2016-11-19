@@ -1,6 +1,7 @@
 package goriak
 
 import (
+	"reflect"
 	"testing"
 )
 
@@ -281,5 +282,44 @@ func TestCounterInitializeSet(t *testing.T) {
 
 	if testVal2.Foos != nil {
 		t.Error("testVal2: Foos is not initialized")
+	}
+}
+
+func TestCounterNestedPaths(t *testing.T) {
+	type testType struct {
+		Count *Counter
+		PathA struct {
+			Count *Counter
+			PathB struct {
+				Count *Counter
+				PathC map[string]*Counter
+			}
+		}
+	}
+
+	var testVal testType
+
+	// Will not be set. Library does not have access to modify the map
+	testVal.PathA.PathB.PathC = make(map[string]*Counter)
+	testVal.PathA.PathB.PathC["Cfirst"] = nil
+
+	_, err := bucket().Set(&testVal).Run(con())
+
+	if err != nil {
+		t.Error(err)
+	}
+
+	if !reflect.DeepEqual(testVal.Count.path, []string{}) {
+		t.Error("Wrong Path testVal.Count")
+	}
+
+	if !reflect.DeepEqual(testVal.PathA.Count.path, []string{"PathA"}) {
+		t.Log(testVal.PathA.Count.path)
+		t.Error("Wrong PathA")
+	}
+
+	if !reflect.DeepEqual(testVal.PathA.PathB.Count.path, []string{"PathA", "PathB"}) {
+		t.Log(testVal.PathA.PathB.Count.path)
+		t.Error("Wrong PathB")
 	}
 }

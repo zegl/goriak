@@ -136,13 +136,17 @@ func (e *mapEncoder) encodeValue(op *riak.MapOperation, itemKey string, f reflec
 		subPath := path
 		subPath = append(subPath, itemKey)
 
-		e.encodeStruct(f, subOp, subPath)
+		_, err := e.encodeStruct(f, subOp, subPath)
+
+		if err != nil {
+			return err
+		}
 
 	case reflect.Ptr:
+		ptrType := f.Type().String()
 
-		switch f.Type().String() {
-
-		case "*goriak.Counter": // Counters
+		// Counters
+		if ptrType == "*goriak.Counter" {
 			if f.IsNil() {
 				// Increase by 0 to create the counter if it doesn't already exist
 				op.IncrementCounter(itemKey, 0)
@@ -165,7 +169,11 @@ func (e *mapEncoder) encodeValue(op *riak.MapOperation, itemKey string, f reflec
 			counterValue := f.Elem().FieldByName("increaseBy").Int()
 			op.IncrementCounter(itemKey, counterValue)
 
-		case "*goriak.Set": // Set
+			return nil
+		}
+
+		// Set
+		if ptrType == "*goriak.Set" {
 
 			// Add an empty item
 			if f.IsNil() {
@@ -195,9 +203,10 @@ func (e *mapEncoder) encodeValue(op *riak.MapOperation, itemKey string, f reflec
 				}
 			}
 
-		default:
-			return errors.New("Unexpected ptr type: " + f.Type().String())
+			return nil
 		}
+
+		return errors.New("Unexpected ptr type: " + f.Type().String())
 
 	default:
 		return errors.New("Unexpected type: " + f.Kind().String())
@@ -313,6 +322,15 @@ func (e *mapEncoder) encodeMap(op *riak.MapOperation, itemKey string, f reflect.
 
 	keyType := f.Type().Key().Kind()
 
+	// Maps are not modifyable, save the current state and mark as not modifyable for now
+	origModifyable := e.isModifyable
+
+	e.isModifyable = false
+
+	defer func() {
+		e.isModifyable = origModifyable
+	}()
+
 	for _, key := range keys {
 
 		// Convert the key to string
@@ -335,10 +353,7 @@ func (e *mapEncoder) encodeMap(op *riak.MapOperation, itemKey string, f reflect.
 			return errors.New("Unknown map key type")
 		}
 
-		subPath := path
-		subPath = append(subPath, itemKey)
-
-		err := e.encodeValue(subOp, keyString, f.MapIndex(key), subPath)
+		err := e.encodeValue(subOp, keyString, f.MapIndex(key), path)
 
 		if err != nil {
 			return err
