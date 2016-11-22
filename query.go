@@ -40,6 +40,11 @@ type Command struct {
 	output      interface{}
 	outputBytes *[]byte
 
+	// VClock is used in conflict resolution
+	// http://docs.basho.com/riak/kv/2.1.4/developing/usage/conflict-resolution/
+	vclock               []byte
+	conflictResolverFunc func([]ConflictObject) ConflictObject
+
 	// Indexes used by SetJSON() and SetRaw()
 	indexes map[string][]string
 
@@ -75,6 +80,7 @@ type Result struct {
 	NotFound bool   // Wether or not the item was not found when using Get, GetJSON, or GetRaw.
 	Key      string // Returns your automatically generated key when using Set, SetJSON, or SetRaw.
 	Context  []byte // Returns the Riak Context used in map operations. Is set when using Get.
+	VClock   []byte
 }
 
 // Bucket specifies the bucket and bucket type that your following command will be performed on.
@@ -88,6 +94,16 @@ func Bucket(bucket, bucketType string) Command {
 // Key specifies the Riak key that following commands such as Get() and MapOperation()
 func (c Command) Key(key string) Command {
 	c.key = key
+	return c
+}
+
+func (c Command) VClock(vclock []byte) Command {
+	c.vclock = vclock
+	return c
+}
+
+func (c Command) ConflictResolver(fn func([]ConflictObject) ConflictObject) Command {
+	c.conflictResolverFunc = fn
 	return c
 }
 
@@ -155,11 +171,11 @@ func (c Command) Run(session *Session) (*Result, error) {
 
 	case riakFetchValueCommandJSON:
 		cmd := c.riakCommand.(*riak.FetchValueCommand)
-		return c.resultFetchValueCommandJSON(cmd)
+		return c.resultFetchValueCommandJSON(session, cmd)
 
 	case riakFetchValueCommandRaw:
 		cmd := c.riakCommand.(*riak.FetchValueCommand)
-		return c.resultFetchValueCommandRaw(cmd)
+		return c.resultFetchValueCommandRaw(session, cmd)
 
 	case riakListKeysCommand:
 		cmd := c.riakCommand.(*riak.ListKeysCommand)
@@ -239,7 +255,41 @@ func (c Command) resultStoreValueCommand(cmd *riak.StoreValueCommand) (*Result, 
 	}, nil
 }
 
-func (c Command) resultFetchValueCommandJSON(cmd *riak.FetchValueCommand) (*Result, error) {
+func (c Command) fetchValueWithResolver(session *Session, values []*riak.Object) ([]byte, []byte, error) {
+
+	// Conflict resolution neccesary
+	if len(values) > 1 {
+
+		if c.conflictResolverFunc == nil {
+			return []byte{}, []byte{}, errors.New("Had conflict, but no conflict resolver")
+		}
+
+		objs := make([]ConflictObject, len(values))
+
+		for i, v := range values {
+			objs[i] = ConflictObject{
+				Value:        v.Value,
+				LastModified: v.LastModified,
+				VClock:       v.VClock,
+			}
+		}
+
+		useObj := c.conflictResolverFunc(objs)
+
+		// Save resolution
+		Bucket(c.bucket, c.bucketType).
+			Key(c.key).
+			VClock(useObj.VClock).
+			SetRaw(useObj.Value).
+			Run(session)
+
+		return useObj.Value, useObj.VClock, nil
+	}
+
+	return values[0].Value, values[0].VClock, nil
+}
+
+func (c Command) resultFetchValueCommandJSON(session *Session, cmd *riak.FetchValueCommand) (*Result, error) {
 	if !cmd.Success() {
 		return nil, errors.New("Not successful")
 	}
@@ -250,18 +300,25 @@ func (c Command) resultFetchValueCommandJSON(cmd *riak.FetchValueCommand) (*Resu
 		}, errors.New("Not found")
 	}
 
-	err := json.Unmarshal(cmd.Response.Values[0].Value, c.output)
+	value, vclock, err := c.fetchValueWithResolver(session, cmd.Response.Values)
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = json.Unmarshal(value, c.output)
 
 	if err != nil {
 		return nil, err
 	}
 
 	return &Result{
-		Key: c.key,
+		Key:    c.key,
+		VClock: vclock,
 	}, nil
 }
 
-func (c Command) resultFetchValueCommandRaw(cmd *riak.FetchValueCommand) (*Result, error) {
+func (c Command) resultFetchValueCommandRaw(session *Session, cmd *riak.FetchValueCommand) (*Result, error) {
 	if !cmd.Success() {
 		return nil, errors.New("Not successful")
 	}
@@ -272,10 +329,17 @@ func (c Command) resultFetchValueCommandRaw(cmd *riak.FetchValueCommand) (*Resul
 		}, errors.New("Not found")
 	}
 
-	*c.outputBytes = cmd.Response.Values[0].Value
+	value, vclock, err := c.fetchValueWithResolver(session, cmd.Response.Values)
+
+	if err != nil {
+		return nil, err
+	}
+
+	*c.outputBytes = value
 
 	return &Result{
-		Key: c.key,
+		Key:    c.key,
+		VClock: vclock,
 	}, nil
 }
 
