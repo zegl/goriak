@@ -9,8 +9,11 @@ func (c Command) MapOperation(op riak.MapOperation, context []byte) Command {
 	builder := riak.NewUpdateMapCommandBuilder().
 		WithBucket(c.bucket).
 		WithBucketType(c.bucketType).
-		WithMapOperation(&op).
-		WithContext(context)
+		WithMapOperation(&op)
+
+	if len(context) != 0 {
+		builder.WithContext(context)
+	}
 
 	c.updateMapCommandBuilder = builder
 	c.commandType = riakUpdateMapCommand
