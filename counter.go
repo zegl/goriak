@@ -59,6 +59,11 @@ func (c *Counter) Exec(client *Session) error {
 		return errors.New("Unknown path to counter. Retrieve counter with GetMap before updating the counter")
 	}
 
+	// Validate c.key
+	if c.key.bucket == "" || c.key.bucketType == "" || c.key.key == "" {
+		return errors.New("Invalid key in Counter Exec()")
+	}
+
 	op := &riak.MapOperation{}
 	outerOp := op
 

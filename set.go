@@ -147,6 +147,11 @@ func (s *Set) Exec(client *Session) error {
 		return errors.New("Unknown path to Set. Retrieve Set with GetMap before updating the Set")
 	}
 
+	// Validate s.key
+	if s.key.bucket == "" || s.key.bucketType == "" || s.key.key == "" {
+		return errors.New("Invalid key in Set Exec()")
+	}
+
 	op := &riak.MapOperation{}
 	outerOp := op
 

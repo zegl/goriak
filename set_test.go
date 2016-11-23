@@ -1,6 +1,7 @@
 package goriak
 
 import (
+	"math/rand"
 	"reflect"
 	"sort"
 	"testing"
@@ -344,5 +345,76 @@ func TestSetInitializeSet(t *testing.T) {
 
 	if testVal2.Foos != nil {
 		t.Error("testVal2: Foos is not initialized")
+	}
+}
+
+var letters = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
+
+func randomKey() string {
+	n := 10
+	b := make([]rune, n)
+	for i := range b {
+		b[i] = letters[rand.Intn(len(letters))]
+	}
+	return string(b)
+}
+
+func TestSetUnitialized(t *testing.T) {
+	type testType struct {
+		Foos *Set
+	}
+
+	val := testType{}
+	key := randomKey()
+
+	_, err := bucket().Key(key).Set(&val).Run(con())
+
+	if err != nil {
+		t.Error(err)
+	}
+
+	err = val.Foos.AddString("wohoohooo").Exec(con())
+
+	if err != nil {
+		t.Error(err)
+	}
+
+	// Fetch
+	var val2 testType
+	_, err = bucket().Get(key, &val2).Run(con())
+
+	if err != nil {
+		t.Error(err)
+	}
+
+	if !val2.Foos.HasString("wohoohooo") {
+		t.Error("Not in set after save")
+	}
+}
+
+func TestSetUnitializedOtherOrder(t *testing.T) {
+	type testType struct {
+		Foos *Set
+	}
+
+	val := testType{}
+	key := randomKey()
+
+	// The difference is here
+	_, err := bucket().Set(&val).Key(key).Run(con())
+
+	if err != nil {
+		t.Error(err)
+	}
+
+	err = val.Foos.AddString("wohoohooo").Exec(con())
+
+	if err == nil {
+		t.Error("Got no error after AddString()")
+		return
+	}
+
+	if err.Error() != "Invalid key in Set Exec()" {
+		t.Error("Unexpected error:", err.Error())
 	}
 }
