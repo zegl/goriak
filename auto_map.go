@@ -53,6 +53,7 @@ func (c Command) Set(val interface{}) Command {
 	riakContext, op, err := encodeInterface(val, requestData{
 		bucket:     c.bucket,
 		bucketType: c.bucketType,
+		key:        c.key,
 	})
 
 	if err != nil {

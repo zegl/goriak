@@ -297,7 +297,7 @@ func mapMaptoMap(mapValue reflect.Value, data *riak.Map) error {
 			keyValue = reflect.ValueOf(int64(i))
 
 		default:
-			return errors.New("Unknown map key type")
+			return errors.New("Unknown map key type: " + mapKeyType.String())
 		}
 
 		// Convert val ([]byte) to the correct reflect.Value
@@ -307,6 +307,49 @@ func mapMaptoMap(mapValue reflect.Value, data *riak.Map) error {
 		case reflect.String:
 			valValue = reflect.ValueOf(string(val))
 
+		case reflect.Int:
+			i, _ := strconv.ParseInt(string(val), 10, 0)
+			valValue = reflect.ValueOf(int(i))
+
+		case reflect.Int8:
+			i, _ := strconv.ParseInt(string(val), 10, 8)
+			valValue = reflect.ValueOf(int8(i))
+
+		case reflect.Int16:
+			i, _ := strconv.ParseInt(string(val), 10, 16)
+			valValue = reflect.ValueOf(int16(i))
+
+		case reflect.Int32:
+			i, _ := strconv.ParseInt(string(val), 10, 32)
+			valValue = reflect.ValueOf(int32(i))
+
+		case reflect.Int64:
+			i, _ := strconv.ParseInt(string(val), 10, 64)
+			valValue = reflect.ValueOf(int64(i))
+
+		case reflect.Array:
+
+			// Create new array of the expected type
+			newArray := reflect.New(mapValue.Type().Elem()).Elem()
+			lengthOfExpectedArray := mapValue.Type().Elem().Len()
+
+			arrayItemType := mapValue.Type().Elem().Elem().Kind()
+
+			switch arrayItemType {
+			// Byte array
+			case reflect.Uint8:
+
+				// Copy bytes
+				for i := 0; i < lengthOfExpectedArray; i++ {
+					newArray.Index(i).Set(reflect.ValueOf(val[i]))
+				}
+
+				valValue = newArray
+
+			default:
+				return errors.New("Unknown map value array type: " + mapValue.Type().Elem().String())
+			}
+
 		case reflect.Slice:
 
 			sliceItemType := mapValue.Type().Elem().Elem().Kind()
@@ -315,7 +358,7 @@ func mapMaptoMap(mapValue reflect.Value, data *riak.Map) error {
 			case reflect.Uint8:
 				valValue = reflect.ValueOf(val)
 			default:
-				return errors.New("Unknown map value type")
+				return errors.New("Unknown map value type: slice: " + sliceItemType.String())
 			}
 
 		default:
