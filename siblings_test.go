@@ -2,20 +2,8 @@ package goriak
 
 import (
 	"encoding/json"
-	"math/rand"
 	"testing"
 )
-
-var letters = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
-
-func randomKey() string {
-	n := 10
-	b := make([]rune, n)
-	for i := range b {
-		b[i] = letters[rand.Intn(len(letters))]
-	}
-	return string(b)
-}
 
 func TestSiblings(t *testing.T) {
 	key := randomKey()
