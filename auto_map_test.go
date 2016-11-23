@@ -564,7 +564,7 @@ func TestDecodeUnsupportedTypes(t *testing.T) {
 		return
 	}
 
-	if err.Error() != "Unknown map key type" {
+	if err.Error() != "Unknown map key type: float64" {
 		t.Error("Unexpected error", err)
 	}
 
@@ -662,7 +662,7 @@ func TestDecodeUnsupportedTypes(t *testing.T) {
 		return
 	}
 
-	if err.Error() != "Unknown map value type" {
+	if err.Error() != "Unknown map value type: slice: float64" {
 		t.Error("Unexpected error", err)
 	}
 
@@ -752,7 +752,7 @@ func TestEncodeErrors(t *testing.T) {
 		t.Error("no error")
 	}
 
-	if err.Error() != "Unknown map key type" {
+	if err.Error() != "Unknown map key type: float64" {
 		t.Error("Unexpected error", err)
 	}
 
@@ -815,5 +815,40 @@ func TestAutoMapIgnore(t *testing.T) {
 		t.Error("Unepxected output content")
 		t.Logf("%+v", output)
 	}
+}
 
+func TestAutoMapMapArray(t *testing.T) {
+	type ourTestType struct {
+		Things map[string][4]byte
+	}
+
+	val := ourTestType{
+		Things: map[string][4]byte{
+			"a": [4]byte{1, 1, 1, 1},
+			"b": [4]byte{2, 2, 2, 2},
+		},
+	}
+
+	c := con()
+
+	res, err := bucket().Set(val).Run(c)
+
+	if err != nil {
+		t.Error(err)
+	}
+
+	t.Log(res)
+
+	var resVal ourTestType
+	_, err = bucket().Get(res.Key, &resVal).Run(c)
+
+	if err != nil {
+		t.Error(err)
+	}
+
+	if !reflect.DeepEqual(val, resVal) {
+		t.Error("Did not get same value back")
+		t.Log(val)
+		t.Log(resVal)
+	}
 }
