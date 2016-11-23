@@ -837,8 +837,6 @@ func TestAutoMapMapArray(t *testing.T) {
 		t.Error(err)
 	}
 
-	t.Log(res)
-
 	var resVal ourTestType
 	_, err = bucket().Get(res.Key, &resVal).Run(c)
 
