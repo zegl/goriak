@@ -156,3 +156,34 @@ func TestConflictResolverInterface(t *testing.T) {
 		t.Error("Did not get the item with the highest score back second time")
 	}
 }
+
+func TestPreventConflicts(t *testing.T) {
+	key := randomKey()
+	c := con()
+
+	_, err := Bucket("sibs", "tests").Key(key).SetJSON(ourTypeWithResolveInterface{200}).Run(c)
+
+	if err != nil {
+		t.Error(err)
+	}
+
+	var val ourTypeWithResolveInterface
+	res, err := Bucket("sibs", "tests").GetJSON(key, &val).Run(c)
+
+	_, err = Bucket("sibs", "tests").VClock(res.VClock).Key(key).SetJSON(ourTypeWithResolveInterface{200}).Run(c)
+
+	if err != nil {
+		t.Error(err)
+	}
+
+	var val2 ourTypeWithResolveInterface
+	res, err = Bucket("sibs", "tests").GetJSON(key, &val2).Run(c)
+
+	if err != nil {
+		t.Error(err)
+	}
+
+	if didInterfaceResolver {
+		t.Error("Had to do interface resolver even with VClock set")
+	}
+}
