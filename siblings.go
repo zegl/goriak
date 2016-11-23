@@ -9,3 +9,7 @@ type ConflictObject struct {
 	VClock       []byte
 	LastModified time.Time
 }
+
+type ConflictResolver interface {
+	ConflictResolver([]ConflictObject) ConflictObject
+}

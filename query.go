@@ -3,7 +3,6 @@ package goriak
 import (
 	"encoding/json"
 	"errors"
-
 	riak "github.com/basho/riak-go-client"
 )
 
@@ -260,8 +259,15 @@ func (c Command) fetchValueWithResolver(session *Session, values []*riak.Object)
 	// Conflict resolution neccesary
 	if len(values) > 1 {
 
+		// No explicit resolver func
 		if c.conflictResolverFunc == nil {
-			return []byte{}, []byte{}, errors.New("Had conflict, but no conflict resolver")
+
+			// Use conflict resolver func from interface
+			if resolver, ok := c.output.(ConflictResolver); ok {
+				c.conflictResolverFunc = resolver.ConflictResolver
+			} else {
+				return []byte{}, []byte{}, errors.New("Had conflict, but no conflict resolver")
+			}
 		}
 
 		objs := make([]ConflictObject, len(values))
@@ -275,6 +281,10 @@ func (c Command) fetchValueWithResolver(session *Session, values []*riak.Object)
 		}
 
 		useObj := c.conflictResolverFunc(objs)
+
+		if len(useObj.VClock) == 0 {
+			return []byte{}, []byte{}, errors.New("Invalid value from conflict resolver")
+		}
 
 		// Save resolution
 		Bucket(c.bucket, c.bucketType).
