@@ -350,7 +350,7 @@ func (e *mapEncoder) encodeMap(op *riak.MapOperation, itemKey string, f reflect.
 		case reflect.Int64:
 			keyString = strconv.FormatInt(int64(key.Int()), 10)
 		default:
-			return errors.New("Unknown map key type")
+			return errors.New("Unknown map key type: " + keyType.String())
 		}
 
 		err := e.encodeValue(subOp, keyString, f.MapIndex(key), path)
