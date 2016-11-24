@@ -850,3 +850,40 @@ func TestAutoMapMapArray(t *testing.T) {
 		t.Log(resVal)
 	}
 }
+
+func TestAutoMapMapArray2(t *testing.T) {
+	type ourTestType struct {
+		Things map[int64][32]byte
+	}
+
+	val := ourTestType{
+		Things: map[int64][32]byte{
+			500: [32]byte{1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5, 6, 6, 6, 6},
+			600: [32]byte{2, 2, 2, 2},
+		},
+	}
+
+	c := con()
+
+	res, err := bucket().Set(val).Run(c)
+
+	if err != nil {
+		t.Error(err)
+	}
+
+	var resVal ourTestType
+	_, err = bucket().Get(res.Key, &resVal).Run(c)
+
+	if err != nil {
+		t.Error(err)
+	}
+
+	t.Log(val)
+	t.Log(resVal)
+
+	if !reflect.DeepEqual(val, resVal) {
+		t.Error("Did not get same value back")
+		t.Log(val)
+		t.Log(resVal)
+	}
+}

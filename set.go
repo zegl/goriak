@@ -176,6 +176,7 @@ func (s *Set) Exec(client *Session) error {
 		WithKey(s.key.key).
 		WithMapOperation(outerOp).
 		WithContext(s.context).
+		WithReturnBody(true).
 		Build()
 
 	if err != nil {
@@ -197,6 +198,16 @@ func (s *Set) Exec(client *Session) error {
 	if !res.Success() {
 		return errors.New("Not successful")
 	}
+
+	// Update internal status
+	resMap := res.Response.Map
+
+	for _, subMapName := range s.path {
+		resMap = resMap.Maps[subMapName]
+	}
+
+	s.value = resMap.Sets[s.name]
+	s.context = res.Response.Context
 
 	return nil
 }
