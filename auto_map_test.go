@@ -878,9 +878,6 @@ func TestAutoMapMapArray2(t *testing.T) {
 		t.Error(err)
 	}
 
-	t.Log(val)
-	t.Log(resVal)
-
 	if !reflect.DeepEqual(val, resVal) {
 		t.Error("Did not get same value back")
 		t.Log(val)
