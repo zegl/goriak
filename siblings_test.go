@@ -2,6 +2,7 @@ package goriak
 
 import (
 	"encoding/json"
+	"log"
 	"testing"
 )
 
@@ -185,4 +186,60 @@ func TestPreventConflicts(t *testing.T) {
 	if didInterfaceResolver {
 		t.Error("Had to do interface resolver even with VClock set")
 	}
+}
+
+func ExampleConflictResolver() {
+
+	// For this to work you need to activate allow_mult on your bucket type
+	// http://docs.basho.com/riak/kv/2.2.0/developing/usage/conflict-resolution/
+
+	session, _ := Connect(ConnectOpts{
+		Address: "127.0.0.1",
+	})
+
+	key := "object-1"
+
+	// Save the same object without using .VClock() causing a conflict
+	_, err := Bucket("bucket", "tests").Key(key).SetJSON("hello").Run(session)
+
+	if err != nil {
+		log.Println(err)
+	}
+
+	_, err = Bucket("bucket", "tests").Key(key).SetJSON("worlds of conflicts!").Run(session)
+
+	if err != nil {
+		log.Println(err)
+	}
+
+	// Our conflict resolver object
+	resolver := func(objs []ConflictObject) ResolvedConflict {
+		// Decide how to pick the result. We'll use len() to pick the longest value
+		var maxObject ConflictObject
+		var maxValue int
+
+		for _, o := range objs {
+			if len(o.Value) > maxValue {
+				maxObject = o
+				maxValue = len(o.Value)
+			}
+		}
+
+		// Convert directly to a ResolvedConflict object
+		return maxObject.GetResolved()
+	}
+
+	// Get your object
+	var res string
+	_, err = Bucket("bucket", "tests").
+		ConflictResolver(resolver).
+		GetJSON(key, &res).
+		Run(session)
+
+	if err != nil {
+		log.Println(err)
+	}
+
+	// res will now contain the longest value
+	log.Println(res)
 }

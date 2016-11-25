@@ -266,7 +266,7 @@ func (c Command) fetchValueWithResolver(session *Session, values []*riak.Object)
 			if resolver, ok := c.output.(ConflictResolver); ok {
 				c.conflictResolverFunc = resolver.ConflictResolver
 			} else {
-				return []byte{}, []byte{}, errors.New("Had conflict, but no conflict resolver")
+				return []byte{}, []byte{}, errors.New("goriak: Had conflict, but no conflict resolver")
 			}
 		}
 
@@ -283,7 +283,7 @@ func (c Command) fetchValueWithResolver(session *Session, values []*riak.Object)
 		useObj := c.conflictResolverFunc(objs)
 
 		if len(useObj.VClock) == 0 {
-			return []byte{}, []byte{}, errors.New("Invalid value from conflict resolver")
+			return []byte{}, []byte{}, errors.New("goriak: Invalid value from conflict resolver")
 		}
 
 		// Save resolution
