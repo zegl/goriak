@@ -42,7 +42,7 @@ type Command struct {
 	// VClock is used in conflict resolution
 	// http://docs.basho.com/riak/kv/2.1.4/developing/usage/conflict-resolution/
 	vclock               []byte
-	conflictResolverFunc func([]ConflictObject) ConflictObject
+	conflictResolverFunc func([]ConflictObject) ResolvedConflict
 
 	// Indexes used by SetJSON() and SetRaw()
 	indexes map[string][]string
@@ -101,7 +101,7 @@ func (c Command) VClock(vclock []byte) Command {
 	return c
 }
 
-func (c Command) ConflictResolver(fn func([]ConflictObject) ConflictObject) Command {
+func (c Command) ConflictResolver(fn func([]ConflictObject) ResolvedConflict) Command {
 	c.conflictResolverFunc = fn
 	return c
 }

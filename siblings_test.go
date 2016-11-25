@@ -27,8 +27,7 @@ func TestSiblings(t *testing.T) {
 
 	didConflictResolution := false
 
-	resolver := func(objects []ConflictObject) ConflictObject {
-		//t.Logf("In conflict resolution: %+v", objects)
+	resolver := func(objects []ConflictObject) ResolvedConflict {
 
 		if len(objects) != 2 {
 			t.Errorf("Did not receive 2 objects to conflict resolution. Got %d", len(objects))
@@ -37,11 +36,11 @@ func TestSiblings(t *testing.T) {
 		for _, obj := range objects {
 			if string(obj.Value) == `"bob"` {
 				didConflictResolution = true
-				return obj
+				return obj.GetResolved()
 			}
 		}
 
-		return objects[0]
+		return objects[0].GetResolved()
 	}
 
 	var out string
@@ -74,7 +73,7 @@ type ourTypeWithResolveInterface struct {
 	Score int
 }
 
-func (o ourTypeWithResolveInterface) ConflictResolver(objs []ConflictObject) ConflictObject {
+func (o ourTypeWithResolveInterface) ConflictResolver(objs []ConflictObject) ResolvedConflict {
 	var highObj ConflictObject
 	var highScore int
 
@@ -94,7 +93,7 @@ func (o ourTypeWithResolveInterface) ConflictResolver(objs []ConflictObject) Con
 		}
 	}
 
-	return highObj
+	return highObj.GetResolved()
 }
 
 var didInterfaceResolver bool
