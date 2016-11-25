@@ -418,3 +418,129 @@ func TestSetUnitializedOtherOrder(t *testing.T) {
 		t.Error("Unexpected error:", err.Error())
 	}
 }
+
+func TestSetAddRemove2(t *testing.T) {
+	type testType struct {
+		Foos *Set
+
+		Sub struct {
+			Boos *Set
+		}
+	}
+
+	val := testType{}
+	res, err := bucket().Set(&val).Run(con())
+
+	if err != nil {
+		t.Error(err)
+	}
+
+	val2 := testType{}
+	_, err = bucket().Get(res.Key, &val2).Run(con())
+
+	if err != nil {
+		t.Error(err)
+	}
+
+	c := con()
+	val2.Foos.AddString("a").Exec(c)
+	val2.Foos.AddString("b").Exec(c)
+	val2.Foos.AddString("c").Exec(c)
+	val2.Foos.RemoveString("b").Exec(c)
+
+	if len(val2.Foos.Strings()) != 2 {
+		t.Error("Unexpected length")
+	}
+
+	val3 := testType{}
+	_, err = bucket().Get(res.Key, &val3).Run(con())
+
+	if err != nil {
+		t.Error(err)
+	}
+
+	if len(val2.Foos.Strings()) != 2 {
+		t.Error("Unexpected length")
+	}
+
+	hasA := false
+	hasB := false
+	hasC := false
+
+	for _, v := range val2.Foos.Strings() {
+		if v == "a" {
+			hasA = true
+		}
+
+		if v == "b" {
+			hasB = true
+		}
+
+		if v == "c" {
+			hasC = true
+		}
+	}
+
+	if !hasA {
+		t.Error("Did not find A in Foos")
+	}
+
+	if hasB {
+		t.Error("Did find B in Foos")
+	}
+
+	if !hasC {
+		t.Error("Did not find C in Foos")
+	}
+
+	// Same test but on Boos
+	val2.Sub.Boos.AddString("aaa").Exec(c)
+	val2.Sub.Boos.AddString("bbb").Exec(c)
+	val2.Sub.Boos.AddString("ccc").Exec(c)
+	val2.Sub.Boos.RemoveString("bbb").Exec(c)
+
+	if len(val2.Sub.Boos.Strings()) != 2 {
+		t.Error("Unexpected length")
+	}
+
+	val4 := testType{}
+	_, err = bucket().Get(res.Key, &val4).Run(con())
+
+	if err != nil {
+		t.Error(err)
+	}
+
+	if len(val2.Sub.Boos.Strings()) != 2 {
+		t.Error("Unexpected length")
+	}
+
+	hasA = false
+	hasB = false
+	hasC = false
+
+	for _, v := range val2.Sub.Boos.Strings() {
+		if v == "aaa" {
+			hasA = true
+		}
+
+		if v == "bbb" {
+			hasB = true
+		}
+
+		if v == "ccc" {
+			hasC = true
+		}
+	}
+
+	if !hasA {
+		t.Error("Did not find A in Boos")
+	}
+
+	if hasB {
+		t.Error("Did find B in Boos")
+	}
+
+	if !hasC {
+		t.Error("Did not find C in Boos")
+	}
+}
