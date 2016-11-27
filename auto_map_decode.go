@@ -166,6 +166,21 @@ func mapToStruct(data *riak.Map, rValue reflect.Value, rType reflect.Type, riakC
 
 				f.Set(reflect.ValueOf(resFlag))
 
+			case "*goriak.Register":
+
+				var registerValue []byte
+
+				if val, ok := data.Registers[registerName]; ok {
+					registerValue = val
+				}
+
+				resRegister := &Register{
+					helper: helperPathData,
+					val:    registerValue,
+				}
+
+				f.Set(reflect.ValueOf(resRegister))
+
 			default:
 				return errors.New("Unexpected ptr type: " + f.Type().String())
 			}
