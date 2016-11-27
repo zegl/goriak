@@ -213,6 +213,39 @@ func (e *mapEncoder) encodeValue(op *riak.MapOperation, itemKey string, f reflec
 			return nil
 		}
 
+		// Flag
+		if ptrType == "*goriak.Flag" {
+
+			// Add an empty flag
+			if f.IsNil() {
+
+				// Initialize flag if Flag() was given a struct pointer
+				if e.isModifyable {
+					resFlag := &Flag{
+						helper: helper{
+							name: itemKey,
+							path: path,
+							key:  e.riakRequest,
+						},
+
+						// Initialize to false
+						val: false,
+					}
+
+					f.Set(reflect.ValueOf(resFlag))
+				}
+
+				return nil
+			}
+
+			// Save flag
+			if f, ok := f.Interface().(*Flag); ok {
+				op.SetFlag(itemKey, f.Value())
+			}
+
+			return nil
+		}
+
 		return errors.New("Unexpected ptr type: " + f.Type().String())
 
 	default:
