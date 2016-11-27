@@ -102,3 +102,28 @@ func TestNestedHelperTypes(t *testing.T) {
 	assert.Equal(t, val.A.B.Set.Value(), val2.A.B.Set.Value())
 	assert.Equal(t, val.A.B.Counter.Value(), val2.A.B.Counter.Value())
 }
+
+func TestHelperTypeOnNil(t *testing.T) {
+	type ourTestType struct {
+		Register *Register
+		Flag     *Flag
+		Set      *Set
+		Counter  *Counter
+	}
+
+	c := con()
+
+	var val ourTestType
+
+	err := val.Register.Exec(c)
+	assert.EqualError(t, err, "Nil Register")
+
+	err = val.Flag.Exec(c)
+	assert.EqualError(t, err, "Nil Flag")
+
+	err = val.Set.Exec(c)
+	assert.EqualError(t, err, "Nil Set")
+
+	err = val.Counter.Exec(c)
+	assert.EqualError(t, err, "Nil Counter")
+}
