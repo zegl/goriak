@@ -19,9 +19,7 @@ func NewCounter() *Counter {
 // Counter is a wapper to handle Riak Counters
 // Counter needs to be initialized by GetMap() to fully function
 type Counter struct {
-	path []string    // Path to the counter (can be a map in a map in a map, etc..)
-	name string      // Name of the counter
-	key  requestData // bucket information
+	helper
 
 	val        int64
 	increaseBy int64

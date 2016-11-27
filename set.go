@@ -7,6 +7,13 @@ import (
 	riak "github.com/basho/riak-go-client"
 )
 
+type helper struct {
+	path    []string    // Path to the counter (can be a map in a map in a map, etc..)
+	name    string      // Name of the counter
+	key     requestData // bucket information
+	context []byte      // riak context
+}
+
 // NewSet returnes a new and empty Set.
 // Sets returned from NewSet() can not be used with Set.Exec()
 func NewSet() *Set {
@@ -15,10 +22,7 @@ func NewSet() *Set {
 
 // Set is a special type to make it easier to work with Riak Sets in Go.
 type Set struct {
-	path    []string    // Path to the counter (can be a map in a map in a map, etc..)
-	name    string      // Name of the counter
-	key     requestData // bucket information
-	context []byte      // riak context
+	helper
 
 	value   [][]byte // The full content
 	adds    [][]byte // Not-yet performed Add actions (performed locally but not to Riak)

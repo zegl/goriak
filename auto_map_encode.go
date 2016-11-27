@@ -154,10 +154,14 @@ func (e *mapEncoder) encodeValue(op *riak.MapOperation, itemKey string, f reflec
 				// Initialize counter if Set() was given a struct pointer
 				if e.isModifyable {
 					resCounter := &Counter{
-						name: itemKey,
-						path: path,
-						key:  e.riakRequest,
-						val:  0,
+						helper: helper{
+							name: itemKey,
+							path: path,
+							key:  e.riakRequest,
+							//context: riakContext,
+						},
+
+						val: 0,
 					}
 
 					f.Set(reflect.ValueOf(resCounter))
@@ -182,9 +186,12 @@ func (e *mapEncoder) encodeValue(op *riak.MapOperation, itemKey string, f reflec
 				// Initialize counter if Set() was given a struct pointer
 				if e.isModifyable {
 					resSet := &Set{
-						name: itemKey,
-						path: path,
-						key:  e.riakRequest,
+						helper: helper{
+							name: itemKey,
+							path: path,
+							key:  e.riakRequest,
+							//context: riakContext,
+						},
 					}
 
 					f.Set(reflect.ValueOf(resSet))

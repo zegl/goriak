@@ -123,9 +123,12 @@ func mapToStruct(data *riak.Map, rValue reflect.Value, rType reflect.Type, riakC
 				}
 
 				resCounter := &Counter{
-					name: registerName,
-					path: path,
-					key:  riakRequest,
+					helper: helper{
+						name:    registerName,
+						path:    path,
+						key:     riakRequest,
+						context: riakContext,
+					},
 
 					val: counterValue,
 				}
@@ -141,10 +144,13 @@ func mapToStruct(data *riak.Map, rValue reflect.Value, rType reflect.Type, riakC
 				}
 
 				resSet := &Set{
-					name:    registerName,
-					path:    path,
-					key:     riakRequest,
-					context: riakContext,
+
+					helper: helper{
+						name:    registerName,
+						path:    path,
+						key:     riakRequest,
+						context: riakContext,
+					},
 
 					value: setValue,
 				}
