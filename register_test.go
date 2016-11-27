@@ -29,7 +29,7 @@ func TestRegisterMap(t *testing.T) {
 	assert.Empty(t, val.Name.String())
 
 	// Update Register
-	err = val.Name.SetString("foo").Exec(c)
+	err = val.Name.Set([]byte("foo")).Exec(c)
 	assert.Nil(t, err)
 	assert.Equal(t, val.Name.String(), "foo")
 
@@ -49,4 +49,56 @@ func TestRegisterMap(t *testing.T) {
 	_, err = bucket().Get(key, &val3).Run(c)
 	assert.Nil(t, err)
 	assert.Equal(t, val3.Name.String(), "bar")
+}
+
+func TestNestedHelperTypes(t *testing.T) {
+	type ourTestType struct {
+		A struct {
+			B struct {
+				Register *Register
+				Flag     *Flag
+				Set      *Set
+				Counter  *Counter
+			}
+		}
+	}
+
+	var val ourTestType
+	key := randomKey()
+	c := con()
+
+	_, err := bucket().Key(key).Set(&val).Run(c)
+	assert.Nil(t, err)
+
+	// Register
+	err = val.A.B.Register.SetString("foobar").Exec(c)
+	assert.Nil(t, err)
+	assert.Equal(t, val.A.B.Register.String(), "foobar")
+
+	// Flag
+	err = val.A.B.Flag.Set(true).Exec(c)
+	assert.Nil(t, err)
+	assert.Equal(t, val.A.B.Flag.Value(), true)
+
+	// Set
+	err = val.A.B.Set.AddString("foo").AddString("bar").Exec(c)
+	assert.Nil(t, err)
+	assert.Equal(t, val.A.B.Set.HasString("foo"), true)
+	assert.Equal(t, val.A.B.Set.HasString("bar"), true)
+	assert.Equal(t, val.A.B.Set.HasString("baz"), false)
+
+	// Counter
+	err = val.A.B.Counter.Increase(3).Exec(c)
+	assert.Nil(t, err)
+	assert.Equal(t, val.A.B.Counter.Value(), int64(3))
+
+	// Get it again
+	var val2 ourTestType
+	_, err = bucket().Get(key, &val2).Run(c)
+	assert.Nil(t, err)
+
+	assert.Equal(t, val.A.B.Register.Value(), val2.A.B.Register.Value())
+	assert.Equal(t, val.A.B.Flag.Value(), val2.A.B.Flag.Value())
+	assert.Equal(t, val.A.B.Set.Value(), val2.A.B.Set.Value())
+	assert.Equal(t, val.A.B.Counter.Value(), val2.A.B.Counter.Value())
 }
