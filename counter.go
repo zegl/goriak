@@ -54,7 +54,7 @@ func (c *Counter) Exec(client *Session) error {
 	}
 
 	if c.name == "" {
-		return errors.New("Unknown path to counter. Retrieve counter with GetMap before updating the counter")
+		return errors.New("Unknown path to Counter. Retrieve Counter with Get or Set before updating the Counter")
 	}
 
 	// Validate c.key

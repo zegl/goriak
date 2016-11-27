@@ -127,3 +127,33 @@ func TestHelperTypeOnNil(t *testing.T) {
 	err = val.Counter.Exec(c)
 	assert.EqualError(t, err, "Nil Counter")
 }
+
+func TestHelperTypeUnknownPath(t *testing.T) {
+	type ourTestType struct {
+		Register *Register
+		Flag     *Flag
+		Set      *Set
+		Counter  *Counter
+	}
+
+	c := con()
+
+	val := ourTestType{
+		Register: NewRegister(),
+		Flag:     NewFlag(),
+		Set:      NewSet(),
+		Counter:  NewCounter(),
+	}
+
+	err := val.Register.Exec(c)
+	assert.EqualError(t, err, "Unknown path to Register. Retrieve Register with Get or Set before updating the Register")
+
+	err = val.Flag.Exec(c)
+	assert.EqualError(t, err, "Unknown path to Flag. Retrieve Flag with Get or Set before updating the Flag")
+
+	err = val.Set.Exec(c)
+	assert.EqualError(t, err, "Unknown path to Set. Retrieve Set with Get or Set before updating the Set")
+
+	err = val.Counter.Exec(c)
+	assert.EqualError(t, err, "Unknown path to Counter. Retrieve Counter with Get or Set before updating the Counter")
+}
