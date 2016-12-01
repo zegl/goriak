@@ -30,6 +30,11 @@ func (c Command) buildStoreValueCommand() Command {
 		c.storeValueCommandBuilder.WithW(c.riakW)
 	}
 
+	// Set VClock
+	if len(c.vclock) > 0 {
+		c.storeValueCommandBuilder.WithVClock(c.vclock)
+	}
+
 	// Set object
 	c.storeValueCommandBuilder.WithContent(c.storeValueObject)
 
