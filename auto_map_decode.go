@@ -114,6 +114,7 @@ func mapToStruct(data *riak.Map, rValue reflect.Value, rType reflect.Type, riakC
 						return err
 					}
 
+					f.Set(reflect.ValueOf(ts))
 					done = true
 				}
 			}
