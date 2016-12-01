@@ -134,6 +134,13 @@ func mapToStruct(data *riak.Map, rValue reflect.Value, rType reflect.Type, riakC
 
 			f := rValue.Field(i)
 
+			helperPathData := helper{
+				name:    registerName,
+				path:    path,
+				key:     riakRequest,
+				context: riakContext,
+			}
+
 			switch f.Type().String() {
 			case "*goriak.Counter":
 				var counterValue int64
@@ -143,11 +150,8 @@ func mapToStruct(data *riak.Map, rValue reflect.Value, rType reflect.Type, riakC
 				}
 
 				resCounter := &Counter{
-					name: registerName,
-					path: path,
-					key:  riakRequest,
-
-					val: counterValue,
+					helper: helperPathData,
+					val:    counterValue,
 				}
 
 				f.Set(reflect.ValueOf(resCounter))
@@ -161,15 +165,41 @@ func mapToStruct(data *riak.Map, rValue reflect.Value, rType reflect.Type, riakC
 				}
 
 				resSet := &Set{
-					name:    registerName,
-					path:    path,
-					key:     riakRequest,
-					context: riakContext,
-
-					value: setValue,
+					helper: helperPathData,
+					value:  setValue,
 				}
 
 				f.Set(reflect.ValueOf(resSet))
+
+			case "*goriak.Flag":
+
+				var flagValue bool
+
+				if val, ok := data.Flags[registerName]; ok {
+					flagValue = val
+				}
+
+				resFlag := &Flag{
+					helper: helperPathData,
+					val:    flagValue,
+				}
+
+				f.Set(reflect.ValueOf(resFlag))
+
+			case "*goriak.Register":
+
+				var registerValue []byte
+
+				if val, ok := data.Registers[registerName]; ok {
+					registerValue = val
+				}
+
+				resRegister := &Register{
+					helper: helperPathData,
+					val:    registerValue,
+				}
+
+				f.Set(reflect.ValueOf(resRegister))
 
 			default:
 				return errors.New("Unexpected ptr type: " + f.Type().String())
