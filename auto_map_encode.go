@@ -4,6 +4,7 @@ import (
 	"errors"
 	"reflect"
 	"strconv"
+	"time"
 
 	riak "github.com/basho/riak-go-client"
 )
@@ -131,15 +132,33 @@ func (e *mapEncoder) encodeValue(op *riak.MapOperation, itemKey string, f reflec
 		}
 
 	case reflect.Struct:
-		subOp := op.Map(itemKey)
 
-		subPath := path
-		subPath = append(subPath, itemKey)
+		done := false
 
-		_, err := e.encodeStruct(f, subOp, subPath)
+		if ts, ok := f.Interface().(time.Time); ok {
+			bin, err := ts.MarshalBinary()
 
-		if err != nil {
-			return err
+			if err != nil {
+				return err
+			}
+
+			op.SetRegister(itemKey, bin)
+			done = true
+		}
+
+		_ = time.Time{}
+
+		if !done {
+			subOp := op.Map(itemKey)
+
+			subPath := path
+			subPath = append(subPath, itemKey)
+
+			_, err := e.encodeStruct(f, subOp, subPath)
+
+			if err != nil {
+				return err
+			}
 		}
 
 	case reflect.Ptr:

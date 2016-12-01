@@ -4,6 +4,7 @@ import (
 	"errors"
 	"reflect"
 	"strconv"
+	"time"
 
 	riak "github.com/basho/riak-go-client"
 )
@@ -98,15 +99,37 @@ func mapToStruct(data *riak.Map, rValue reflect.Value, rType reflect.Type, riakC
 			}
 
 		case reflect.Struct:
-			if subMap, ok := data.Maps[registerName]; ok {
-				f := rValue.Field(i)
 
-				newPath := append(path, registerName)
+			done := false
 
-				err := mapToStruct(subMap, f, f.Type(), riakContext, newPath, riakRequest)
+			f := rValue.Field(i)
 
-				if err != nil {
-					return err
+			// time.Time
+			if bin, ok := data.Registers[registerName]; ok {
+				if ts, ok := f.Interface().(time.Time); ok {
+					err := ts.UnmarshalBinary(bin)
+
+					if err != nil {
+						return err
+					}
+
+					done = true
+				}
+			}
+
+			_ = time.Time{}
+
+			if !done {
+
+				if subMap, ok := data.Maps[registerName]; ok {
+					// Struct
+					newPath := append(path, registerName)
+
+					err := mapToStruct(subMap, f, f.Type(), riakContext, newPath, riakRequest)
+
+					if err != nil {
+						return err
+					}
 				}
 			}
 
