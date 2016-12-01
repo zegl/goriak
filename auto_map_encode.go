@@ -7,6 +7,7 @@ import (
 	"time"
 
 	riak "github.com/basho/riak-go-client"
+	"time"
 )
 
 type mapEncoder struct {
@@ -81,7 +82,23 @@ func (e *mapEncoder) encodeStruct(rValue reflect.Value, op *riak.MapOperation, p
 }
 
 func (e *mapEncoder) encodeValue(op *riak.MapOperation, itemKey string, f reflect.Value, path []string) error {
+
+	timeKind := reflect.ValueOf(time.Time{}).Kind()
+
 	switch f.Kind() {
+
+	// time.Time
+	case timeKind:
+
+		if ts, ok := f.Interface().(time.Time); ok {
+			bin, err := ts.MarshalBinary()
+
+			if err != nil {
+				return err
+			}
+
+			op.SetRegister(itemKey, bin)
+		}
 
 	// Ints are saved as Registers
 	case reflect.Int:
@@ -173,10 +190,14 @@ func (e *mapEncoder) encodeValue(op *riak.MapOperation, itemKey string, f reflec
 				// Initialize counter if Set() was given a struct pointer
 				if e.isModifyable {
 					resCounter := &Counter{
-						name: itemKey,
-						path: path,
-						key:  e.riakRequest,
-						val:  0,
+						helper: helper{
+							name: itemKey,
+							path: path,
+							key:  e.riakRequest,
+							//context: riakContext,
+						},
+
+						val: 0,
 					}
 
 					f.Set(reflect.ValueOf(resCounter))
@@ -201,9 +222,12 @@ func (e *mapEncoder) encodeValue(op *riak.MapOperation, itemKey string, f reflec
 				// Initialize counter if Set() was given a struct pointer
 				if e.isModifyable {
 					resSet := &Set{
-						name: itemKey,
-						path: path,
-						key:  e.riakRequest,
+						helper: helper{
+							name: itemKey,
+							path: path,
+							key:  e.riakRequest,
+							//context: riakContext,
+						},
 					}
 
 					f.Set(reflect.ValueOf(resSet))
@@ -220,6 +244,69 @@ func (e *mapEncoder) encodeValue(op *riak.MapOperation, itemKey string, f reflec
 				for _, remove := range s.removes {
 					op.RemoveFromSet(itemKey, remove)
 				}
+			}
+
+			return nil
+		}
+
+		// Flag
+		if ptrType == "*goriak.Flag" {
+
+			// Add an empty flag
+			if f.IsNil() {
+
+				// Initialize flag if Flag() was given a struct pointer
+				if e.isModifyable {
+					resFlag := &Flag{
+						helper: helper{
+							name: itemKey,
+							path: path,
+							key:  e.riakRequest,
+						},
+
+						// Initialize to false
+						val: false,
+					}
+
+					f.Set(reflect.ValueOf(resFlag))
+				}
+
+				return nil
+			}
+
+			// Save flag
+			if f, ok := f.Interface().(*Flag); ok {
+				op.SetFlag(itemKey, f.Value())
+			}
+
+			return nil
+		}
+
+		// Register
+		if ptrType == "*goriak.Register" {
+
+			// Add an empty flag
+			if f.IsNil() {
+
+				// Initialize flag if Flag() was given a struct pointer
+				if e.isModifyable {
+					resRegister := &Register{
+						helper: helper{
+							name: itemKey,
+							path: path,
+							key:  e.riakRequest,
+						},
+					}
+
+					f.Set(reflect.ValueOf(resRegister))
+				}
+
+				return nil
+			}
+
+			// Save flag
+			if f, ok := f.Interface().(*Register); ok {
+				op.SetRegister(itemKey, f.Value())
 			}
 
 			return nil
