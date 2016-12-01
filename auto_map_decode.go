@@ -24,9 +24,6 @@ func mapToStruct(data *riak.Map, rValue reflect.Value, rType reflect.Type, riakC
 
 	num := rType.NumField()
 
-	// Save for later (used when handling time.Time)
-	timeKind := reflect.ValueOf(time.Time{}).Kind()
-
 	for i := 0; i < num; i++ {
 
 		field := rType.Field(i)
@@ -102,21 +99,6 @@ func mapToStruct(data *riak.Map, rValue reflect.Value, rType reflect.Type, riakC
 				}
 			}
 
-		// time.Time
-		case timeKind:
-			if bin, ok := data.Registers[registerName]; ok {
-
-				// Convert to time.Time
-				ts := time.Time{}
-				err := ts.UnmarshalBinary(bin)
-
-				if err != nil {
-					return err
-				}
-
-				rValue.Field(i).Set(reflect.ValueOf(ts))
-			}
-
 		case reflect.Struct:
 
 			done := false
@@ -135,8 +117,6 @@ func mapToStruct(data *riak.Map, rValue reflect.Value, rType reflect.Type, riakC
 					done = true
 				}
 			}
-
-			_ = time.Time{}
 
 			if !done {
 

@@ -7,7 +7,6 @@ import (
 	"time"
 
 	riak "github.com/basho/riak-go-client"
-	"time"
 )
 
 type mapEncoder struct {
@@ -82,23 +81,7 @@ func (e *mapEncoder) encodeStruct(rValue reflect.Value, op *riak.MapOperation, p
 }
 
 func (e *mapEncoder) encodeValue(op *riak.MapOperation, itemKey string, f reflect.Value, path []string) error {
-
-	timeKind := reflect.ValueOf(time.Time{}).Kind()
-
 	switch f.Kind() {
-
-	// time.Time
-	case timeKind:
-
-		if ts, ok := f.Interface().(time.Time); ok {
-			bin, err := ts.MarshalBinary()
-
-			if err != nil {
-				return err
-			}
-
-			op.SetRegister(itemKey, bin)
-		}
 
 	// Ints are saved as Registers
 	case reflect.Int:
