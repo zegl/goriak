@@ -47,6 +47,7 @@ Set automatically converts your Go datatype to the equivalent type in Riak
 	| []slice    | set       |
 	| [][]byte   | set       |
 	| map        | map       |
+	| time.Time  | register  |
 */
 func (c Command) Set(val interface{}) Command {
 

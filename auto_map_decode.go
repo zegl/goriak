@@ -4,6 +4,7 @@ import (
 	"errors"
 	"reflect"
 	"strconv"
+	"time"
 
 	riak "github.com/basho/riak-go-client"
 )
@@ -20,7 +21,11 @@ func decodeInterface(data *riak.FetchMapResponse, output interface{}, riakReques
 }
 
 func mapToStruct(data *riak.Map, rValue reflect.Value, rType reflect.Type, riakContext []byte, path []string, riakRequest requestData) error {
+
 	num := rType.NumField()
+
+	// Save for later (used when handling time.Time)
+	timeKind := reflect.ValueOf(time.Time{}).Kind()
 
 	for i := 0; i < num; i++ {
 
@@ -95,6 +100,21 @@ func mapToStruct(data *riak.Map, rValue reflect.Value, rType reflect.Type, riakC
 				if err != nil {
 					return err
 				}
+			}
+
+		// time.Time
+		case timeKind:
+			if bin, ok := data.Registers[registerName]; ok {
+
+				// Convert to time.Time
+				ts := time.Time{}
+				err := ts.UnmarshalBinary(bin)
+
+				if err != nil {
+					return err
+				}
+
+				rValue.Field(i).Set(reflect.ValueOf(ts))
 			}
 
 		case reflect.Struct:
