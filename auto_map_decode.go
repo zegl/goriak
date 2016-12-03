@@ -4,6 +4,7 @@ import (
 	"errors"
 	"reflect"
 	"strconv"
+	"time"
 
 	riak "github.com/basho/riak-go-client"
 )
@@ -20,6 +21,7 @@ func decodeInterface(data *riak.FetchMapResponse, output interface{}, riakReques
 }
 
 func mapToStruct(data *riak.Map, rValue reflect.Value, rType reflect.Type, riakContext []byte, path []string, riakRequest requestData) error {
+
 	num := rType.NumField()
 
 	for i := 0; i < num; i++ {
@@ -98,21 +100,49 @@ func mapToStruct(data *riak.Map, rValue reflect.Value, rType reflect.Type, riakC
 			}
 
 		case reflect.Struct:
-			if subMap, ok := data.Maps[registerName]; ok {
-				f := rValue.Field(i)
 
-				newPath := append(path, registerName)
+			done := false
 
-				err := mapToStruct(subMap, f, f.Type(), riakContext, newPath, riakRequest)
+			f := rValue.Field(i)
 
-				if err != nil {
-					return err
+			// time.Time
+			if bin, ok := data.Registers[registerName]; ok {
+				if ts, ok := f.Interface().(time.Time); ok {
+					err := ts.UnmarshalBinary(bin)
+
+					if err != nil {
+						return err
+					}
+
+					f.Set(reflect.ValueOf(ts))
+					done = true
+				}
+			}
+
+			if !done {
+
+				if subMap, ok := data.Maps[registerName]; ok {
+					// Struct
+					newPath := append(path, registerName)
+
+					err := mapToStruct(subMap, f, f.Type(), riakContext, newPath, riakRequest)
+
+					if err != nil {
+						return err
+					}
 				}
 			}
 
 		case reflect.Ptr:
 
 			f := rValue.Field(i)
+
+			helperPathData := helper{
+				name:    registerName,
+				path:    path,
+				key:     riakRequest,
+				context: riakContext,
+			}
 
 			switch f.Type().String() {
 			case "*goriak.Counter":
@@ -123,14 +153,8 @@ func mapToStruct(data *riak.Map, rValue reflect.Value, rType reflect.Type, riakC
 				}
 
 				resCounter := &Counter{
-					helper: helper{
-						name:    registerName,
-						path:    path,
-						key:     riakRequest,
-						context: riakContext,
-					},
-
-					val: counterValue,
+					helper: helperPathData,
+					val:    counterValue,
 				}
 
 				f.Set(reflect.ValueOf(resCounter))
@@ -144,18 +168,41 @@ func mapToStruct(data *riak.Map, rValue reflect.Value, rType reflect.Type, riakC
 				}
 
 				resSet := &Set{
-
-					helper: helper{
-						name:    registerName,
-						path:    path,
-						key:     riakRequest,
-						context: riakContext,
-					},
-
-					value: setValue,
+					helper: helperPathData,
+					value:  setValue,
 				}
 
 				f.Set(reflect.ValueOf(resSet))
+
+			case "*goriak.Flag":
+
+				var flagValue bool
+
+				if val, ok := data.Flags[registerName]; ok {
+					flagValue = val
+				}
+
+				resFlag := &Flag{
+					helper: helperPathData,
+					val:    flagValue,
+				}
+
+				f.Set(reflect.ValueOf(resFlag))
+
+			case "*goriak.Register":
+
+				var registerValue []byte
+
+				if val, ok := data.Registers[registerName]; ok {
+					registerValue = val
+				}
+
+				resRegister := &Register{
+					helper: helperPathData,
+					val:    registerValue,
+				}
+
+				f.Set(reflect.ValueOf(resRegister))
 
 			default:
 				return errors.New("Unexpected ptr type: " + f.Type().String())

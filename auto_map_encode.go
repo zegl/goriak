@@ -4,6 +4,7 @@ import (
 	"errors"
 	"reflect"
 	"strconv"
+	"time"
 
 	riak "github.com/basho/riak-go-client"
 )
@@ -131,15 +132,33 @@ func (e *mapEncoder) encodeValue(op *riak.MapOperation, itemKey string, f reflec
 		}
 
 	case reflect.Struct:
-		subOp := op.Map(itemKey)
 
-		subPath := path
-		subPath = append(subPath, itemKey)
+		done := false
 
-		_, err := e.encodeStruct(f, subOp, subPath)
+		if ts, ok := f.Interface().(time.Time); ok {
+			bin, err := ts.MarshalBinary()
 
-		if err != nil {
-			return err
+			if err != nil {
+				return err
+			}
+
+			op.SetRegister(itemKey, bin)
+			done = true
+		}
+
+		_ = time.Time{}
+
+		if !done {
+			subOp := op.Map(itemKey)
+
+			subPath := path
+			subPath = append(subPath, itemKey)
+
+			_, err := e.encodeStruct(f, subOp, subPath)
+
+			if err != nil {
+				return err
+			}
 		}
 
 	case reflect.Ptr:
@@ -208,6 +227,69 @@ func (e *mapEncoder) encodeValue(op *riak.MapOperation, itemKey string, f reflec
 				for _, remove := range s.removes {
 					op.RemoveFromSet(itemKey, remove)
 				}
+			}
+
+			return nil
+		}
+
+		// Flag
+		if ptrType == "*goriak.Flag" {
+
+			// Add an empty flag
+			if f.IsNil() {
+
+				// Initialize flag if Flag() was given a struct pointer
+				if e.isModifyable {
+					resFlag := &Flag{
+						helper: helper{
+							name: itemKey,
+							path: path,
+							key:  e.riakRequest,
+						},
+
+						// Initialize to false
+						val: false,
+					}
+
+					f.Set(reflect.ValueOf(resFlag))
+				}
+
+				return nil
+			}
+
+			// Save flag
+			if f, ok := f.Interface().(*Flag); ok {
+				op.SetFlag(itemKey, f.Value())
+			}
+
+			return nil
+		}
+
+		// Register
+		if ptrType == "*goriak.Register" {
+
+			// Add an empty flag
+			if f.IsNil() {
+
+				// Initialize flag if Flag() was given a struct pointer
+				if e.isModifyable {
+					resRegister := &Register{
+						helper: helper{
+							name: itemKey,
+							path: path,
+							key:  e.riakRequest,
+						},
+					}
+
+					f.Set(reflect.ValueOf(resRegister))
+				}
+
+				return nil
+			}
+
+			// Save flag
+			if f, ok := f.Interface().(*Register); ok {
+				op.SetRegister(itemKey, f.Value())
 			}
 
 			return nil
