@@ -1,6 +1,7 @@
 package goriak
 
 import (
+	"encoding/json"
 	"math/rand"
 	"reflect"
 	"sort"
@@ -543,4 +544,39 @@ func TestSetAddRemove2(t *testing.T) {
 	if !hasC {
 		t.Error("Did not find C in Boos")
 	}
+}
+
+func TestSetJSONmarshal(t *testing.T) {
+
+	set := NewSet()
+	set.AddString("foo")
+	set.AddString("bar")
+
+	jsonByte, err := json.Marshal(set)
+
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	var unmarshaledSet Set
+	err = json.Unmarshal(jsonByte, &unmarshaledSet)
+
+	if err != nil {
+		t.Error(err)
+		return
+	}
+
+	if !unmarshaledSet.HasString("foo") {
+		t.Error("Did not have foo")
+	}
+
+	if !unmarshaledSet.HasString("bar") {
+		t.Error("Did not have bar")
+	}
+
+	if len(unmarshaledSet.Value()) != 2 {
+		t.Error("Unexpected length")
+	}
+
 }

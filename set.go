@@ -2,6 +2,7 @@ package goriak
 
 import (
 	"bytes"
+	"encoding/json"
 	"errors"
 
 	riak "github.com/basho/riak-go-client"
@@ -213,5 +214,24 @@ func (s *Set) Exec(client *Session) error {
 	s.value = resMap.Sets[s.name]
 	s.context = res.Response.Context
 
+	return nil
+}
+
+// MarshalJSON satisfies the JSON interface
+func (s Set) MarshalJSON() ([]byte, error) {
+	return json.Marshal(s.value)
+}
+
+// UnmarshalJSON satisfies the JSON interface
+func (s *Set) UnmarshalJSON(data []byte) error {
+	var values [][]byte
+
+	err := json.Unmarshal(data, &values)
+
+	if err != nil {
+		return err
+	}
+
+	s.value = values
 	return nil
 }
