@@ -38,6 +38,11 @@ func mapToStruct(data *riak.Map, rValue reflect.Value, rType reflect.Type, riakC
 			continue
 		}
 
+		// Ignore this value
+		if tag == "-" {
+			continue
+		}
+
 		if len(tag) > 0 {
 			registerName = tag
 		}
