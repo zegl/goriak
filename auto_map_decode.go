@@ -82,6 +82,25 @@ func mapToStruct(data *riak.Map, rValue reflect.Value, rType reflect.Type, riakC
 				}
 			}
 
+		// Unsigned integers
+		case reflect.Uint:
+			fallthrough
+		case reflect.Uint8:
+			fallthrough
+		case reflect.Uint16:
+			fallthrough
+		case reflect.Uint32:
+			fallthrough
+		case reflect.Uint64:
+
+			if val, ok := data.Registers[registerName]; ok {
+				intVal, err := strconv.ParseUint(string(val), 10, 0)
+
+				if err == nil {
+					rValue.Field(i).SetUint(intVal)
+				}
+			}
+
 		case reflect.Bool:
 
 			if val, ok := data.Flags[registerName]; ok {

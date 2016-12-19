@@ -115,6 +115,18 @@ func TestAbunchOfTypes(t *testing.T) {
 		ByteSliceSlice       [][]byte
 		ByteArraySlice       [][4]byte
 		CustomByteArraySlice []customByteArray
+
+		Num   int
+		Num8  int8
+		Num16 int16
+		Num32 int32
+		Num64 int64
+
+		Unum   uint
+		Unum8  uint8
+		Unum16 uint16
+		Unum32 uint32
+		Unum64 uint64
 	}
 
 	o := aBunchOfTypes{
@@ -127,6 +139,18 @@ func TestAbunchOfTypes(t *testing.T) {
 		ByteSliceSlice:       [][]byte{{10, 11, 12}, {100, 110, 120}},
 		ByteArraySlice:       [][4]byte{{1, 2, 3, 4}, {6, 6, 6, 6}},
 		CustomByteArraySlice: []customByteArray{{1, 2, 3}, {4, 5, 6}},
+
+		Num:   -1,
+		Num8:  -8,
+		Num16: -16,
+		Num32: -32,
+		Num64: -64,
+
+		Unum:   1,
+		Unum8:  8,
+		Unum16: 16,
+		Unum32: 32,
+		Unum64: 64,
 	}
 
 	result, err := bucket().Set(o).Run(con())

@@ -95,6 +95,18 @@ func (e *mapEncoder) encodeValue(op *riak.MapOperation, itemKey string, f reflec
 	case reflect.Int64:
 		op.SetRegister(itemKey, []byte(strconv.FormatInt(f.Int(), 10)))
 
+	// Unsigned integers
+	case reflect.Uint:
+		fallthrough
+	case reflect.Uint8:
+		fallthrough
+	case reflect.Uint16:
+		fallthrough
+	case reflect.Uint32:
+		fallthrough
+	case reflect.Uint64:
+		op.SetRegister(itemKey, []byte(strconv.FormatUint(f.Uint(), 10)))
+
 	// Strings are saved as Registers
 	case reflect.String:
 		op.SetRegister(itemKey, []byte(f.String()))
