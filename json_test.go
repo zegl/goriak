@@ -318,3 +318,55 @@ func TestJSONIntIndex(t *testing.T) {
 		t.Error("Expected 4 results, got: ", foundCount)
 	}
 }
+
+func TestJSONIntSliceIndex(t *testing.T) {
+	type testType struct {
+		User string
+		Age  []int `goriakindex:"ageintslice_int"`
+	}
+
+	users := []testType{
+		{"A", []int{10}},
+		{"B", []int{10}},
+		{"C", []int{10}},
+		{"D", []int{10}},
+		{"E", []int{13}},
+		{"F", []int{13}},
+		{"G", []int{13}},
+		{"H", []int{13}},
+	}
+	for _, u := range users {
+		_, err := Bucket("json", "default").
+			SetJSON(u).
+			Run(con())
+
+		if err != nil {
+			t.Error(err)
+			return
+		}
+	}
+
+	foundCount := 0
+
+	cb := func(key SecondaryIndexQueryResult) {
+		if !key.IsComplete {
+			foundCount++
+		}
+	}
+
+	// With limit
+	Bucket("json", "default").Limit(2).KeysInIndex("ageintslice_int", "10", cb).Run(con())
+
+	if foundCount != 2 {
+		t.Error("Expected 2 results, got: ", foundCount)
+	}
+
+	foundCount = 0
+
+	// Unlimited
+	Bucket("json", "default").KeysInIndex("ageintslice_int", "10", cb).Run(con())
+
+	if foundCount != 4 {
+		t.Error("Expected 4 results, got: ", foundCount)
+	}
+}

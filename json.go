@@ -50,13 +50,31 @@ func (c Command) SetJSON(value interface{}) Command {
 				sliceType := refValue.Field(i).Type().Elem()
 				sliceValue := refValue.Field(i)
 
-				// Slice: String
-				if sliceType.Kind() == reflect.String {
+				switch sliceType.Kind() {
+
+				// []string
+				case reflect.String:
 					for sli := 0; sli < sliceValue.Len(); sli++ {
 						object.AddToIndex(indexName, sliceValue.Index(sli).String())
 					}
 
-					continue
+				// []int
+				case reflect.Int:
+					fallthrough
+				case reflect.Int8:
+					fallthrough
+				case reflect.Int16:
+					fallthrough
+				case reflect.Int32:
+					fallthrough
+				case reflect.Int64:
+					for sli := 0; sli < sliceValue.Len(); sli++ {
+						object.AddToIndex(indexName, strconv.FormatInt(sliceValue.Index(sli).Int(), 10))
+					}
+
+				default:
+					c.err = errors.New("Did not know how to set index: " + refType.Field(i).Name)
+					return c
 				}
 
 			// Int
