@@ -370,3 +370,49 @@ func TestJSONIntSliceIndex(t *testing.T) {
 		t.Error("Expected 4 results, got: ", foundCount)
 	}
 }
+
+func TestJSONUnknownSliceIndex(t *testing.T) {
+	type testType struct {
+		User string
+		Age  []byte `goriakindex:"ageintbyteslice_int"`
+	}
+
+	_, err := Bucket("json", "default").
+		SetJSON(testType{
+			User: "Yay",
+			Age:  []byte{100, 200},
+		}).
+		Run(con())
+
+	if err == nil {
+		t.Error("no error")
+		return
+	}
+
+	if err.Error() != "Did not know how to set index: Age" {
+		t.Error("Unexpected error:", err.Error())
+	}
+}
+
+func TestJSONUnknownIndex(t *testing.T) {
+	type testType struct {
+		User string
+		Age  byte `goriakindex:"ageintbyte_int"`
+	}
+
+	_, err := Bucket("json", "default").
+		SetJSON(testType{
+			User: "Yay2",
+			Age:  130,
+		}).
+		Run(con())
+
+	if err == nil {
+		t.Error("no error")
+		return
+	}
+
+	if err.Error() != "Did not know how to set index: Age" {
+		t.Error("Unexpected error:", err.Error())
+	}
+}
