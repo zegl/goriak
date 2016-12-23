@@ -1,6 +1,6 @@
 # goriak [![Build Status](https://circleci.com/gh/zegl/goriak.svg?style=shield)](https://circleci.com/gh/zegl/goriak) [![codecov](https://codecov.io/gh/zegl/goriak/branch/v2/graph/badge.svg)](https://codecov.io/gh/zegl/goriak/branch/v2) [![Go Report Card](https://goreportcard.com/badge/gopkg.in/zegl/goriak.v2)](https://goreportcard.com/report/gopkg.in/zegl/goriak.v2) [![Join the chat at https://gitter.im/golangriak/Lobby](https://badges.gitter.im/golangriak/Lobby.svg)](https://gitter.im/golangriak/Lobby)
 
-Current version: `v2.3.0`.  
+Current version: `v2.4.0`.
 Riak KV version: 2.0 or higher, the latest version of Riak KV is always recommended. 
 
 # What is goriak?
@@ -35,6 +35,18 @@ user := User {
 goriak.Bucket("bucket-name", "bucket-type").Key("key").Set(user).Run(c)
 ```
 
+### Tags
+
+Struct tags can be used to change the name of the item, or to ignore it.
+
+```go
+type User struct {
+    Name    string   `goriak:"-"`       // Ignore field
+    Aliases []string `goriak:"aliases"` // Save as "aliases" in Riak KV
+}
+```
+
+
 ## Get (Riak Data Types)
 
 The map can later be retreived as a whole:
@@ -47,30 +59,31 @@ goriak.Bucket("bucket-name", "bucket-type").Key("key").Get(&res).Run(c)
 ## Supported Go types
 
 
-|  Go Type   | Riak Type |
-|------------|-----------|
-| `struct`   | map       |
-| `string`   | register  |
-| `[n]byte`  | register  |
-| `[]byte`   | register  |
-| `[]slice`  | set       |
-| `[]slice`  | set       |
-| `[][]byte` | set       |
-| `map`      | map       |
-| `int` [1]  | register  |
+|  Go Type    | Riak Type |
+|-------------|-----------|
+| `struct`    | map       |
+| `string`    | register  |
+| `[n]byte`   | register  |
+| `[]byte`    | register  |
+| `[]slice`   | set       |
+| `[]slice`   | set       |
+| `[][]byte`  | set       |
+| `map`       | map       |
+| `time.Time` | register  |
+| int [1]     | register  |
 
-1: All signed integer types are supported.
+1: All signed and unsigned integer types are supported.
 
 ### Golang map types
 
-Supported key types: `int`, `int8`, `int16`, `int32`, `int64`, `string`.  
+Supported key types: all integer types, `string`.  
 Supported value types: `string`, `[]byte`.
 
 ## Helper types
 
 Some actions are more complicated then necessary with the use of the default Go types and `MapOperations`.
 
-This is why goriak contains the types `goriak.Counter` and `goriak.Set`. Both of these types will help you performing actions such as incrementing a value, or adding/removing items.
+This is why goriak contains the types `goriak.Counter`, `goriak.Set` and, `goriak.Flag`. Both of these types will help you performing actions such as incrementing a value, or adding/removing items.
 
 ### Counters
 
@@ -170,6 +183,8 @@ goriak.MapOperation("bucket-name", "bucket-type", "key", operation, val.Context)
 # Secondary Indexes
 
 You can set secondary indexes automatically with `SetJSON()` by using struct tags.
+
+Strings and all signed integer types are supported. Both as-is and in slices.
 
 ```go
 type User struct {
