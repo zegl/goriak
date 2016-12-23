@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"reflect"
+	"strconv"
 
 	riak "github.com/basho/riak-go-client"
 )
@@ -37,32 +38,68 @@ func (c Command) SetJSON(value interface{}) Command {
 				continue
 			}
 
+			switch refValue.Field(i).Type().Kind() {
+
 			// String
-			if refValue.Field(i).Type().Kind() == reflect.String {
+			case reflect.String:
 				object.AddToIndex(indexName, refValue.Field(i).String())
-				continue
-			}
 
 			// Slice
-			if refValue.Field(i).Type().Kind() == reflect.Slice {
+			case reflect.Slice:
 
 				sliceType := refValue.Field(i).Type().Elem()
 				sliceValue := refValue.Field(i)
 
-				// Slice: String
-				if sliceType.Kind() == reflect.String {
+				switch sliceType.Kind() {
+
+				// []string
+				case reflect.String:
 					for sli := 0; sli < sliceValue.Len(); sli++ {
 						object.AddToIndex(indexName, sliceValue.Index(sli).String())
 					}
 
-					continue
+				// []int
+				case reflect.Int:
+					fallthrough
+				case reflect.Int8:
+					fallthrough
+				case reflect.Int16:
+					fallthrough
+				case reflect.Int32:
+					fallthrough
+				case reflect.Int64:
+					for sli := 0; sli < sliceValue.Len(); sli++ {
+						object.AddToIndex(indexName, strconv.FormatInt(sliceValue.Index(sli).Int(), 10))
+					}
+
+				default:
+					c.err = errors.New("Did not know how to set index: " + refType.Field(i).Name)
+					return c
 				}
+
+			// Int
+			case reflect.Int:
+				fallthrough
+			case reflect.Int8:
+				fallthrough
+			case reflect.Int16:
+				fallthrough
+			case reflect.Int32:
+				fallthrough
+			case reflect.Int64:
+
+				// Bashos AddToIntIndex() only accepts int as a type. Using AddToIndex() has
+				// the same effect but allows for different sizes of ints
+				object.AddToIndex(
+					indexName,
+					strconv.FormatInt(refValue.Field(i).Int(), 10),
+				)
+
+			default:
+				c.err = errors.New("Did not know how to set index: " + refType.Field(i).Name)
+				return c
 			}
-
-			c.err = errors.New("Did not know how to set index: " + refType.Field(i).Name)
-			return c
 		}
-
 	}
 
 	builder := riak.NewStoreValueCommandBuilder().
