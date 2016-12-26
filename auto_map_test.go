@@ -908,3 +908,17 @@ func TestAutoMapMapArray2(t *testing.T) {
 		t.Log(resVal)
 	}
 }
+
+func TestAutoMapGetNoBucket(t *testing.T) {
+	var val string
+	_, err := Bucket("", "").Get("keykeykey", val).Run(con())
+
+	if err == nil {
+		t.Error("no error")
+		return
+	}
+
+	if err.Error() != "ClientError|Bucket is required" {
+		t.Error("Unexpected error:", err.Error())
+	}
+}
