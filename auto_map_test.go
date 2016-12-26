@@ -469,7 +469,7 @@ func TestSubStructs(t *testing.T) {
 	}
 }
 
-func TestDecodeUnsupportedTypes(t *testing.T) {
+func TestAutoMapSlices(t *testing.T) {
 	type writeType struct {
 		A string
 	}
@@ -686,7 +686,7 @@ func TestDecodeUnsupportedTypes(t *testing.T) {
 		return
 	}
 
-	if err.Error() != "Unknown map value type: slice: float64" {
+	if err.Error() != "Unknown map value type" {
 		t.Error("Unexpected error", err)
 	}
 

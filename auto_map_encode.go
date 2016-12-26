@@ -399,6 +399,7 @@ func (e *mapEncoder) encodeSlice(op *riak.MapOperation, itemKey string, f reflec
 			return nil
 		}
 
+		// [][]byte
 		if sliceVal.Type().Elem().Elem().Kind() == reflect.Uint8 {
 			for ii := 0; ii < sliceVal.Len(); ii++ {
 				op.AddToSet(itemKey, sliceVal.Index(ii).Bytes())

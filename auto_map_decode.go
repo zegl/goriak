@@ -10,7 +10,7 @@ import (
 )
 
 func decodeInterface(data *riak.FetchMapResponse, output interface{}, riakRequest requestData) error {
-	return mapToStruct(
+	return transMapToStruct(
 		data.Map,
 		reflect.ValueOf(output).Elem(),
 		reflect.TypeOf(output).Elem(),
@@ -20,13 +20,15 @@ func decodeInterface(data *riak.FetchMapResponse, output interface{}, riakReques
 	)
 }
 
-func mapToStruct(data *riak.Map, rValue reflect.Value, rType reflect.Type, riakContext []byte, path []string, riakRequest requestData) error {
+// Assings values from a Riak Map to a receiving Go struct
+func transMapToStruct(data *riak.Map, rValue reflect.Value, rType reflect.Type, riakContext []byte, path []string, riakRequest requestData) error {
 
 	num := rType.NumField()
 
 	for i := 0; i < num; i++ {
 
 		field := rType.Field(i)
+		fieldVal := rValue.Field(i)
 		registerName := field.Name
 		tag := field.Tag.Get("goriak")
 
@@ -50,15 +52,15 @@ func mapToStruct(data *riak.Map, rValue reflect.Value, rType reflect.Type, riakC
 		switch field.Type.Kind() {
 		case reflect.String:
 			if val, ok := data.Registers[registerName]; ok {
-				rValue.Field(i).SetString(string(val))
+				fieldVal.SetString(string(val))
 			}
 
 		case reflect.Array:
 			// []byte
-			if rValue.Field(i).Type().Elem().Kind() == reflect.Uint8 {
+			if fieldVal.Type().Elem().Kind() == reflect.Uint8 {
 				if val, ok := data.Registers[registerName]; ok {
-					for ii := 0; ii < rValue.Field(i).Len(); ii++ {
-						rValue.Field(i).Index(ii).SetUint(uint64(val[ii]))
+					for ii := 0; ii < fieldVal.Len(); ii++ {
+						fieldVal.Index(ii).SetUint(uint64(val[ii]))
 					}
 				}
 			}
@@ -73,12 +75,9 @@ func mapToStruct(data *riak.Map, rValue reflect.Value, rType reflect.Type, riakC
 		case reflect.Int32:
 			fallthrough
 		case reflect.Int64:
-
 			if val, ok := data.Registers[registerName]; ok {
-				intVal, err := strconv.ParseInt(string(val), 10, 0)
-
-				if err == nil {
-					rValue.Field(i).SetInt(intVal)
+				if intVal, err := strconv.ParseInt(string(val), 10, 0); err == nil {
+					fieldVal.SetInt(intVal)
 				}
 			}
 
@@ -92,23 +91,19 @@ func mapToStruct(data *riak.Map, rValue reflect.Value, rType reflect.Type, riakC
 		case reflect.Uint32:
 			fallthrough
 		case reflect.Uint64:
-
 			if val, ok := data.Registers[registerName]; ok {
-				intVal, err := strconv.ParseUint(string(val), 10, 0)
-
-				if err == nil {
-					rValue.Field(i).SetUint(intVal)
+				if intVal, err := strconv.ParseUint(string(val), 10, 0); err == nil {
+					fieldVal.SetUint(intVal)
 				}
 			}
 
 		case reflect.Bool:
-
 			if val, ok := data.Flags[registerName]; ok {
-				rValue.Field(i).SetBool(val)
+				fieldVal.SetBool(val)
 			}
 
 		case reflect.Slice:
-			err := mapSliceToStruct(rValue.Field(i), registerName, data)
+			err := transRiakToSlice(rValue.Field(i), registerName, data)
 
 			if err != nil {
 				return err
@@ -116,7 +111,7 @@ func mapToStruct(data *riak.Map, rValue reflect.Value, rType reflect.Type, riakC
 
 		case reflect.Map:
 			if subMap, ok := data.Maps[registerName]; ok {
-				err := mapMaptoMap(rValue.Field(i), subMap)
+				err := transMapToMap(rValue.Field(i), subMap)
 
 				if err != nil {
 					return err
@@ -124,21 +119,18 @@ func mapToStruct(data *riak.Map, rValue reflect.Value, rType reflect.Type, riakC
 			}
 
 		case reflect.Struct:
-
 			done := false
-
-			f := rValue.Field(i)
 
 			// time.Time
 			if bin, ok := data.Registers[registerName]; ok {
-				if ts, ok := f.Interface().(time.Time); ok {
+				if ts, ok := fieldVal.Interface().(time.Time); ok {
 					err := ts.UnmarshalBinary(bin)
 
 					if err != nil {
 						return err
 					}
 
-					f.Set(reflect.ValueOf(ts))
+					fieldVal.Set(reflect.ValueOf(ts))
 					done = true
 				}
 			}
@@ -149,7 +141,7 @@ func mapToStruct(data *riak.Map, rValue reflect.Value, rType reflect.Type, riakC
 					// Struct
 					newPath := append(path, registerName)
 
-					err := mapToStruct(subMap, f, f.Type(), riakContext, newPath, riakRequest)
+					err := transMapToStruct(subMap, fieldVal, fieldVal.Type(), riakContext, newPath, riakRequest)
 
 					if err != nil {
 						return err
@@ -159,8 +151,6 @@ func mapToStruct(data *riak.Map, rValue reflect.Value, rType reflect.Type, riakC
 
 		case reflect.Ptr:
 
-			f := rValue.Field(i)
-
 			helperPathData := helper{
 				name:    registerName,
 				path:    path,
@@ -168,7 +158,7 @@ func mapToStruct(data *riak.Map, rValue reflect.Value, rType reflect.Type, riakC
 				context: riakContext,
 			}
 
-			switch f.Type().String() {
+			switch fieldVal.Type().String() {
 			case "*goriak.Counter":
 				var counterValue int64
 
@@ -181,7 +171,7 @@ func mapToStruct(data *riak.Map, rValue reflect.Value, rType reflect.Type, riakC
 					val:    counterValue,
 				}
 
-				f.Set(reflect.ValueOf(resCounter))
+				fieldVal.Set(reflect.ValueOf(resCounter))
 
 			case "*goriak.Set":
 
@@ -196,7 +186,7 @@ func mapToStruct(data *riak.Map, rValue reflect.Value, rType reflect.Type, riakC
 					value:  setValue,
 				}
 
-				f.Set(reflect.ValueOf(resSet))
+				fieldVal.Set(reflect.ValueOf(resSet))
 
 			case "*goriak.Flag":
 
@@ -211,7 +201,7 @@ func mapToStruct(data *riak.Map, rValue reflect.Value, rType reflect.Type, riakC
 					val:    flagValue,
 				}
 
-				f.Set(reflect.ValueOf(resFlag))
+				fieldVal.Set(reflect.ValueOf(resFlag))
 
 			case "*goriak.Register":
 
@@ -226,24 +216,26 @@ func mapToStruct(data *riak.Map, rValue reflect.Value, rType reflect.Type, riakC
 					val:    registerValue,
 				}
 
-				f.Set(reflect.ValueOf(resRegister))
+				fieldVal.Set(reflect.ValueOf(resRegister))
 
 			default:
-				return errors.New("Unexpected ptr type: " + f.Type().String())
+				return errors.New("Unexpected ptr type: " + fieldVal.Type().String())
 			}
 
 		default:
 			return errors.New("Unknown type: " + field.Type.Kind().String())
-
 		}
 	}
 
 	return nil
 }
 
-func mapSliceToStruct(sliceValue reflect.Value, registerName string, data *riak.Map) error {
+// Converts Riak objects (can be either Sets or Registers) to Golang Slices
+func transRiakToSlice(sliceValue reflect.Value, registerName string, data *riak.Map) error {
 
 	switch sliceValue.Type().Elem().Kind() {
+
+	// []int
 	case reflect.Int:
 		if setVal, ok := data.Sets[registerName]; ok {
 			result := make([]int, len(setVal))
@@ -262,6 +254,7 @@ func mapSliceToStruct(sliceValue reflect.Value, registerName string, data *riak.
 			sliceValue.Set(reflect.ValueOf(result))
 		}
 
+	// []string
 	case reflect.String:
 		if setVal, ok := data.Sets[registerName]; ok {
 			result := make([]string, len(setVal))
@@ -274,6 +267,7 @@ func mapSliceToStruct(sliceValue reflect.Value, registerName string, data *riak.
 			sliceValue.Set(reflect.ValueOf(result))
 		}
 
+	// []byte
 	case reflect.Uint8:
 		if val, ok := data.Registers[registerName]; ok {
 			sliceValue.SetBytes(val)
@@ -281,6 +275,7 @@ func mapSliceToStruct(sliceValue reflect.Value, registerName string, data *riak.
 
 	// [][]byte
 	case reflect.Slice:
+
 		if sliceValue.Type().Elem().Elem().Kind() == reflect.Uint8 {
 			if val, ok := data.Sets[registerName]; ok {
 				sliceValue.Set(reflect.ValueOf(val))
@@ -336,10 +331,74 @@ func mapSliceToStruct(sliceValue reflect.Value, registerName string, data *riak.
 	return nil
 }
 
-func mapMaptoMap(mapValue reflect.Value, data *riak.Map) error {
+func bytesToValue(input []byte, outputType reflect.Type) (reflect.Value, error) {
+
+	outputKind := outputType.Kind()
+
+	switch outputKind {
+	case reflect.String:
+		return reflect.ValueOf(string(input)), nil
+
+	case reflect.Int:
+		if i, err := strconv.ParseInt(string(input), 10, 0); err == nil {
+			return reflect.ValueOf(int(i)), nil
+		}
+
+	case reflect.Int8:
+		if i, err := strconv.ParseInt(string(input), 10, 8); err == nil {
+			return reflect.ValueOf(int8(i)), nil
+		}
+
+	case reflect.Int16:
+		if i, err := strconv.ParseInt(string(input), 10, 16); err == nil {
+			return reflect.ValueOf(int16(i)), nil
+		}
+
+	case reflect.Int32:
+		if i, err := strconv.ParseInt(string(input), 10, 32); err == nil {
+			return reflect.ValueOf(int32(i)), nil
+		}
+
+	case reflect.Int64:
+		if i, err := strconv.ParseInt(string(input), 10, 64); err == nil {
+			return reflect.ValueOf(int64(i)), nil
+		}
+
+	case reflect.Slice:
+		sliceItemType := outputType.Elem().Kind()
+
+		switch sliceItemType {
+		case reflect.Uint8:
+			return reflect.ValueOf(input), nil
+		}
+
+	case reflect.Array:
+
+		// Create new array of the expected type
+		newArray := reflect.New(outputType).Elem()
+		lengthOfExpectedArray := outputType.Len()
+		arrayItemType := outputType.Elem().Kind()
+
+		switch arrayItemType {
+		// Byte array
+		case reflect.Uint8:
+
+			// Copy bytes
+			for i := 0; i < lengthOfExpectedArray; i++ {
+				newArray.Index(i).Set(reflect.ValueOf(input[i]))
+			}
+
+			return newArray, nil
+		}
+	}
+
+	return reflect.ValueOf(nil), errors.New("Invalid input type: " + outputType.String())
+}
+
+// Converts a Riak Map to a Go Map
+func transMapToMap(mapValue reflect.Value, data *riak.Map) error {
 
 	mapKeyType := mapValue.Type().Key().Kind()
-	mapValueType := mapValue.Type().Elem().Kind()
 
 	// Initialize the map
 	newMap := reflect.MakeMap(mapValue.Type())
@@ -348,97 +407,15 @@ func mapMaptoMap(mapValue reflect.Value, data *riak.Map) error {
 	for key, val := range data.Registers {
 
 		// Convert key (a string) to the correct reflect.Value
-		var keyValue reflect.Value
-		switch mapKeyType {
-		case reflect.String:
-			keyValue = reflect.ValueOf(key)
+		keyValue, err := bytesToValue([]byte(key), mapValue.Type().Key())
 
-		case reflect.Int:
-			i, _ := strconv.ParseInt(key, 10, 0)
-			keyValue = reflect.ValueOf(int(i))
-
-		case reflect.Int8:
-			i, _ := strconv.ParseInt(key, 10, 8)
-			keyValue = reflect.ValueOf(int8(i))
-
-		case reflect.Int16:
-			i, _ := strconv.ParseInt(key, 10, 16)
-			keyValue = reflect.ValueOf(int16(i))
-
-		case reflect.Int32:
-			i, _ := strconv.ParseInt(key, 10, 32)
-			keyValue = reflect.ValueOf(int32(i))
-
-		case reflect.Int64:
-			i, _ := strconv.ParseInt(key, 10, 64)
-			keyValue = reflect.ValueOf(int64(i))
-
-		default:
+		if err != nil {
 			return errors.New("Unknown map key type: " + mapKeyType.String())
 		}
 
-		// Convert val ([]byte) to the correct reflect.Value
-		var valValue reflect.Value
+		valValue, err := bytesToValue(val, mapValue.Type().Elem())
 
-		switch mapValueType {
-		case reflect.String:
-			valValue = reflect.ValueOf(string(val))
-
-		case reflect.Int:
-			i, _ := strconv.ParseInt(string(val), 10, 0)
-			valValue = reflect.ValueOf(int(i))
-
-		case reflect.Int8:
-			i, _ := strconv.ParseInt(string(val), 10, 8)
-			valValue = reflect.ValueOf(int8(i))
-
-		case reflect.Int16:
-			i, _ := strconv.ParseInt(string(val), 10, 16)
-			valValue = reflect.ValueOf(int16(i))
-
-		case reflect.Int32:
-			i, _ := strconv.ParseInt(string(val), 10, 32)
-			valValue = reflect.ValueOf(int32(i))
-
-		case reflect.Int64:
-			i, _ := strconv.ParseInt(string(val), 10, 64)
-			valValue = reflect.ValueOf(int64(i))
-
-		case reflect.Array:
-
-			// Create new array of the expected type
-			newArray := reflect.New(mapValue.Type().Elem()).Elem()
-			lengthOfExpectedArray := mapValue.Type().Elem().Len()
-
-			arrayItemType := mapValue.Type().Elem().Elem().Kind()
-
-			switch arrayItemType {
-			// Byte array
-			case reflect.Uint8:
-
-				// Copy bytes
-				for i := 0; i < lengthOfExpectedArray; i++ {
-					newArray.Index(i).Set(reflect.ValueOf(val[i]))
-				}
-
-				valValue = newArray
-
-			default:
-				return errors.New("Unknown map value array type: " + mapValue.Type().Elem().String())
-			}
-
-		case reflect.Slice:
-
-			sliceItemType := mapValue.Type().Elem().Elem().Kind()
-
-			switch sliceItemType {
-			case reflect.Uint8:
-				valValue = reflect.ValueOf(val)
-			default:
-				return errors.New("Unknown map value type: slice: " + sliceItemType.String())
-			}
-
-		default:
+		if err != nil {
 			return errors.New("Unknown map value type")
 		}
 
