@@ -50,22 +50,10 @@ func transMapToStruct(data *riak.Map, rValue reflect.Value, rType reflect.Type, 
 		}
 
 		switch field.Type.Kind() {
-		case reflect.String:
-			if val, ok := data.Registers[registerName]; ok {
-				fieldVal.SetString(string(val))
-			}
-
 		case reflect.Array:
-			// []byte
-			if fieldVal.Type().Elem().Kind() == reflect.Uint8 {
-				if val, ok := data.Registers[registerName]; ok {
-					for ii := 0; ii < fieldVal.Len(); ii++ {
-						fieldVal.Index(ii).SetUint(uint64(val[ii]))
-					}
-				}
-			}
-
-		// Integer types
+			fallthrough
+		case reflect.String:
+			fallthrough
 		case reflect.Int:
 			fallthrough
 		case reflect.Int8:
