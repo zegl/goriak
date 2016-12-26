@@ -75,13 +75,7 @@ func transMapToStruct(data *riak.Map, rValue reflect.Value, rType reflect.Type, 
 		case reflect.Int32:
 			fallthrough
 		case reflect.Int64:
-			if val, ok := data.Registers[registerName]; ok {
-				if intVal, err := strconv.ParseInt(string(val), 10, 0); err == nil {
-					fieldVal.SetInt(intVal)
-				}
-			}
-
-		// Unsigned integers
+			fallthrough
 		case reflect.Uint:
 			fallthrough
 		case reflect.Uint8:
@@ -92,8 +86,8 @@ func transMapToStruct(data *riak.Map, rValue reflect.Value, rType reflect.Type, 
 			fallthrough
 		case reflect.Uint64:
 			if val, ok := data.Registers[registerName]; ok {
-				if intVal, err := strconv.ParseUint(string(val), 10, 0); err == nil {
-					fieldVal.SetUint(intVal)
+				if newVal, err := bytesToValue(val, field.Type); err == nil {
+					fieldVal.Set(newVal)
 				}
 			}
 
@@ -362,6 +356,31 @@ func bytesToValue(input []byte, outputType reflect.Type) (reflect.Value, error) 
 	case reflect.Int64:
 		if i, err := strconv.ParseInt(string(input), 10, 64); err == nil {
 			return reflect.ValueOf(int64(i)), nil
+		}
+
+	case reflect.Uint:
+		if i, err := strconv.ParseUint(string(input), 10, 0); err == nil {
+			return reflect.ValueOf(uint(i)), nil
+		}
+
+	case reflect.Uint8:
+		if i, err := strconv.ParseUint(string(input), 10, 8); err == nil {
+			return reflect.ValueOf(uint8(i)), nil
+		}
+
+	case reflect.Uint16:
+		if i, err := strconv.ParseUint(string(input), 10, 16); err == nil {
+			return reflect.ValueOf(uint16(i)), nil
+		}
+
+	case reflect.Uint32:
+		if i, err := strconv.ParseUint(string(input), 10, 32); err == nil {
+			return reflect.ValueOf(uint32(i)), nil
+		}
+
+	case reflect.Uint64:
+		if i, err := strconv.ParseUint(string(input), 10, 64); err == nil {
+			return reflect.ValueOf(uint64(i)), nil
 		}
 
 	case reflect.Slice:
