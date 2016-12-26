@@ -1,7 +1,9 @@
 package goriak
 
 import (
+	"encoding/json"
 	"errors"
+
 	riak "github.com/basho/riak-go-client"
 )
 
@@ -85,5 +87,24 @@ func (r *Register) Exec(client *Session) error {
 		return errors.New("Not successful")
 	}
 
+	return nil
+}
+
+// MarshalJSON satisfies the JSON interface
+func (r Register) MarshalJSON() ([]byte, error) {
+	return json.Marshal(r.val)
+}
+
+// UnmarshalJSON satisfies the JSON interface
+func (r *Register) UnmarshalJSON(data []byte) error {
+	var values []byte
+
+	err := json.Unmarshal(data, &values)
+
+	if err != nil {
+		return err
+	}
+
+	r.val = values
 	return nil
 }

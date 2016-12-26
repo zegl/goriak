@@ -1,6 +1,7 @@
 package goriak
 
 import (
+	"encoding/json"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
@@ -156,4 +157,27 @@ func TestHelperTypeUnknownPath(t *testing.T) {
 
 	err = val.Counter.Exec(c)
 	assert.EqualError(t, err, "Unknown path to Counter. Retrieve Counter with Get or Set before updating the Counter")
+}
+
+func TestRegisterJSON(t *testing.T) {
+	c := NewRegister()
+	c.SetString("hello")
+
+	jstr, err := json.Marshal(c)
+
+	if err != nil {
+		t.Error(err)
+	}
+
+	var newRegister *Register
+
+	err = json.Unmarshal(jstr, &newRegister)
+
+	if err != nil {
+		t.Error(err)
+	}
+
+	if c.String() != "hello" {
+		t.Error("Unexpected value")
+	}
 }

@@ -1,6 +1,7 @@
 package goriak
 
 import (
+	"encoding/json"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
@@ -49,4 +50,27 @@ func TestFlagMap(t *testing.T) {
 	_, err = bucket().Get(key, &val2).Run(c)
 	assert.Nil(t, err)
 	assert.True(t, val2.Enabled.Value())
+}
+
+func TestFlagJSON(t *testing.T) {
+	c := NewFlag()
+	c.Set(true)
+
+	jstr, err := json.Marshal(c)
+
+	if err != nil {
+		t.Error(err)
+	}
+
+	var newFlag *Flag
+
+	err = json.Unmarshal(jstr, &newFlag)
+
+	if err != nil {
+		t.Error(err)
+	}
+
+	if c.Value() == false {
+		t.Error("Unexpected value")
+	}
 }

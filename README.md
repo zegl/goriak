@@ -83,7 +83,7 @@ Supported value types: `string`, `[]byte`.
 
 Some actions are more complicated then necessary with the use of the default Go types and `MapOperations`.
 
-This is why goriak contains the types `goriak.Counter`, `goriak.Set` and, `goriak.Flag`. Both of these types will help you performing actions such as incrementing a value, or adding/removing items.
+This is why goriak contains the types `Counter`, `Set`, `Flag` and `Register`. All of these types will help you performing actions such as incrementing a value, or adding/removing items.
 
 ### Counters
 

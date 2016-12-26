@@ -1,6 +1,7 @@
 package goriak
 
 import (
+	"encoding/json"
 	"errors"
 
 	riak "github.com/basho/riak-go-client"
@@ -116,5 +117,24 @@ func (c *Counter) Exec(client *Session) error {
 	// Reset increase counter
 	c.increaseBy = 0
 
+	return nil
+}
+
+// MarshalJSON satisfies the JSON interface
+func (c Counter) MarshalJSON() ([]byte, error) {
+	return json.Marshal(c.val)
+}
+
+// UnmarshalJSON satisfies the JSON interface
+func (c *Counter) UnmarshalJSON(data []byte) error {
+	var value int64
+
+	err := json.Unmarshal(data, &value)
+
+	if err != nil {
+		return err
+	}
+
+	c.val = value
 	return nil
 }

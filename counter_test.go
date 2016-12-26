@@ -1,6 +1,7 @@
 package goriak
 
 import (
+	"encoding/json"
 	"reflect"
 	"testing"
 )
@@ -321,5 +322,28 @@ func TestCounterNestedPaths(t *testing.T) {
 	if !reflect.DeepEqual(testVal.PathA.PathB.Count.path, []string{"PathA", "PathB"}) {
 		t.Log(testVal.PathA.PathB.Count.path)
 		t.Error("Wrong PathB")
+	}
+}
+
+func TestCounterJSON(t *testing.T) {
+	c := NewCounter()
+	c.Increase(45)
+
+	jstr, err := json.Marshal(c)
+
+	if err != nil {
+		t.Error(err)
+	}
+
+	var newCounter *Counter
+
+	err = json.Unmarshal(jstr, &newCounter)
+
+	if err != nil {
+		t.Error(err)
+	}
+
+	if c.Value() != 45 {
+		t.Error("Unexpected error")
 	}
 }
