@@ -17,13 +17,13 @@ func TestSiblings(t *testing.T) {
 	_, err := a1.Run(c)
 
 	if err != nil {
-		t.Error()
+		t.Error(err)
 	}
 
 	_, err = a2.Run(c)
 
 	if err != nil {
-		t.Error()
+		t.Error(err)
 	}
 
 	didConflictResolution := false
@@ -51,7 +51,7 @@ func TestSiblings(t *testing.T) {
 		Run(c)
 
 	if err != nil {
-		t.Error()
+		t.Error(err)
 	}
 
 	if !didConflictResolution {
@@ -64,6 +64,10 @@ func TestSiblings(t *testing.T) {
 		ConflictResolver(resolver).
 		GetJSON(key, &out).
 		Run(c)
+
+	if err != nil {
+		t.Error(err)
+	}
 
 	if didConflictResolution {
 		t.Error("Did resolution after already beeing resolved?")
@@ -147,6 +151,10 @@ func TestConflictResolverInterface(t *testing.T) {
 	didInterfaceResolver = false
 	var val2 ourTypeWithResolveInterface
 	_, err = Bucket("sibs", "tests").GetJSON(key, &val2).Run(c)
+
+	if err != nil {
+		t.Error(err)
+	}
 
 	if didInterfaceResolver {
 		t.Error("Used resolver even if not needed")
