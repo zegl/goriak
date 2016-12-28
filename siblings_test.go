@@ -70,7 +70,7 @@ func TestSiblings(t *testing.T) {
 	}
 
 	if didConflictResolution {
-		t.Error("Did resolution after already beeing resolved?")
+		t.Error("Did resolution after already being resolved?")
 	}
 }
 

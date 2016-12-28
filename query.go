@@ -256,7 +256,7 @@ func (c Command) resultStoreValueCommand(cmd *riak.StoreValueCommand) (*Result, 
 
 func (c Command) fetchValueWithResolver(session *Session, values []*riak.Object) ([]byte, []byte, error) {
 
-	// Conflict resolution neccesary
+	// Conflict resolution necessary
 	if len(values) > 1 {
 
 		// No explicit resolver func

@@ -7,7 +7,7 @@ func (c Command) WithPw(pw uint32) Command {
 	return c
 }
 
-// WithDw sets the amount of nodes required to report sucessfully writes to backend storage.
+// WithDw sets the amount of nodes required to report successfully writes to backend storage.
 // Used with Set(), SetRaw(), SetJSON(), and Delete()
 func (c Command) WithDw(dw uint32) Command {
 	c.riakDW = dw
@@ -21,7 +21,7 @@ func (c Command) WithW(w uint32) Command {
 	return c
 }
 
-// WithRw sets the amount fo nodes required to report successfull deletes from backend storage.
+// WithRw sets the amount fo nodes required to report successful deletes from backend storage.
 // Used with Delete().
 func (c Command) WithRw(rw uint32) Command {
 	c.riakRW = rw
