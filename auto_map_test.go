@@ -848,8 +848,8 @@ func TestAutoMapMapArray(t *testing.T) {
 
 	val := ourTestType{
 		Things: map[string][4]byte{
-			"a": [4]byte{1, 1, 1, 1},
-			"b": [4]byte{2, 2, 2, 2},
+			"a": {1, 1, 1, 1},
+			"b": {2, 2, 2, 2},
 		},
 	}
 
@@ -882,8 +882,8 @@ func TestAutoMapMapArray2(t *testing.T) {
 
 	val := ourTestType{
 		Things: map[int64][32]byte{
-			500: [32]byte{1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5, 6, 6, 6, 6},
-			600: [32]byte{2, 2, 2, 2},
+			500: {1, 1, 1, 1, 2, 2, 2, 2, 3, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5, 6, 6, 6, 6},
+			600: {2, 2, 2, 2},
 		},
 	}
 
