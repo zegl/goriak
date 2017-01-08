@@ -1,7 +1,7 @@
 package goriak
 
 // buildStoreValueCommand completes the building if the StoreValueCommand used by SetRaw and SetJSON
-func (c Command) buildStoreValueCommand() Command {
+func (c *Command) buildStoreValueCommand() *Command {
 	// Set key
 	if c.key != "" {
 		c.storeValueCommandBuilder.WithKey(c.key)
@@ -44,7 +44,7 @@ func (c Command) buildStoreValueCommand() Command {
 }
 
 // buildSecondaryIndexQueryCommand completes the buildinf of the SecondaryIndexQueryCommand used by KeysInIndex
-func (c Command) buildSecondaryIndexQueryCommand() Command {
+func (c *Command) buildSecondaryIndexQueryCommand() *Command {
 	// Set limit
 	if c.limit != 0 {
 		c.secondaryIndexQueryCommandBuilder.WithMaxResults(c.limit)
@@ -55,7 +55,7 @@ func (c Command) buildSecondaryIndexQueryCommand() Command {
 	return c
 }
 
-func (c Command) buildUpdateMapQueryCommand() Command {
+func (c *Command) buildUpdateMapQueryCommand() *Command {
 	if c.key != "" {
 		c.updateMapCommandBuilder.WithKey(c.key)
 	}
@@ -80,7 +80,7 @@ func (c Command) buildUpdateMapQueryCommand() Command {
 	return c
 }
 
-func (c Command) buildFetchValueCommand() Command {
+func (c *Command) buildFetchValueCommand() *Command {
 
 	// Primary node reads
 	if c.riakPR > 0 {
@@ -97,7 +97,7 @@ func (c Command) buildFetchValueCommand() Command {
 	return c
 }
 
-func (c Command) buildDeleteValueCommand() Command {
+func (c *Command) buildDeleteValueCommand() *Command {
 
 	// Primary node writes
 	if c.riakPW > 0 {

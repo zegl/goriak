@@ -11,7 +11,7 @@ import (
 
 // SetJSON saves value as key in the bucket bucket/bucketType
 // Values can automatically be added to indexes with the struct tag goriakindex
-func (c Command) SetJSON(value interface{}) Command {
+func (c *Command) SetJSON(value interface{}) *Command {
 	by, err := json.Marshal(value)
 
 	if err != nil {
@@ -116,7 +116,7 @@ func (c Command) SetJSON(value interface{}) Command {
 }
 
 // GetJSON is the same as GetRaw, but with automatic JSON unmarshalling
-func (c Command) GetJSON(key string, output interface{}) Command {
+func (c *Command) GetJSON(key string, output interface{}) *Command {
 	builder := riak.NewFetchValueCommandBuilder().
 		WithBucket(c.bucket).
 		WithBucketType(c.bucketType).
