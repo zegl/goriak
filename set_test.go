@@ -597,4 +597,21 @@ func TestSetBackwardsCompabilityEmptyItems(t *testing.T) {
 	if len(s.Strings()) != 2 {
 		t.Error("Unexpected amount of items")
 	}
+
+	a := false
+	b := false
+
+	for _, s := range s.Strings() {
+		if s == "A" {
+			a = true
+		}
+
+		if s == "B" {
+			b = true
+		}
+	}
+
+	if !a || !b {
+		t.Error("Unexpected content")
+	}
 }
