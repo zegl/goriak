@@ -229,3 +229,35 @@ func TestFilterSetNested(t *testing.T) {
 
 	t.Errorf("Unexpected: %+v", val)
 }
+
+func TestFilterIncludeAfterSet(t *testing.T) {
+	type item struct {
+		A string
+	}
+
+	_, err := bucket().Set(item{}).FilterInclude("B").Run(con())
+
+	if err == nil {
+		t.Error("no error")
+	}
+
+	if err.Error() != "FilterInclude() must be called before Set()" {
+		t.Error("unexpected error")
+	}
+}
+
+func TestFilterExcludeAfterSet(t *testing.T) {
+	type item struct {
+		A string
+	}
+
+	_, err := bucket().Set(item{}).FilterExclude("B").Run(con())
+
+	if err == nil {
+		t.Error("no error")
+	}
+
+	if err.Error() != "FilterExclude() must be called before Set()" {
+		t.Error("unexpected error")
+	}
+}

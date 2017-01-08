@@ -120,6 +120,11 @@ func (c *Command) Limit(limit uint32) *Command {
 // Run performs the action built in Command and runs it against the Riak connection specified by Session.
 func (c *Command) Run(session *Session) (*Result, error) {
 
+	// Check if an error already has been set
+	if c.err != nil {
+		return nil, c.err
+	}
+
 	if session == nil {
 		return nil, errors.New("No session provided")
 	}
