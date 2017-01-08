@@ -5,7 +5,7 @@ import (
 )
 
 // MapOperation takes a riak.MapOperation so that you can run custom commands on your Riak Maps
-func (c *Command) MapOperation(op riak.MapOperation, context []byte) *Command {
+func (c Command) MapOperation(op riak.MapOperation, context []byte) Command {
 	builder := riak.NewUpdateMapCommandBuilder().
 		WithBucket(c.bucket).
 		WithBucketType(c.bucketType).

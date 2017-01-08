@@ -5,6 +5,8 @@ import (
 	"reflect"
 	"strconv"
 	"time"
+
+	riak "github.com/basho/riak-go-client"
 )
 
 type mapEncoder struct {
@@ -12,8 +14,8 @@ type mapEncoder struct {
 	riakRequest  requestData
 }
 
-func encodeInterface(input interface{}, riakRequest requestData) ([]byte, *riakMapOperation, error) {
-	op := &riakMapOperation{}
+func encodeInterface(input interface{}, riakRequest requestData) ([]byte, *riak.MapOperation, error) {
+	op := &riak.MapOperation{}
 
 	var rValue reflect.Value
 
@@ -40,7 +42,7 @@ func encodeInterface(input interface{}, riakRequest requestData) ([]byte, *riakM
 	return riakContext, op, nil
 }
 
-func (e *mapEncoder) encodeStruct(rValue reflect.Value, op *riakMapOperation, path []string) ([]byte, error) {
+func (e *mapEncoder) encodeStruct(rValue reflect.Value, op *riak.MapOperation, path []string) ([]byte, error) {
 	rType := rValue.Type()
 
 	num := rType.NumField()
@@ -78,7 +80,7 @@ func (e *mapEncoder) encodeStruct(rValue reflect.Value, op *riakMapOperation, pa
 	return riakContext, nil
 }
 
-func (e *mapEncoder) encodeValue(op *riakMapOperation, itemKey string, f reflect.Value, path []string) error {
+func (e *mapEncoder) encodeValue(op *riak.MapOperation, itemKey string, f reflect.Value, path []string) error {
 	switch f.Kind() {
 
 	// Ints are saved as Registers
@@ -315,7 +317,7 @@ func (e *mapEncoder) encodeValue(op *riakMapOperation, itemKey string, f reflect
 }
 
 // Arrays are saved as Registers
-func (e *mapEncoder) encodeArray(op *riakMapOperation, itemKey string, f reflect.Value) error {
+func (e *mapEncoder) encodeArray(op *riak.MapOperation, itemKey string, f reflect.Value) error {
 
 	// Empty
 	if f.Len() == 0 {
@@ -341,7 +343,7 @@ func (e *mapEncoder) encodeArray(op *riakMapOperation, itemKey string, f reflect
 
 // Slices are saved as Sets
 // []byte and []uint8 are saved as Registers
-func (e *mapEncoder) encodeSlice(op *riakMapOperation, itemKey string, f reflect.Value) error {
+func (e *mapEncoder) encodeSlice(op *riak.MapOperation, itemKey string, f reflect.Value) error {
 	sliceType := f.Type().Elem().Kind()
 	sliceLength := f.Len()
 	sliceVal := f.Slice(0, sliceLength)
@@ -415,7 +417,7 @@ func (e *mapEncoder) encodeSlice(op *riakMapOperation, itemKey string, f reflect
 	return nil
 }
 
-func (e *mapEncoder) encodeMap(op *riakMapOperation, itemKey string, f reflect.Value, path []string) error {
+func (e *mapEncoder) encodeMap(op *riak.MapOperation, itemKey string, f reflect.Value, path []string) error {
 	keys := f.MapKeys()
 
 	subOp := op.Map(itemKey)

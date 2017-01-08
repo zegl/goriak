@@ -5,7 +5,7 @@ import (
 )
 
 // Delete deletes the value stored as key
-func (c *Command) Delete(key string) *Command {
+func (c Command) Delete(key string) Command {
 	builder := riak.NewDeleteValueCommandBuilder().
 		WithBucket(c.bucket).
 		WithBucketType(c.bucketType).
@@ -20,7 +20,7 @@ func (c *Command) Delete(key string) *Command {
 
 // AllKeys returns all keys in the set bucket.
 // The response will be sent in multiple batches to callback
-func (c *Command) AllKeys(callback func([]string) error) *Command {
+func (c Command) AllKeys(callback func([]string) error) Command {
 	cmd, err := riak.NewListKeysCommandBuilder().
 		WithBucket(c.bucket).
 		WithBucketType(c.bucketType).
