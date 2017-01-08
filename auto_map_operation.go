@@ -83,21 +83,3 @@ func (mapOp *riakMapOperation) Map(key string) *riakMapOperation {
 	mapOp.maps[key] = innerMapOp
 	return innerMapOp
 }
-
-func (mapOp *riakMapOperation) hasRemoves(includeRemoveFromSets bool) bool {
-	nestedHaveRemoves := false
-	for _, m := range mapOp.maps {
-		if m.hasRemoves(false) {
-			nestedHaveRemoves = true
-			break
-		}
-	}
-
-	rv := nestedHaveRemoves
-
-	if includeRemoveFromSets {
-		rv = rv || len(mapOp.removeFromSets) > 0
-	}
-
-	return rv
-}
