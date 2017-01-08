@@ -168,6 +168,10 @@ func transMapToStruct(data *riak.Map, rValue reflect.Value, rType reflect.Type, 
 					value:  setValue,
 				}
 
+				// Cleans the object for empty objects
+				// This is because of backwards compability reasons with goriak <= 2.4
+				resSet.removeEmptyItems()
+
 				fieldVal.Set(reflect.ValueOf(resSet))
 
 			case "*goriak.Flag":

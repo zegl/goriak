@@ -10,10 +10,11 @@ import (
 
 func TestAutoMapSet(t *testing.T) {
 	type ourTestType struct {
+		Val   string
 		Items *Set
 	}
 
-	testVal := ourTestType{}
+	testVal := ourTestType{Val: "valvalval"}
 	result, errset := bucket().Set(testVal).Run(con())
 
 	if errset != nil {

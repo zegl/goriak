@@ -32,16 +32,7 @@ type Set struct {
 
 // Value returnes the raw values from the Set
 func (s *Set) Value() [][]byte {
-	r := make([][]byte, 0)
-
-	// Remove empty items
-	for _, v := range s.value {
-		if len(v) != 0 {
-			r = append(r, v)
-		}
-	}
-
-	return r
+	return s.value
 }
 
 // Strings returns the same data as Value(), but encoded as strings
@@ -60,6 +51,11 @@ func (s *Set) Strings() []string {
 // Add adds an item to the direct value of the Set.
 // Save the changes to Riak with Set.Exec() or SetMap().
 func (s *Set) Add(add []byte) *Set {
+	// Do not allow empty items (for backwards compability with goriak < 2.4)
+	if len(add) == 0 {
+		return s
+	}
+
 	// Make sure that our set doesn't already contain this value
 	for _, item := range s.value {
 		if bytes.Equal(item, add) {
@@ -234,4 +230,15 @@ func (s *Set) UnmarshalJSON(data []byte) error {
 
 	s.value = values
 	return nil
+}
+
+func (s *Set) removeEmptyItems() {
+	for i, v := range s.value {
+		if len(v) == 0 {
+			// Remove without perserving order
+			s.value[i] = s.value[len(s.value)-1]
+			s.value[len(s.value)-1] = nil
+			s.value = s.value[:len(s.value)-1]
+		}
+	}
 }
