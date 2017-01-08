@@ -212,8 +212,6 @@ func (e *mapEncoder) encodeValue(op *riak.MapOperation, itemKey string, f reflec
 
 			// Add an empty item
 			if f.IsNil() {
-				op.AddToSet(itemKey, []byte{})
-
 				// Initialize counter if Set() was given a struct pointer
 				if e.isModifyable {
 					resSet := &Set{

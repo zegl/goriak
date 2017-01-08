@@ -10,10 +10,11 @@ import (
 
 func TestAutoMapSet(t *testing.T) {
 	type ourTestType struct {
+		Val   string
 		Items *Set
 	}
 
-	testVal := ourTestType{}
+	testVal := ourTestType{Val: "valvalval"}
 	result, errset := bucket().Set(testVal).Run(con())
 
 	if errset != nil {
@@ -579,4 +580,38 @@ func TestSetJSONmarshal(t *testing.T) {
 		t.Error("Unexpected length")
 	}
 
+}
+
+func TestSetBackwardsCompabilityEmptyItems(t *testing.T) {
+	s := NewSet()
+	s.AddString("A")
+	s.AddString("B")
+	s.value = append(s.value, []byte{})
+
+	if len(s.Strings()) != 3 {
+		t.Error("Unexpected amount of items")
+	}
+
+	// Run cleanup
+	s.removeEmptyItems()
+	if len(s.Strings()) != 2 {
+		t.Error("Unexpected amount of items")
+	}
+
+	a := false
+	b := false
+
+	for _, s := range s.Strings() {
+		if s == "A" {
+			a = true
+		}
+
+		if s == "B" {
+			b = true
+		}
+	}
+
+	if !a || !b {
+		t.Error("Unexpected content")
+	}
 }
