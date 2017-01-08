@@ -62,8 +62,7 @@ func TestAllKeys(t *testing.T) {
 }
 
 func TestAllKeysNoBucket(t *testing.T) {
-	cmd := &Command{}
-	_, err := cmd.AllKeys(func(res []string) error {
+	_, err := Command{}.AllKeys(func(res []string) error {
 		return nil
 	}).Run(con())
 

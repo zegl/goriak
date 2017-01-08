@@ -14,7 +14,7 @@ type SecondaryIndexQueryResult struct {
 // KeysInIndex returns all keys in the index indexName that has the value indexValue
 // The values will be returned to the callbak function
 // When all keys have been returned SecondaryIndexQueryResult.IsComplete will be true
-func (c *Command) KeysInIndex(indexName, indexValue string, callback func(SecondaryIndexQueryResult)) *Command {
+func (c Command) KeysInIndex(indexName, indexValue string, callback func(SecondaryIndexQueryResult)) Command {
 
 	cb := func(res []*riak.SecondaryIndexQueryResult) error {
 		if len(res) == 0 {
