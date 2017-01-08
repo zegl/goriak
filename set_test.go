@@ -581,3 +581,20 @@ func TestSetJSONmarshal(t *testing.T) {
 	}
 
 }
+
+func TestSetBackwardsCompabilityEmptyItems(t *testing.T) {
+	s := NewSet()
+	s.AddString("A")
+	s.AddString("B")
+	s.value = append(s.value, []byte{})
+
+	if len(s.Strings()) != 3 {
+		t.Error("Unexpected amount of items")
+	}
+
+	// Run cleanup
+	s.removeEmptyItems()
+	if len(s.Strings()) != 2 {
+		t.Error("Unexpected amount of items")
+	}
+}
