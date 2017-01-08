@@ -65,7 +65,7 @@ func (c *Command) Set(val interface{}) *Command {
 	builder := riak.NewUpdateMapCommandBuilder().
 		WithBucket(c.bucket).
 		WithBucketType(c.bucketType).
-		WithMapOperation(filterMapOperation(&c, op, []string{}, nil))
+		WithMapOperation(filterMapOperation(c, op, []string{}, nil))
 
 	if len(riakContext) > 0 {
 		builder.WithContext(riakContext)

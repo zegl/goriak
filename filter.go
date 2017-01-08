@@ -9,7 +9,7 @@ import (
 // Can be combined with FilterExclude() to form more complicated patterns.
 // Use FilterInclude or FilterExclude without parameters to include/exclude the root object.
 // If the same field is both included and excluded the include is prioritized.
-func (c Command) FilterInclude(path ...string) Command {
+func (c *Command) FilterInclude(path ...string) *Command {
 	if c.updateMapCommandBuilder != nil {
 		c.err = errors.New("FilterInclude() must be called before Set()")
 		return c
@@ -22,7 +22,7 @@ func (c Command) FilterInclude(path ...string) Command {
 
 // FilterExclude does the opposite of FilterInclude.
 // See FinterInclude for more info.
-func (c Command) FilterExclude(path ...string) Command {
+func (c *Command) FilterExclude(path ...string) *Command {
 	if c.updateMapCommandBuilder != nil {
 		c.err = errors.New("FilterExclude() must be called before Set()")
 		return c
@@ -33,7 +33,7 @@ func (c Command) FilterExclude(path ...string) Command {
 	return c
 }
 
-func (c Command) filterAllowPath(path ...string) bool {
+func (c *Command) filterAllowPath(path ...string) bool {
 
 	// No filter has been set: Allow all paths
 	if len(c.includeFilter) == 0 && len(c.excludeFilter) == 0 {
