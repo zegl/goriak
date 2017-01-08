@@ -13,7 +13,7 @@ type requestData struct {
 // Get retreives a Map from Riak.
 // Get performs automatic conversion from Riak Maps to your Go datatype.
 // See Set() for more information.
-func (c Command) Get(key string, output interface{}) Command {
+func (c *Command) Get(key string, output interface{}) *Command {
 	c.key = key
 	c.output = output
 
@@ -49,7 +49,7 @@ Set automatically converts your Go datatype to the equivalent type in Riak
 	| map        | map       |
 	| time.Time  | register  |
 */
-func (c Command) Set(val interface{}) Command {
+func (c *Command) Set(val interface{}) *Command {
 
 	riakContext, op, err := encodeInterface(val, requestData{
 		bucket:     c.bucket,

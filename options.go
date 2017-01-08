@@ -1,6 +1,6 @@
 package goriak
 
-func (c Command) AddToIndex(key, value string) Command {
+func (c *Command) AddToIndex(key, value string) *Command {
 	// Create map if needed
 	if c.indexes == nil {
 		c.indexes = make(map[string][]string)
