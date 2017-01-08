@@ -65,7 +65,7 @@ func (c *Command) Set(val interface{}) *Command {
 	builder := riak.NewUpdateMapCommandBuilder().
 		WithBucket(c.bucket).
 		WithBucketType(c.bucketType).
-		WithMapOperation(op)
+		WithMapOperation(filterMapOperation(c, op, []string{}, nil))
 
 	if len(riakContext) > 0 {
 		builder.WithContext(riakContext)
@@ -75,4 +75,68 @@ func (c *Command) Set(val interface{}) *Command {
 	c.commandType = riakUpdateMapCommand
 
 	return c
+}
+
+// Takes a *riakMapOperation (our type) applies any filtering rules set on the Command
+// Returns a *riak.MapOperation (from riak-go-client)
+func filterMapOperation(cmd *Command, input *riakMapOperation, path []string, op *riak.MapOperation) *riak.MapOperation {
+
+	if op == nil {
+		op = &riak.MapOperation{}
+	}
+
+	// Not implemented:
+	// RemoveRegister()
+	// RemoveCounter()
+	// RemoveFlag()
+	// RemoveMap()
+	// RemoveSet()
+
+	// AddToSet
+	for key, values := range input.addToSets {
+		for _, value := range values {
+			if cmd.filterAllowPath(append(path, key)...) {
+				op.AddToSet(key, value)
+			}
+		}
+	}
+
+	// RemoveFromSet
+	for key, values := range input.removeFromSets {
+		for _, value := range values {
+			if cmd.filterAllowPath(append(path, key)...) {
+				op.RemoveFromSet(key, value)
+			}
+		}
+	}
+
+	// SetRegister
+	for key, value := range input.registersToSet {
+		if cmd.filterAllowPath(append(path, key)...) {
+			op.SetRegister(key, value)
+		}
+	}
+
+	// Map
+	for key, value := range input.maps {
+		// No filtering is performed here
+		subOp := op.Map(key)
+		filterMapOperation(cmd, value, append(path, key), subOp)
+	}
+
+	// IncrementCounter
+	for key, value := range input.incrementCounters {
+		if cmd.filterAllowPath(append(path, key)...) {
+			op.IncrementCounter(key, value)
+		}
+	}
+
+	// SetFlag
+	for key, value := range input.flagsToSet {
+		if cmd.filterAllowPath(append(path, key)...) {
+			op.SetFlag(key, value)
+		}
+	}
+
+	return op
 }

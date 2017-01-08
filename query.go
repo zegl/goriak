@@ -72,6 +72,10 @@ type Command struct {
 	riakRW uint32 // Nodes that successfully deleted item from backend storage
 	riakPR uint32 // Primary nodes during read
 	riakR  uint32 // Nodes during read
+
+	// Filters
+	includeFilter [][]string
+	excludeFilter [][]string
 }
 
 // Result contains your query result data from Run()
