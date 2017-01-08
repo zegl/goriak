@@ -87,38 +87,38 @@ type Result struct {
 }
 
 // Bucket specifies the bucket and bucket type that your following command will be performed on.
-func Bucket(bucket, bucketType string) Command {
-	return Command{
+func Bucket(bucket, bucketType string) *Command {
+	return &Command{
 		bucket:     bucket,
 		bucketType: bucketType,
 	}
 }
 
 // Key specifies the Riak key that following commands such as Get() and MapOperation()
-func (c Command) Key(key string) Command {
+func (c *Command) Key(key string) *Command {
 	c.key = key
 	return c
 }
 
-func (c Command) VClock(vclock []byte) Command {
+func (c *Command) VClock(vclock []byte) *Command {
 	c.vclock = vclock
 	return c
 }
 
-func (c Command) ConflictResolver(fn func([]ConflictObject) ResolvedConflict) Command {
+func (c *Command) ConflictResolver(fn func([]ConflictObject) ResolvedConflict) *Command {
 	c.conflictResolverFunc = fn
 	return c
 }
 
 // Limit sets the limit returned in KeysInIndex
 // A limit of 0 means unlimited
-func (c Command) Limit(limit uint32) Command {
+func (c *Command) Limit(limit uint32) *Command {
 	c.limit = limit
 	return c
 }
 
 // Run performs the action built in Command and runs it against the Riak connection specified by Session.
-func (c Command) Run(session *Session) (*Result, error) {
+func (c *Command) Run(session *Session) (*Result, error) {
 
 	if session == nil {
 		return nil, errors.New("No session provided")
@@ -197,7 +197,7 @@ func (c Command) Run(session *Session) (*Result, error) {
 	}
 }
 
-func (c Command) resultFetchMapCommand(cmd *riak.FetchMapCommand) (*Result, error) {
+func (c *Command) resultFetchMapCommand(cmd *riak.FetchMapCommand) (*Result, error) {
 	if !cmd.Success() {
 		return nil, errors.New("Not successful")
 	}
@@ -226,7 +226,7 @@ func (c Command) resultFetchMapCommand(cmd *riak.FetchMapCommand) (*Result, erro
 	}, nil
 }
 
-func (c Command) resultUpdateMapCommand(cmd *riak.UpdateMapCommand) (*Result, error) {
+func (c *Command) resultUpdateMapCommand(cmd *riak.UpdateMapCommand) (*Result, error) {
 	if !cmd.Success() {
 		return nil, errors.New("Not successful")
 	}
@@ -242,7 +242,7 @@ func (c Command) resultUpdateMapCommand(cmd *riak.UpdateMapCommand) (*Result, er
 	}, nil
 }
 
-func (c Command) resultStoreValueCommand(cmd *riak.StoreValueCommand) (*Result, error) {
+func (c *Command) resultStoreValueCommand(cmd *riak.StoreValueCommand) (*Result, error) {
 	if !cmd.Success() {
 		return nil, errors.New("Not successful")
 	}
@@ -258,7 +258,7 @@ func (c Command) resultStoreValueCommand(cmd *riak.StoreValueCommand) (*Result, 
 	}, nil
 }
 
-func (c Command) fetchValueWithResolver(session *Session, values []*riak.Object) ([]byte, []byte, error) {
+func (c *Command) fetchValueWithResolver(session *Session, values []*riak.Object) ([]byte, []byte, error) {
 
 	// Conflict resolution necessary
 	if len(values) > 1 {
@@ -303,7 +303,7 @@ func (c Command) fetchValueWithResolver(session *Session, values []*riak.Object)
 	return values[0].Value, values[0].VClock, nil
 }
 
-func (c Command) resultFetchValueCommandJSON(session *Session, cmd *riak.FetchValueCommand) (*Result, error) {
+func (c *Command) resultFetchValueCommandJSON(session *Session, cmd *riak.FetchValueCommand) (*Result, error) {
 	if !cmd.Success() {
 		return nil, errors.New("Not successful")
 	}
@@ -332,7 +332,7 @@ func (c Command) resultFetchValueCommandJSON(session *Session, cmd *riak.FetchVa
 	}, nil
 }
 
-func (c Command) resultFetchValueCommandRaw(session *Session, cmd *riak.FetchValueCommand) (*Result, error) {
+func (c *Command) resultFetchValueCommandRaw(session *Session, cmd *riak.FetchValueCommand) (*Result, error) {
 	if !cmd.Success() {
 		return nil, errors.New("Not successful")
 	}
@@ -357,7 +357,7 @@ func (c Command) resultFetchValueCommandRaw(session *Session, cmd *riak.FetchVal
 	}, nil
 }
 
-func (c Command) resultListKeysCommand(cmd *riak.ListKeysCommand) (*Result, error) {
+func (c *Command) resultListKeysCommand(cmd *riak.ListKeysCommand) (*Result, error) {
 	if !cmd.Success() {
 		return nil, errors.New("Not successful")
 	}
@@ -365,7 +365,7 @@ func (c Command) resultListKeysCommand(cmd *riak.ListKeysCommand) (*Result, erro
 	return &Result{}, nil
 }
 
-func (c Command) resultDeleteValueCommand(cmd *riak.DeleteValueCommand) (*Result, error) {
+func (c *Command) resultDeleteValueCommand(cmd *riak.DeleteValueCommand) (*Result, error) {
 	if !cmd.Success() {
 		return nil, errors.New("Not successful")
 	}
@@ -373,7 +373,7 @@ func (c Command) resultDeleteValueCommand(cmd *riak.DeleteValueCommand) (*Result
 	return &Result{}, nil
 }
 
-func (c Command) resultSecondaryIndexQueryCommand(cmd *riak.SecondaryIndexQueryCommand) (*Result, error) {
+func (c *Command) resultSecondaryIndexQueryCommand(cmd *riak.SecondaryIndexQueryCommand) (*Result, error) {
 	if !cmd.Success() {
 		return nil, errors.New("Not successful")
 	}

@@ -14,8 +14,7 @@ func con() *Session {
 	return c
 }
 
-func bucket() Command {
-
+func bucket() *Command {
 	return Bucket("testsuitemap", "maps")
 }
 
