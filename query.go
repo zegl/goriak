@@ -28,7 +28,8 @@ type Command struct {
 	key        string
 
 	// Limit result for SecondaryIndex queries
-	limit uint32
+	limit             uint32
+	indexContinuation []byte
 
 	// Temporary information used by Run()
 	err         error
@@ -76,10 +77,11 @@ type Command struct {
 
 // Result contains your query result data from Run()
 type Result struct {
-	NotFound bool   // Wether or not the item was not found when using Get, GetJSON, or GetRaw.
-	Key      string // Returns your automatically generated key when using Set, SetJSON, or SetRaw.
-	Context  []byte // Returns the Riak Context used in map operations. Is set when using Get.
-	VClock   []byte
+	NotFound     bool   // Wether or not the item was not found when using Get, GetJSON, or GetRaw.
+	Key          string // Returns your automatically generated key when using Set, SetJSON, or SetRaw.
+	Context      []byte // Returns the Riak Context used in map operations. Is set when using Get.
+	VClock       []byte
+	Continuation []byte // Continuation in case of SecondaryIndex queries
 }
 
 // Bucket specifies the bucket and bucket type that your following command will be performed on.
@@ -374,5 +376,7 @@ func (c Command) resultSecondaryIndexQueryCommand(cmd *riak.SecondaryIndexQueryC
 		return nil, errors.New("Not successful")
 	}
 
-	return &Result{}, nil
+	return &Result{
+		Continuation: cmd.Response.Continuation,
+	}, nil
 }

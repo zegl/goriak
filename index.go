@@ -15,7 +15,6 @@ type SecondaryIndexQueryResult struct {
 // The values will be returned to the callbak function
 // When all keys have been returned SecondaryIndexQueryResult.IsComplete will be true
 func (c Command) KeysInIndex(indexName, indexValue string, callback func(SecondaryIndexQueryResult)) Command {
-
 	cb := func(res []*riak.SecondaryIndexQueryResult) error {
 		if len(res) == 0 {
 			callback(SecondaryIndexQueryResult{
@@ -45,5 +44,10 @@ func (c Command) KeysInIndex(indexName, indexValue string, callback func(Seconda
 	c.secondaryIndexQueryCommandBuilder = builder
 	c.commandType = riakSecondaryIndexQueryCommand
 
+	return c
+}
+
+func (c Command) IndexContinuation(continuation []byte) Command {
+	c.indexContinuation = continuation
 	return c
 }

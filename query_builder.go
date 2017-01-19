@@ -50,6 +50,10 @@ func (c Command) buildSecondaryIndexQueryCommand() Command {
 		c.secondaryIndexQueryCommandBuilder.WithMaxResults(c.limit)
 	}
 
+	if len(c.indexContinuation) > 0 {
+		c.secondaryIndexQueryCommandBuilder.WithContinuation(c.indexContinuation)
+	}
+
 	// Build it!
 	c.riakCommand, c.err = c.secondaryIndexQueryCommandBuilder.Build()
 	return c
