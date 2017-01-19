@@ -298,7 +298,6 @@ func transRiakToSlice(sliceValue reflect.Value, registerName string, data *riak.
 
 				// Override the Slice from "Userland"
 				sliceValue.Set(finalSliceValue)
-
 			}
 
 			return nil
@@ -317,58 +316,72 @@ func bytesToValue(input []byte, outputType reflect.Type) (reflect.Value, error) 
 
 	outputKind := outputType.Kind()
 
+	// The final type (can be a custom type for example)
+	newWithSameType := reflect.New(outputType).Elem()
+
 	switch outputKind {
 	case reflect.String:
-		return reflect.ValueOf(string(input)), nil
+		newWithSameType.SetString(string(input))
+		return newWithSameType, nil
 
 	case reflect.Int:
 		if i, err := strconv.ParseInt(string(input), 10, 0); err == nil {
-			return reflect.ValueOf(int(i)), nil
+			newWithSameType.SetInt(i)
+			return newWithSameType, nil
 		}
 
 	case reflect.Int8:
 		if i, err := strconv.ParseInt(string(input), 10, 8); err == nil {
-			return reflect.ValueOf(int8(i)), nil
+			newWithSameType.SetInt(i)
+			return newWithSameType, nil
 		}
 
 	case reflect.Int16:
 		if i, err := strconv.ParseInt(string(input), 10, 16); err == nil {
-			return reflect.ValueOf(int16(i)), nil
+			newWithSameType.SetInt(i)
+			return newWithSameType, nil
 		}
 
 	case reflect.Int32:
 		if i, err := strconv.ParseInt(string(input), 10, 32); err == nil {
-			return reflect.ValueOf(int32(i)), nil
+			newWithSameType.SetInt(i)
+			return newWithSameType, nil
 		}
 
 	case reflect.Int64:
 		if i, err := strconv.ParseInt(string(input), 10, 64); err == nil {
-			return reflect.ValueOf(int64(i)), nil
+			newWithSameType.SetInt(i)
+			return newWithSameType, nil
 		}
 
 	case reflect.Uint:
 		if i, err := strconv.ParseUint(string(input), 10, 0); err == nil {
-			return reflect.ValueOf(uint(i)), nil
+			newWithSameType.SetUint(i)
+			return newWithSameType, nil
 		}
 
 	case reflect.Uint8:
 		if i, err := strconv.ParseUint(string(input), 10, 8); err == nil {
-			return reflect.ValueOf(uint8(i)), nil
+			newWithSameType.SetUint(i)
+			return newWithSameType, nil
 		}
 
 	case reflect.Uint16:
 		if i, err := strconv.ParseUint(string(input), 10, 16); err == nil {
-			return reflect.ValueOf(uint16(i)), nil
+			newWithSameType.SetUint(i)
+			return newWithSameType, nil
 		}
 
 	case reflect.Uint32:
 		if i, err := strconv.ParseUint(string(input), 10, 32); err == nil {
-			return reflect.ValueOf(uint32(i)), nil
+			newWithSameType.SetUint(i)
+			return newWithSameType, nil
 		}
 
 	case reflect.Uint64:
 		if i, err := strconv.ParseUint(string(input), 10, 64); err == nil {
-			return reflect.ValueOf(uint64(i)), nil
+			newWithSameType.SetUint(i)
+			return newWithSameType, nil
 		}
 
 	case reflect.Slice:

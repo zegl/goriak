@@ -1,6 +1,7 @@
 package goriak
 
 import (
+	"reflect"
 	"testing"
 )
 
@@ -93,4 +94,40 @@ func TestAutoMapByteSlice(t *testing.T) {
 	if res.Val != "Byte Slice" {
 		t.Error("Wrong Val")
 	}
+}
+
+func TestCustomTypeUint8(t *testing.T) {
+	type CustomNumber uint8
+	type CustomString string
+	type CustomSlice []uint8
+	type tt struct {
+		Num CustomNumber
+		Str CustomString
+		Sli CustomSlice
+	}
+
+	input := tt{
+		Num: 50,
+		Str: "Hello",
+		Sli: CustomSlice{1, 2, 3, 4, 5},
+	}
+
+	res, err := bucket().Set(input).Run(con())
+	if err != nil {
+		t.Error(err)
+	}
+
+	var output tt
+
+	_, err = bucket().Get(res.Key, &output).Run(con())
+	if err != nil {
+		t.Error(err)
+	}
+
+	if !reflect.DeepEqual(input, output) {
+		t.Logf("%+v", input)
+		t.Logf("%+v", output)
+	}
+
+	t.Logf("%+v", output)
 }
