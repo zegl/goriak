@@ -143,8 +143,8 @@ func TestJSONSetIndex(t *testing.T) {
 
 	for _, u := range users {
 		_, err := Bucket("json", "default").
-			AddToIndex("ageC_bin", u.Age).
 			SetJSON(u).
+			AddToIndex("ageC_bin", u.Age).
 			Run(con())
 
 		if err != nil {

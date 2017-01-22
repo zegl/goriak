@@ -11,12 +11,14 @@ import (
 
 // SetJSON saves value as key in the bucket bucket/bucketType
 // Values can automatically be added to indexes with the struct tag goriakindex
-func (c *Command) SetJSON(value interface{}) *Command {
+func (c *Command) SetJSON(value interface{}) (cmdSet *commandSet) {
 	by, err := json.Marshal(value)
 
+	cmdSet = &commandSet{Command: c}
+
 	if err != nil {
-		c.err = err
-		return c
+		cmdSet.err = err
+		return
 	}
 
 	object := riak.Object{
@@ -73,8 +75,8 @@ func (c *Command) SetJSON(value interface{}) *Command {
 					}
 
 				default:
-					c.err = errors.New("Did not know how to set index: " + refType.Field(i).Name)
-					return c
+					cmdSet.err = errors.New("Did not know how to set index: " + refType.Field(i).Name)
+					return
 				}
 
 			// Int
@@ -96,8 +98,8 @@ func (c *Command) SetJSON(value interface{}) *Command {
 				)
 
 			default:
-				c.err = errors.New("Did not know how to set index: " + refType.Field(i).Name)
-				return c
+				cmdSet.err = errors.New("Did not know how to set index: " + refType.Field(i).Name)
+				return
 			}
 		}
 	}
@@ -106,26 +108,23 @@ func (c *Command) SetJSON(value interface{}) *Command {
 		WithBucket(c.bucket).
 		WithBucketType(c.bucketType)
 
-	c.storeValueObject = &object
-	c.storeValueCommandBuilder = builder
+	cmdSet.storeValueObject = &object
+	cmdSet.storeValueCommandBuilder = builder
 
-	// c.riakCommand = cmd
-	c.commandType = riakStoreValueCommand
-
-	return c
+	return
 }
 
 // GetJSON is the same as GetRaw, but with automatic JSON unmarshalling
-func (c *Command) GetJSON(key string, output interface{}) *Command {
+func (c *Command) GetJSON(key string, output interface{}) *commandGet {
 	builder := riak.NewFetchValueCommandBuilder().
 		WithBucket(c.bucket).
 		WithBucketType(c.bucketType).
 		WithKey(key)
 
-	c.key = key
-	c.fetchValueCommandBuilder = builder
-	c.commandType = riakFetchValueCommandJSON
-	c.output = output
-
-	return c
+	return &commandGet{
+		Command:                c,
+		getValueCommandBuilder: builder,
+		key:    key,
+		output: output,
+	}
 }

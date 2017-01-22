@@ -1,6 +1,7 @@
 package goriak
 
 import (
+	"errors"
 	riak "github.com/basho/riak-go-client"
 )
 
@@ -10,28 +11,13 @@ type requestData struct {
 	key        string
 }
 
-// Get retreives a Map from Riak.
-// Get performs automatic conversion from Riak Maps to your Go datatype.
-// See Set() for more information.
-func (c *Command) Get(key string, output interface{}) *Command {
-	c.key = key
-	c.output = output
+type commandMapSet struct {
+	*Command
 
-	cmd, err := riak.NewFetchMapCommandBuilder().
-		WithBucket(c.bucket).
-		WithBucketType(c.bucketType).
-		WithKey(c.key).
-		Build()
+	key   string
+	input interface{}
 
-	if err != nil {
-		c.err = err
-		return c
-	}
-
-	c.riakCommand = cmd
-	c.commandType = riakFetchMapCommand
-
-	return c
+	builder *riak.UpdateMapCommandBuilder
 }
 
 /*
@@ -49,9 +35,18 @@ Set automatically converts your Go datatype to the equivalent type in Riak
 	| map        | map       |
 	| time.Time  | register  |
 */
-func (c *Command) Set(val interface{}) *Command {
+func (cmd *Command) Set(val interface{}) *commandMapSet {
 
-	riakContext, op, err := encodeInterface(val, requestData{
+	c := &commandMapSet{
+		Command: cmd,
+		input:   val,
+	}
+
+	c.builder = riak.NewUpdateMapCommandBuilder().
+		WithBucket(c.bucket).
+		WithBucketType(c.bucketType)
+
+	/*riakContext, op, err := encodeInterface(val, requestData{
 		bucket:     c.bucket,
 		bucketType: c.bucketType,
 		key:        c.key,
@@ -72,14 +67,14 @@ func (c *Command) Set(val interface{}) *Command {
 	}
 
 	c.updateMapCommandBuilder = builder
-	c.commandType = riakUpdateMapCommand
+	c.commandType = riakUpdateMapCommand*/
 
 	return c
 }
 
 // Takes a *riakMapOperation (our type) applies any filtering rules set on the Command
 // Returns a *riak.MapOperation (from riak-go-client)
-func filterMapOperation(cmd *Command, input *riakMapOperation, path []string, op *riak.MapOperation) *riak.MapOperation {
+func filterMapOperation(cmd *commandMapSet, input *riakMapOperation, path []string, op *riak.MapOperation) *riak.MapOperation {
 
 	if op == nil {
 		op = &riak.MapOperation{}
@@ -139,4 +134,49 @@ func filterMapOperation(cmd *Command, input *riakMapOperation, path []string, op
 	}
 
 	return op
+}
+
+func (c *commandMapSet) Run(session *Session) (*Result, error) {
+	riakContext, op, err := encodeInterface(c.input, requestData{
+		bucket:     c.bucket,
+		bucketType: c.bucketType,
+		key:        c.key,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	// Set context
+	if len(riakContext) > 0 {
+		c.builder.WithContext(riakContext)
+	}
+
+	// Set the map operation
+	c.builder.WithMapOperation(filterMapOperation(c, op, []string{}, nil))
+
+	cmd, err := c.builder.Build()
+	if err != nil {
+		return nil, err
+	}
+
+	err = session.riak.Execute(cmd)
+	if err != nil {
+		return nil, err
+	}
+
+	updateCmd := cmd.(*riak.UpdateMapCommand)
+
+	if !updateCmd.Success() {
+		return nil, errors.New("Not successful")
+	}
+
+	if c.key != "" {
+		return &Result{
+			Key: c.key,
+		}, nil
+	}
+
+	return &Result{
+		Key: updateCmd.Response.GeneratedKey,
+	}, nil
 }

@@ -1,48 +1,5 @@
 package goriak
 
-// buildStoreValueCommand completes the building if the StoreValueCommand used by SetRaw and SetJSON
-func (c *Command) buildStoreValueCommand() *Command {
-	// Set key
-	if c.key != "" {
-		c.storeValueCommandBuilder.WithKey(c.key)
-	}
-
-	// Add indexes to object if needed
-	// Indexes from Command.AddToIndex()
-	for indexName, values := range c.indexes {
-		for _, val := range values {
-			c.storeValueObject.AddToIndex(indexName, val)
-		}
-	}
-
-	// Durable writes (to backend storage)
-	if c.riakDW > 0 {
-		c.storeValueCommandBuilder.WithDw(c.riakDW)
-	}
-
-	// Primary node writes
-	if c.riakPW > 0 {
-		c.storeValueCommandBuilder.WithPw(c.riakPW)
-	}
-
-	// Node writes
-	if c.riakW > 0 {
-		c.storeValueCommandBuilder.WithW(c.riakW)
-	}
-
-	// Set VClock
-	if len(c.vclock) > 0 {
-		c.storeValueCommandBuilder.WithVClock(c.vclock)
-	}
-
-	// Set object
-	c.storeValueCommandBuilder.WithContent(c.storeValueObject)
-
-	// Build it!
-	c.riakCommand, c.err = c.storeValueCommandBuilder.Build()
-	return c
-}
-
 // buildSecondaryIndexQueryCommand completes the buildinf of the SecondaryIndexQueryCommand used by KeysInIndex
 func (c *Command) buildSecondaryIndexQueryCommand() *Command {
 	// Set limit

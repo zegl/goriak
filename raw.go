@@ -6,8 +6,8 @@ import (
 
 // SetRaw allows you to set a []byte directly to Riak.
 // SetRaw gives you full control of the data stored, compared to SetJSON and Set.
-func (c *Command) SetRaw(value []byte) *Command {
-	object := riak.Object{
+func (c *Command) SetRaw(value []byte) *commandSet {
+	object := &riak.Object{
 		Value: value,
 	}
 
@@ -15,11 +15,11 @@ func (c *Command) SetRaw(value []byte) *Command {
 		WithBucket(c.bucket).
 		WithBucketType(c.bucketType)
 
-	c.storeValueObject = &object
-	c.storeValueCommandBuilder = builder
-	c.commandType = riakStoreValueCommand
-
-	return c
+	return &commandSet{
+		Command:                  c,
+		storeValueObject:         object,
+		storeValueCommandBuilder: builder,
+	}
 }
 
 // GetRaw retreives key as a []byte.
