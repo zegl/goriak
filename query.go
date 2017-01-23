@@ -27,27 +27,3 @@ func Bucket(bucket, bucketType string) *Command {
 		bucketType: bucketType,
 	}
 }
-
-func (c *Command) resultListKeysCommand(cmd *riak.ListKeysCommand) (*Result, error) {
-	if !cmd.Success() {
-		return nil, errors.New("Not successful")
-	}
-
-	return &Result{}, nil
-}
-
-func (c *Command) resultDeleteValueCommand(cmd *riak.DeleteValueCommand) (*Result, error) {
-	if !cmd.Success() {
-		return nil, errors.New("Not successful")
-	}
-
-	return &Result{}, nil
-}
-
-func (c *Command) resultSecondaryIndexQueryCommand(cmd *riak.SecondaryIndexQueryCommand) (*Result, error) {
-	if !cmd.Success() {
-		return nil, errors.New("Not successful")
-	}
-
-	return &Result{}, nil
-}
