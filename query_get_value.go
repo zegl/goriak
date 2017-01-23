@@ -63,9 +63,9 @@ func (c *commandGet) fetchValueWithResolver(session *Session, values []*riak.Obj
 
 		// Save resolution
 		Bucket(c.bucket, c.bucketType).
+			SetRaw(useObj.Value).
 			Key(c.key).
 			VClock(useObj.VClock).
-			SetRaw(useObj.Value).
 			Run(session)
 
 		return useObj.Value, useObj.VClock, nil
@@ -126,4 +126,8 @@ func (c *commandGet) resultFetchValueCommandRaw(session *Session, cmd *riak.Fetc
 		Key:    c.key,
 		VClock: vclock,
 	}, nil
+}
+
+func (c *commandGet) Run(session *Session) (*Result, error) {
+	return nil, nil
 }

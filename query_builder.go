@@ -1,17 +1,6 @@
 package goriak
 
-// buildSecondaryIndexQueryCommand completes the buildinf of the SecondaryIndexQueryCommand used by KeysInIndex
-func (c *Command) buildSecondaryIndexQueryCommand() *Command {
-	// Set limit
-	if c.limit != 0 {
-		c.secondaryIndexQueryCommandBuilder.WithMaxResults(c.limit)
-	}
-
-	// Build it!
-	c.riakCommand, c.err = c.secondaryIndexQueryCommandBuilder.Build()
-	return c
-}
-
+/*
 func (c *Command) buildUpdateMapQueryCommand() *Command {
 	if c.key != "" {
 		c.updateMapCommandBuilder.WithKey(c.key)
@@ -90,3 +79,4 @@ func (c *Command) buildDeleteValueCommand() *Command {
 	c.riakCommand, c.err = c.deleteValueCommandBuilder.Build()
 	return c
 }
+*/

@@ -2,7 +2,7 @@ package goriak
 
 // WithPw sets the amount of primary nodes required to report back during writes.
 // Used with Set(), SetRaw(), SetJSON(), and Delete().
-func (c *Command) WithPw(pw uint32) *Command {
+/*func (c *Command) WithPw(pw uint32) *Command {
 	c.riakPW = pw
 	return c
 }
@@ -41,3 +41,4 @@ func (c *Command) WithR(r uint32) *Command {
 	c.riakR = r
 	return c
 }
+*/

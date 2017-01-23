@@ -34,7 +34,7 @@ func (cmd *Command) Get(key string, output interface{}) *commandMapGet {
 	return c
 }
 
-func (c *commandMapGet) Build(session *Session) (*Result, error) {
+func (c *commandMapGet) Run(session *Session) (*Result, error) {
 	cmd, err := c.builder.Build()
 	if err != nil {
 		return nil, err

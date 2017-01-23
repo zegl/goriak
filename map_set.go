@@ -18,6 +18,9 @@ type commandMapSet struct {
 	input interface{}
 
 	builder *riak.UpdateMapCommandBuilder
+
+	includeFilter [][]string
+	excludeFilter [][]string
 }
 
 /*
@@ -69,6 +72,11 @@ func (cmd *Command) Set(val interface{}) *commandMapSet {
 	c.updateMapCommandBuilder = builder
 	c.commandType = riakUpdateMapCommand*/
 
+	return c
+}
+
+func (c *commandMapSet) Key(key string) *commandMapSet {
+	c.key = key
 	return c
 }
 

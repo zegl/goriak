@@ -10,33 +10,6 @@ type Command struct {
 	// Key information
 	bucket     string
 	bucketType string
-
-	// Limit result for SecondaryIndex queries
-	limit uint32
-
-	// Riak builder type for KeysInIndex
-	secondaryIndexQueryCommandBuilder *riak.SecondaryIndexQueryCommandBuilder
-
-	// Riak builder type for MapOperation
-	updateMapCommandBuilder *riak.UpdateMapCommandBuilder
-
-	// Riak builder type for GetRaw() and GetJSON()
-	fetchValueCommandBuilder *riak.FetchValueCommandBuilder
-
-	// Riak builder type for Delete()
-	deleteValueCommandBuilder *riak.DeleteValueCommandBuilder
-
-	// Riak Consistency options
-	riakPW uint32 // Primary nodes during write
-	riakDW uint32 // Nodes that successfully can write to backend storage
-	riakW  uint32 // Nodes during write
-	riakRW uint32 // Nodes that successfully deleted item from backend storage
-	riakPR uint32 // Primary nodes during read
-	riakR  uint32 // Nodes during read
-
-	// Filters
-	includeFilter [][]string
-	excludeFilter [][]string
 }
 
 // Result contains your query result data from Run()

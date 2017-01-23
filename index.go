@@ -1,6 +1,7 @@
 package goriak
 
 import (
+	"errors"
 	riak "github.com/basho/riak-go-client"
 )
 
@@ -60,4 +61,31 @@ func (c *Command) KeysInIndex(indexName, indexValue string, callback func(Second
 func (c *commandKeysInIndex) Limit(limit uint32) *commandKeysInIndex {
 	c.limit = limit
 	return c
+}
+
+// buildSecondaryIndexQueryCommand completes the buildinf of the SecondaryIndexQueryCommand used by KeysInIndex
+func (c *commandKeysInIndex) Run(session *Session) (*Result, error) {
+	// Set limit
+	if c.limit != 0 {
+		c.builder.WithMaxResults(c.limit)
+	}
+
+	// Build it!
+	cmd, err := c.builder.Build()
+	if err != nil {
+		return nil, err
+	}
+
+	err = session.riak.Execute(cmd)
+	if err != nil {
+		return nil, err
+	}
+
+	res := cmd.(*riak.SecondaryIndexQueryCommand)
+
+	if !res.Success() {
+		return nil, errors.New("not successful")
+	}
+
+	return &Result{}, nil
 }

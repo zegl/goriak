@@ -24,7 +24,7 @@ func TestMapOperation(t *testing.T) {
 	op := NewMapOperation()
 	op.AddToSet("Set", []byte("Three"))
 
-	_, mapoperr := Bucket("testsuitemap", "maps").Key(result.Key).MapOperation(op, res.RiakContext).Run(con())
+	_, mapoperr := Bucket("testsuitemap", "maps").MapOperation(op, res.RiakContext).Key(result.Key).Run(con())
 
 	if mapoperr != nil {
 		t.Error("MapOperr:", mapoperr)

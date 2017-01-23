@@ -108,7 +108,7 @@ func TestJSONWithIndexLimits(t *testing.T) {
 	}
 
 	// With limit
-	Bucket("json", "default").Limit(2).KeysInIndex("age_bin", "10", cb).Run(con())
+	Bucket("json", "default").KeysInIndex("age_bin", "10", cb).Limit(2).Run(con())
 
 	if foundCount != 2 {
 		t.Error("Expected 2 results, got: ", foundCount)
@@ -162,7 +162,7 @@ func TestJSONSetIndex(t *testing.T) {
 	}
 
 	// With limit
-	Bucket("json", "default").Limit(2).KeysInIndex("ageC_bin", "10", cb).Run(con())
+	Bucket("json", "default").KeysInIndex("ageC_bin", "10", cb).Limit(2).Run(con())
 
 	if foundCount != 2 {
 		t.Error("Expected 2 results, got: ", foundCount)
@@ -213,7 +213,7 @@ func TestJSONWithSliceIndex(t *testing.T) {
 	}
 
 	// With limit
-	Bucket("json", "default").Limit(2).KeysInIndex("ageslice_bin", "10", cb).Run(con())
+	Bucket("json", "default").KeysInIndex("ageslice_bin", "10", cb).Limit(2).Run(con())
 
 	if foundCount != 2 {
 		t.Error("1: Expected 2 results, got: ", foundCount)
@@ -303,7 +303,7 @@ func TestJSONIntIndex(t *testing.T) {
 	}
 
 	// With limit
-	Bucket("json", "default").Limit(2).KeysInIndex("ageint_int", "10", cb).Run(con())
+	Bucket("json", "default").KeysInIndex("ageint_int", "10", cb).Limit(2).Run(con())
 
 	if foundCount != 2 {
 		t.Error("Expected 2 results, got: ", foundCount)
@@ -355,7 +355,7 @@ func TestJSONIntSliceIndex(t *testing.T) {
 	}
 
 	// With limit
-	Bucket("json", "default").Limit(2).KeysInIndex("ageintslice_int", "10", cb).Run(con())
+	Bucket("json", "default").KeysInIndex("ageintslice_int", "10", cb).Limit(2).Run(con())
 
 	if foundCount != 2 {
 		t.Error("Expected 2 results, got: ", foundCount)

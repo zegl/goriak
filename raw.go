@@ -24,16 +24,16 @@ func (c *Command) SetRaw(value []byte) *commandSet {
 
 // GetRaw retreives key as a []byte.
 // The output will be written to output by Run().
-func (c *Command) GetRaw(key string, output *[]byte) *Command {
-	builder := riak.NewFetchValueCommandBuilder().
+func (c *Command) GetRaw(key string, output *[]byte) *commandGet {
+	cmd := &commandGet{
+		key:         key,
+		outputBytes: output,
+	}
+
+	cmd.getValueCommandBuilder = riak.NewFetchValueCommandBuilder().
 		WithBucket(c.bucket).
 		WithBucketType(c.bucketType).
 		WithKey(key)
 
-	c.fetchValueCommandBuilder = builder
-	c.key = key
-	c.commandType = riakFetchValueCommandRaw
-	c.outputBytes = output
-
-	return c
+	return cmd
 }

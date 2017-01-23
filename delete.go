@@ -1,0 +1,44 @@
+package goriak
+
+import (
+	"errors"
+	riak "github.com/basho/riak-go-client"
+)
+
+type deleteCommand struct {
+	*Command
+	builder *riak.DeleteValueCommandBuilder
+}
+
+// Delete deletes the value stored as key
+func (c *Command) Delete(key string) *deleteCommand {
+	builder := riak.NewDeleteValueCommandBuilder().
+		WithBucket(c.bucket).
+		WithBucketType(c.bucketType).
+		WithKey(key)
+
+	return &deleteCommand{
+		Command: c,
+		builder: builder,
+	}
+}
+
+func (c *deleteCommand) Run(session *Session) (*Result, error) {
+	cmd, err := c.builder.Build()
+	if err != nil {
+		return nil, err
+	}
+
+	err = session.riak.Execute(cmd)
+	if err != nil {
+		return nil, err
+	}
+
+	res := cmd.(*riak.DeleteValueCommand)
+
+	if !res.Success() {
+		return nil, errors.New("not successful")
+	}
+
+	return &Result{}, nil
+}
