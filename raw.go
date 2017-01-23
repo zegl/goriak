@@ -28,6 +28,7 @@ func (c *Command) GetRaw(key string, output *[]byte) *commandGet {
 	cmd := &commandGet{
 		key:         key,
 		outputBytes: output,
+		isRawOutput: true,
 	}
 
 	cmd.builder = riak.NewFetchValueCommandBuilder().

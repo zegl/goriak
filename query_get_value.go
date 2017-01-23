@@ -18,6 +18,8 @@ type commandGet struct {
 	output      interface{}
 	outputBytes *[]byte
 
+	isRawOutput bool
+
 	// VClock is used in conflict resolution
 	// http://docs.basho.com/riak/kv/2.1.4/developing/usage/conflict-resolution/
 	vclock               []byte
@@ -149,12 +151,22 @@ func (c *commandGet) Run(session *Session) (*Result, error) {
 		return &Result{NotFound: true}, errors.New("Not found")
 	}
 
-	err = json.Unmarshal(fetchCmd.Response.Values[0].Value, c.output)
+	value, vclock, err := c.fetchValueWithResolver(session, fetchCmd.Response.Values)
 	if err != nil {
 		return nil, err
 	}
 
+	if c.isRawOutput {
+		*c.outputBytes = value
+	} else {
+		err = json.Unmarshal(value, c.output)
+		if err != nil {
+			return nil, err
+		}
+	}
+
 	return &Result{
-		Key: c.key,
+		Key:    c.key,
+		VClock: vclock,
 	}, nil
 }
