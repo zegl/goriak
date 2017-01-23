@@ -12,10 +12,10 @@ type requestData struct {
 }
 
 type commandMapSet struct {
-	*Command
-
-	key   string
-	input interface{}
+	bucket     string
+	bucketType string
+	key        string
+	input      interface{}
 
 	builder *riak.UpdateMapCommandBuilder
 
@@ -39,15 +39,15 @@ Set automatically converts your Go datatype to the equivalent type in Riak
 	| time.Time  | register  |
 */
 func (cmd *Command) Set(val interface{}) *commandMapSet {
-
 	c := &commandMapSet{
-		Command: cmd,
-		input:   val,
+		input:      val,
+		bucket:     cmd.bucket,
+		bucketType: cmd.bucketType,
 	}
 
 	c.builder = riak.NewUpdateMapCommandBuilder().
-		WithBucket(c.bucket).
-		WithBucketType(c.bucketType)
+		WithBucket(cmd.bucket).
+		WithBucketType(cmd.bucketType)
 
 	/*riakContext, op, err := encodeInterface(val, requestData{
 		bucket:     c.bucket,

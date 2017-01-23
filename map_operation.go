@@ -1,6 +1,7 @@
 package goriak
 
 import (
+	"errors"
 	riak "github.com/basho/riak-go-client"
 )
 
@@ -10,20 +11,46 @@ type commandMapOperation struct {
 }
 
 // MapOperation takes a riak.MapOperation so that you can run custom commands on your Riak Maps
-func (c *Command) MapOperation(op riak.MapOperation, context []byte) *commandMapOperation {
+func (c *Command) MapOperation(op riak.MapOperation) *commandMapOperation {
 	builder := riak.NewUpdateMapCommandBuilder().
 		WithBucket(c.bucket).
 		WithBucketType(c.bucketType).
 		WithMapOperation(&op)
 
-	if len(context) != 0 {
-		builder.WithContext(context)
-	}
-
 	return &commandMapOperation{
 		Command: c,
 		builder: builder,
 	}
+}
+
+func (c *commandMapOperation) Context(ctx []byte) *commandMapOperation {
+	c.builder.WithContext(ctx)
+	return c
+}
+
+func (c *commandMapOperation) Key(key string) *commandMapOperation {
+	c.builder.WithKey(key)
+	return c
+}
+
+func (c *commandMapOperation) Run(session *Session) (*Result, error) {
+	cmd, err := c.builder.Build()
+	if err != nil {
+		return nil, err
+	}
+
+	err = session.riak.Execute(cmd)
+	if err != nil {
+		return nil, err
+	}
+
+	res := cmd.(*riak.UpdateMapCommand)
+
+	if !res.Success() {
+		return nil, errors.New("Not successful")
+	}
+
+	return &Result{}, nil
 }
 
 // NewMapOperation returns a new riak.MapOperation that you can for advanced Riak operations

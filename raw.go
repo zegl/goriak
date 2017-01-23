@@ -30,7 +30,7 @@ func (c *Command) GetRaw(key string, output *[]byte) *commandGet {
 		outputBytes: output,
 	}
 
-	cmd.getValueCommandBuilder = riak.NewFetchValueCommandBuilder().
+	cmd.builder = riak.NewFetchValueCommandBuilder().
 		WithBucket(c.bucket).
 		WithBucketType(c.bucketType).
 		WithKey(key)

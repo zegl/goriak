@@ -12,7 +12,7 @@ type commandGet struct {
 	// Riak builder type for SetValue
 	// Other commands populate riakComand directly
 	// SetJSON and SetRaw will populate these values instead
-	getValueCommandBuilder *riak.FetchValueCommandBuilder
+	builder *riak.FetchValueCommandBuilder
 
 	key         string
 	output      interface{}
@@ -129,5 +129,32 @@ func (c *commandGet) resultFetchValueCommandRaw(session *Session, cmd *riak.Fetc
 }
 
 func (c *commandGet) Run(session *Session) (*Result, error) {
-	return nil, nil
+	cmd, err := c.builder.Build()
+	if err != nil {
+		return nil, err
+	}
+
+	err = session.riak.Execute(cmd)
+	if err != nil {
+		return nil, err
+	}
+
+	fetchCmd := cmd.(*riak.FetchValueCommand)
+
+	if !fetchCmd.Success() {
+		return nil, errors.New("Not successful")
+	}
+
+	if fetchCmd.Response.IsNotFound {
+		return &Result{NotFound: true}, errors.New("Not found")
+	}
+
+	err = json.Unmarshal(fetchCmd.Response.Values[0].Value, c.output)
+	if err != nil {
+		return nil, err
+	}
+
+	return &Result{
+		Key: c.key,
+	}, nil
 }

@@ -177,10 +177,10 @@ func TestFilterSet(t *testing.T) {
 		B string
 	}
 
-	res, err := bucket().Set(nil).FilterInclude("A").Set(item{
+	res, err := bucket().Set(item{
 		A: "A",
 		B: "B",
-	}).Run(con())
+	}).FilterInclude("A").Run(con())
 	if err != nil {
 		t.Error(err)
 	}
@@ -212,7 +212,7 @@ func TestFilterSetNested(t *testing.T) {
 	i.A.AB = "AB"
 	i.B = "B"
 
-	res, err := bucket().Set(nil).FilterInclude("A").Set(i).Run(con())
+	res, err := bucket().Set(i).FilterInclude("A").Run(con())
 	if err != nil {
 		t.Error(err)
 	}
@@ -228,36 +228,4 @@ func TestFilterSetNested(t *testing.T) {
 	}
 
 	t.Errorf("Unexpected: %+v", val)
-}
-
-func TestFilterIncludeAfterSet(t *testing.T) {
-	type item struct {
-		A string
-	}
-
-	_, err := bucket().Set(item{}).FilterInclude("B").Run(con())
-
-	if err == nil {
-		t.Error("no error")
-	}
-
-	if err.Error() != "FilterInclude() must be called before Set()" {
-		t.Error("unexpected error")
-	}
-}
-
-func TestFilterExcludeAfterSet(t *testing.T) {
-	type item struct {
-		A string
-	}
-
-	_, err := bucket().Set(item{}).FilterExclude("B").Run(con())
-
-	if err == nil {
-		t.Error("no error")
-	}
-
-	if err.Error() != "FilterExclude() must be called before Set()" {
-		t.Error("unexpected error")
-	}
 }

@@ -24,7 +24,7 @@ func TestMapOperation(t *testing.T) {
 	op := NewMapOperation()
 	op.AddToSet("Set", []byte("Three"))
 
-	_, mapoperr := Bucket("testsuitemap", "maps").MapOperation(op, res.RiakContext).Key(result.Key).Run(con())
+	_, mapoperr := Bucket("testsuitemap", "maps").MapOperation(op).Context(res.RiakContext).Key(result.Key).Run(con())
 
 	if mapoperr != nil {
 		t.Error("MapOperr:", mapoperr)
@@ -64,7 +64,7 @@ func TestMapOperationAlternateOrder(t *testing.T) {
 	op.AddToSet("Set", []byte("Three"))
 
 	// This is where the change is compared to TestMapOperation()
-	_, mapoperr := Bucket("testsuitemap", "maps").MapOperation(op, res.RiakContext).Key(result.Key).Run(con())
+	_, mapoperr := Bucket("testsuitemap", "maps").MapOperation(op).Context(res.RiakContext).Key(result.Key).Run(con())
 
 	if mapoperr != nil {
 		t.Error("MapOperr:", mapoperr)

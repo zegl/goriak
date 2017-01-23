@@ -122,9 +122,9 @@ func (c *Command) GetJSON(key string, output interface{}) *commandGet {
 		WithKey(key)
 
 	return &commandGet{
-		Command:                c,
-		getValueCommandBuilder: builder,
-		key:    key,
-		output: output,
+		Command: c,
+		builder: builder,
+		key:     key,
+		output:  output,
 	}
 }

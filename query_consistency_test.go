@@ -1,9 +1,10 @@
 package goriak
 
 import (
-	"testing"
+//"testing"
 )
 
+/*
 func TestSetRawWithConsistancyOptions(t *testing.T) {
 	_, err := Bucket("raw", "default").
 		SetRaw([]byte("Hello Raw")).
@@ -137,3 +138,4 @@ func TestDeleteWithConsistancyOptions(t *testing.T) {
 		t.Error(err)
 	}
 }
+*/
