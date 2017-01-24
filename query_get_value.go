@@ -76,60 +76,6 @@ func (c *GetRawCommand) fetchValueWithResolver(session *Session, values []*riak.
 	return values[0].Value, values[0].VClock, nil
 }
 
-func (c *GetRawCommand) resultFetchValueCommandJSON(session *Session, cmd *riak.FetchValueCommand) (*Result, error) {
-	if !cmd.Success() {
-		return nil, errors.New("Not successful")
-	}
-
-	if cmd.Response.IsNotFound {
-		return &Result{
-			NotFound: true,
-		}, errors.New("Not found")
-	}
-
-	value, vclock, err := c.fetchValueWithResolver(session, cmd.Response.Values)
-
-	if err != nil {
-		return nil, err
-	}
-
-	err = json.Unmarshal(value, c.output)
-
-	if err != nil {
-		return nil, err
-	}
-
-	return &Result{
-		Key:    c.key,
-		VClock: vclock,
-	}, nil
-}
-
-func (c *GetRawCommand) resultFetchValueCommandRaw(session *Session, cmd *riak.FetchValueCommand) (*Result, error) {
-	if !cmd.Success() {
-		return nil, errors.New("Not successful")
-	}
-
-	if cmd.Response.IsNotFound {
-		return &Result{
-			NotFound: true,
-		}, errors.New("Not found")
-	}
-
-	value, vclock, err := c.fetchValueWithResolver(session, cmd.Response.Values)
-
-	if err != nil {
-		return nil, err
-	}
-
-	*c.outputBytes = value
-
-	return &Result{
-		Key:    c.key,
-		VClock: vclock,
-	}, nil
-}
-
 func (c *GetRawCommand) Run(session *Session) (*Result, error) {
 	cmd, err := c.builder.Build()
 	if err != nil {
