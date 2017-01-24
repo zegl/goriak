@@ -6,7 +6,7 @@ import (
 	riak "github.com/basho/riak-go-client"
 )
 
-type commandGet struct {
+type GetRawCommand struct {
 	*Command
 
 	// Riak builder type for SetValue
@@ -26,12 +26,12 @@ type commandGet struct {
 	conflictResolverFunc func([]ConflictObject) ResolvedConflict
 }
 
-func (c *commandGet) ConflictResolver(fn func([]ConflictObject) ResolvedConflict) *commandGet {
+func (c *GetRawCommand) ConflictResolver(fn func([]ConflictObject) ResolvedConflict) *GetRawCommand {
 	c.conflictResolverFunc = fn
 	return c
 }
 
-func (c *commandGet) fetchValueWithResolver(session *Session, values []*riak.Object) ([]byte, []byte, error) {
+func (c *GetRawCommand) fetchValueWithResolver(session *Session, values []*riak.Object) ([]byte, []byte, error) {
 
 	// Conflict resolution necessary
 	if len(values) > 1 {
@@ -76,7 +76,7 @@ func (c *commandGet) fetchValueWithResolver(session *Session, values []*riak.Obj
 	return values[0].Value, values[0].VClock, nil
 }
 
-func (c *commandGet) resultFetchValueCommandJSON(session *Session, cmd *riak.FetchValueCommand) (*Result, error) {
+func (c *GetRawCommand) resultFetchValueCommandJSON(session *Session, cmd *riak.FetchValueCommand) (*Result, error) {
 	if !cmd.Success() {
 		return nil, errors.New("Not successful")
 	}
@@ -105,7 +105,7 @@ func (c *commandGet) resultFetchValueCommandJSON(session *Session, cmd *riak.Fet
 	}, nil
 }
 
-func (c *commandGet) resultFetchValueCommandRaw(session *Session, cmd *riak.FetchValueCommand) (*Result, error) {
+func (c *GetRawCommand) resultFetchValueCommandRaw(session *Session, cmd *riak.FetchValueCommand) (*Result, error) {
 	if !cmd.Success() {
 		return nil, errors.New("Not successful")
 	}
@@ -130,7 +130,7 @@ func (c *commandGet) resultFetchValueCommandRaw(session *Session, cmd *riak.Fetc
 	}, nil
 }
 
-func (c *commandGet) Run(session *Session) (*Result, error) {
+func (c *GetRawCommand) Run(session *Session) (*Result, error) {
 	cmd, err := c.builder.Build()
 	if err != nil {
 		return nil, err

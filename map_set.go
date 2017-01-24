@@ -11,7 +11,7 @@ type requestData struct {
 	key        string
 }
 
-type commandMapSet struct {
+type MapSetCommand struct {
 	bucket     string
 	bucketType string
 	key        string
@@ -38,8 +38,8 @@ Set automatically converts your Go datatype to the equivalent type in Riak
 	| map        | map       |
 	| time.Time  | register  |
 */
-func (cmd *Command) Set(val interface{}) *commandMapSet {
-	c := &commandMapSet{
+func (cmd *Command) Set(val interface{}) *MapSetCommand {
+	c := &MapSetCommand{
 		input:      val,
 		bucket:     cmd.bucket,
 		bucketType: cmd.bucketType,
@@ -52,7 +52,7 @@ func (cmd *Command) Set(val interface{}) *commandMapSet {
 	return c
 }
 
-func (c *commandMapSet) Key(key string) *commandMapSet {
+func (c *MapSetCommand) Key(key string) *MapSetCommand {
 	c.key = key
 	c.builder.WithKey(key)
 	return c
@@ -60,7 +60,7 @@ func (c *commandMapSet) Key(key string) *commandMapSet {
 
 // Takes a *riakMapOperation (our type) applies any filtering rules set on the Command
 // Returns a *riak.MapOperation (from riak-go-client)
-func filterMapOperation(cmd *commandMapSet, input *riakMapOperation, path []string, op *riak.MapOperation) *riak.MapOperation {
+func filterMapOperation(cmd *MapSetCommand, input *riakMapOperation, path []string, op *riak.MapOperation) *riak.MapOperation {
 
 	if op == nil {
 		op = &riak.MapOperation{}
@@ -122,7 +122,7 @@ func filterMapOperation(cmd *commandMapSet, input *riakMapOperation, path []stri
 	return op
 }
 
-func (c *commandMapSet) Run(session *Session) (*Result, error) {
+func (c *MapSetCommand) Run(session *Session) (*Result, error) {
 	riakContext, op, err := encodeInterface(c.input, requestData{
 		bucket:     c.bucket,
 		bucketType: c.bucketType,

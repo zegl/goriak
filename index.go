@@ -12,17 +12,16 @@ type SecondaryIndexQueryResult struct {
 	IsComplete bool
 }
 
-type commandKeysInIndex struct {
+type CommandKeysInIndex struct {
 	*Command
 
 	builder *riak.SecondaryIndexQueryCommandBuilder
-	limit   uint32
 }
 
 // KeysInIndex returns all keys in the index indexName that has the value indexValue
 // The values will be returned to the callbak function
 // When all keys have been returned SecondaryIndexQueryResult.IsComplete will be true
-func (c *Command) KeysInIndex(indexName, indexValue string, callback func(SecondaryIndexQueryResult)) *commandKeysInIndex {
+func (c *Command) KeysInIndex(indexName, indexValue string, callback func(SecondaryIndexQueryResult)) *CommandKeysInIndex {
 
 	cb := func(res []*riak.SecondaryIndexQueryResult) error {
 		if len(res) == 0 {
@@ -50,7 +49,7 @@ func (c *Command) KeysInIndex(indexName, indexValue string, callback func(Second
 		WithStreaming(true).
 		WithCallback(cb)
 
-	return &commandKeysInIndex{
+	return &CommandKeysInIndex{
 		Command: c,
 		builder: builder,
 	}
@@ -58,17 +57,13 @@ func (c *Command) KeysInIndex(indexName, indexValue string, callback func(Second
 
 // Limit sets the limit returned in KeysInIndex
 // A limit of 0 means unlimited
-func (c *commandKeysInIndex) Limit(limit uint32) *commandKeysInIndex {
-	c.limit = limit
+func (c *CommandKeysInIndex) Limit(limit uint32) *CommandKeysInIndex {
+	c.builder.WithMaxResults(limit)
 	return c
 }
 
 // buildSecondaryIndexQueryCommand completes the buildinf of the SecondaryIndexQueryCommand used by KeysInIndex
-func (c *commandKeysInIndex) Run(session *Session) (*Result, error) {
-	// Set limit
-	if c.limit != 0 {
-		c.builder.WithMaxResults(c.limit)
-	}
+func (c *CommandKeysInIndex) Run(session *Session) (*Result, error) {
 
 	// Build it!
 	cmd, err := c.builder.Build()

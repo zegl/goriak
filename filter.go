@@ -5,19 +5,19 @@ package goriak
 // Can be combined with FilterExclude() to form more complicated patterns.
 // Use FilterInclude or FilterExclude without parameters to include/exclude the root object.
 // If the same field is both included and excluded the include is prioritized.
-func (c *commandMapSet) FilterInclude(path ...string) *commandMapSet {
+func (c *MapSetCommand) FilterInclude(path ...string) *MapSetCommand {
 	c.includeFilter = append(c.includeFilter, path)
 	return c
 }
 
 // FilterExclude does the opposite of FilterInclude.
 // See FinterInclude for more info.
-func (c *commandMapSet) FilterExclude(path ...string) *commandMapSet {
+func (c *MapSetCommand) FilterExclude(path ...string) *MapSetCommand {
 	c.excludeFilter = append(c.excludeFilter, path)
 	return c
 }
 
-func (c *commandMapSet) filterAllowPath(path ...string) bool {
+func (c *MapSetCommand) filterAllowPath(path ...string) bool {
 
 	// No filter has been set: Allow all paths
 	if len(c.includeFilter) == 0 && len(c.excludeFilter) == 0 {

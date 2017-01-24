@@ -5,36 +5,31 @@ import (
 	riak "github.com/basho/riak-go-client"
 )
 
-type commandMapGet struct {
+type MapGetCommand struct {
 	*Command
-
-	key    string
-	output interface{}
-
+	output  interface{}
+	key     string
 	builder *riak.FetchMapCommandBuilder
 }
 
 // Get retreives a Map from Riak.
 // Get performs automatic conversion from Riak Maps to your Go datatype.
 // See Set() for more information.
-func (cmd *Command) Get(key string, output interface{}) *commandMapGet {
-
-	c := &commandMapGet{
-		Command: cmd,
-	}
-
-	c.key = key
-	c.output = output
-
-	c.builder = riak.NewFetchMapCommandBuilder().
+func (c *Command) Get(key string, output interface{}) *MapGetCommand {
+	builder := riak.NewFetchMapCommandBuilder().
 		WithBucket(c.bucket).
 		WithBucketType(c.bucketType).
-		WithKey(c.key)
+		WithKey(key)
 
-	return c
+	return &MapGetCommand{
+		Command: c,
+		output:  output,
+		key:     key,
+		builder: builder,
+	}
 }
 
-func (c *commandMapGet) Run(session *Session) (*Result, error) {
+func (c *MapGetCommand) Run(session *Session) (*Result, error) {
 	cmd, err := c.builder.Build()
 	if err != nil {
 		return nil, err

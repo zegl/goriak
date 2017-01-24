@@ -11,14 +11,14 @@ import (
 
 // SetJSON saves value as key in the bucket bucket/bucketType
 // Values can automatically be added to indexes with the struct tag goriakindex
-func (c *Command) SetJSON(value interface{}) (cmdSet *commandSet) {
+func (c *Command) SetJSON(value interface{}) *SetRawCommand {
 	by, err := json.Marshal(value)
 
-	cmdSet = &commandSet{Command: c}
+	cmdSet := &SetRawCommand{Command: c}
 
 	if err != nil {
 		cmdSet.err = err
-		return
+		return cmdSet
 	}
 
 	object := riak.Object{
@@ -76,7 +76,7 @@ func (c *Command) SetJSON(value interface{}) (cmdSet *commandSet) {
 
 				default:
 					cmdSet.err = errors.New("Did not know how to set index: " + refType.Field(i).Name)
-					return
+					return cmdSet
 				}
 
 			// Int
@@ -99,7 +99,7 @@ func (c *Command) SetJSON(value interface{}) (cmdSet *commandSet) {
 
 			default:
 				cmdSet.err = errors.New("Did not know how to set index: " + refType.Field(i).Name)
-				return
+				return cmdSet
 			}
 		}
 	}
@@ -111,17 +111,17 @@ func (c *Command) SetJSON(value interface{}) (cmdSet *commandSet) {
 	cmdSet.storeValueObject = &object
 	cmdSet.storeValueCommandBuilder = builder
 
-	return
+	return cmdSet
 }
 
 // GetJSON is the same as GetRaw, but with automatic JSON unmarshalling
-func (c *Command) GetJSON(key string, output interface{}) *commandGet {
+func (c *Command) GetJSON(key string, output interface{}) *GetRawCommand {
 	builder := riak.NewFetchValueCommandBuilder().
 		WithBucket(c.bucket).
 		WithBucketType(c.bucketType).
 		WithKey(key)
 
-	return &commandGet{
+	return &GetRawCommand{
 		Command: c,
 		builder: builder,
 		key:     key,

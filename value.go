@@ -5,27 +5,27 @@ import (
 	riak "github.com/basho/riak-go-client"
 )
 
-type allKeysCommand struct {
+type AllKeysCommand struct {
 	*Command
 	builder *riak.ListKeysCommandBuilder
 }
 
 // AllKeys returns all keys in the set bucket.
 // The response will be sent in multiple batches to callback
-func (c *Command) AllKeys(callback func([]string) error) *allKeysCommand {
+func (c *Command) AllKeys(callback func([]string) error) *AllKeysCommand {
 	builder := riak.NewListKeysCommandBuilder().
 		WithBucket(c.bucket).
 		WithBucketType(c.bucketType).
 		WithCallback(callback).
 		WithStreaming(true)
 
-	return &allKeysCommand{
+	return &AllKeysCommand{
 		Command: c,
 		builder: builder,
 	}
 }
 
-func (c *allKeysCommand) Run(session *Session) (*Result, error) {
+func (c *AllKeysCommand) Run(session *Session) (*Result, error) {
 	cmd, err := c.builder.Build()
 	if err != nil {
 		return nil, err

@@ -5,7 +5,7 @@ import (
 	riak "github.com/basho/riak-go-client"
 )
 
-type commandSet struct {
+type SetRawCommand struct {
 	*Command
 
 	// Riak builder type for SetValue
@@ -19,42 +19,42 @@ type commandSet struct {
 	err error
 }
 
-func (c *commandSet) Key(key string) *commandSet {
+func (c *SetRawCommand) Key(key string) *SetRawCommand {
 	c.storeValueCommandBuilder.WithKey(key)
 	c.key = key
 	return c
 }
 
-func (c *commandSet) AddToIndex(key, value string) *commandSet {
+func (c *SetRawCommand) AddToIndex(key, value string) *SetRawCommand {
 	c.storeValueObject.AddToIndex(key, value)
 	return c
 }
 
 // Durable writes (to backend storage)
-func (c *commandSet) WithDw(val uint32) *commandSet {
+func (c *SetRawCommand) WithDw(val uint32) *SetRawCommand {
 	c.storeValueCommandBuilder.WithDw(val)
 	return c
 }
 
 // Primary node writes
-func (c *commandSet) WithPw(val uint32) *commandSet {
+func (c *SetRawCommand) WithPw(val uint32) *SetRawCommand {
 	c.storeValueCommandBuilder.WithPw(val)
 	return c
 }
 
 // Node writes
-func (c *commandSet) WithW(val uint32) *commandSet {
+func (c *SetRawCommand) WithW(val uint32) *SetRawCommand {
 	c.storeValueCommandBuilder.WithW(val)
 	return c
 }
 
-func (c *commandSet) VClock(val []byte) *commandSet {
+func (c *SetRawCommand) VClock(val []byte) *SetRawCommand {
 	c.storeValueCommandBuilder.WithVClock(val)
 	return c
 }
 
 // buildStoreValueCommand completes the building if the StoreValueCommand used by SetRaw and SetJSON
-func (c *commandSet) Run(session *Session) (*Result, error) {
+func (c *SetRawCommand) Run(session *Session) (*Result, error) {
 	if c.err != nil {
 		return nil, c.err
 	}
