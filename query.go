@@ -1,10 +1,5 @@
 package goriak
 
-import (
-	"errors"
-	riak "github.com/basho/riak-go-client"
-)
-
 // Command is the main query builder object
 type Command struct {
 	// Key information

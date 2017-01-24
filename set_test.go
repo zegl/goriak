@@ -394,33 +394,6 @@ func TestSetUnitialized(t *testing.T) {
 	}
 }
 
-func TestSetUnitializedOtherOrder(t *testing.T) {
-	type testType struct {
-		Foos *Set
-	}
-
-	val := testType{}
-	key := randomKey()
-
-	// The difference is here
-	_, err := bucket().Set(&val).Key(key).Run(con())
-
-	if err != nil {
-		t.Error(err)
-	}
-
-	err = val.Foos.AddString("wohoohooo").Exec(con())
-
-	if err == nil {
-		t.Error("Got no error after AddString()")
-		return
-	}
-
-	if err.Error() != "Invalid key in Set Exec()" {
-		t.Error("Unexpected error:", err.Error())
-	}
-}
-
 func TestSetAddRemove2(t *testing.T) {
 	type testType struct {
 		Foos *Set

@@ -49,34 +49,12 @@ func (cmd *Command) Set(val interface{}) *commandMapSet {
 		WithBucket(cmd.bucket).
 		WithBucketType(cmd.bucketType)
 
-	/*riakContext, op, err := encodeInterface(val, requestData{
-		bucket:     c.bucket,
-		bucketType: c.bucketType,
-		key:        c.key,
-	})
-
-	if err != nil {
-		c.err = err
-		return c
-	}
-
-	builder := riak.NewUpdateMapCommandBuilder().
-		WithBucket(c.bucket).
-		WithBucketType(c.bucketType).
-		WithMapOperation(filterMapOperation(c, op, []string{}, nil))
-
-	if len(riakContext) > 0 {
-		builder.WithContext(riakContext)
-	}
-
-	c.updateMapCommandBuilder = builder
-	c.commandType = riakUpdateMapCommand*/
-
 	return c
 }
 
 func (c *commandMapSet) Key(key string) *commandMapSet {
 	c.key = key
+	c.builder.WithKey(key)
 	return c
 }
 
@@ -160,7 +138,9 @@ func (c *commandMapSet) Run(session *Session) (*Result, error) {
 	}
 
 	// Set the map operation
-	c.builder.WithMapOperation(filterMapOperation(c, op, []string{}, nil))
+	op2 := filterMapOperation(c, op, []string{}, nil)
+
+	c.builder.WithMapOperation(op2)
 
 	cmd, err := c.builder.Build()
 	if err != nil {
