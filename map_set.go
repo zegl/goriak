@@ -122,6 +122,21 @@ func filterMapOperation(cmd *MapSetCommand, input *riakMapOperation, path []stri
 	return op
 }
 
+func (c *MapSetCommand) WithPw(pw uint32) *MapSetCommand {
+	c.builder.WithPw(pw)
+	return c
+}
+
+func (c *MapSetCommand) WithDw(dw uint32) *MapSetCommand {
+	c.builder.WithDw(dw)
+	return c
+}
+
+func (c *MapSetCommand) WithW(w uint32) *MapSetCommand {
+	c.builder.WithPw(w)
+	return c
+}
+
 func (c *MapSetCommand) Run(session *Session) (*Result, error) {
 	riakContext, op, err := encodeInterface(c.input, requestData{
 		bucket:     c.bucket,

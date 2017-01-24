@@ -76,6 +76,16 @@ func (c *GetRawCommand) fetchValueWithResolver(session *Session, values []*riak.
 	return values[0].Value, values[0].VClock, nil
 }
 
+func (c *GetRawCommand) WithPr(pr uint32) *GetRawCommand {
+	c.builder.WithPr(pr)
+	return c
+}
+
+func (c *GetRawCommand) WithR(r uint32) *GetRawCommand {
+	c.builder.WithR(r)
+	return c
+}
+
 func (c *GetRawCommand) Run(session *Session) (*Result, error) {
 	cmd, err := c.builder.Build()
 	if err != nil {
