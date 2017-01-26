@@ -1,39 +1,23 @@
 package goriak
 
-import (
-	"errors"
-)
-
 // FilterInclude adds a include filter to Set().
 // Call FilterInclude("A") to only include the field A (and children).
 // Can be combined with FilterExclude() to form more complicated patterns.
 // Use FilterInclude or FilterExclude without parameters to include/exclude the root object.
 // If the same field is both included and excluded the include is prioritized.
-func (c *Command) FilterInclude(path ...string) *Command {
-	if c.updateMapCommandBuilder != nil {
-		c.err = errors.New("FilterInclude() must be called before Set()")
-		return c
-	}
-
+func (c *MapSetCommand) FilterInclude(path ...string) *MapSetCommand {
 	c.includeFilter = append(c.includeFilter, path)
-
 	return c
 }
 
 // FilterExclude does the opposite of FilterInclude.
 // See FinterInclude for more info.
-func (c *Command) FilterExclude(path ...string) *Command {
-	if c.updateMapCommandBuilder != nil {
-		c.err = errors.New("FilterExclude() must be called before Set()")
-		return c
-	}
-
+func (c *MapSetCommand) FilterExclude(path ...string) *MapSetCommand {
 	c.excludeFilter = append(c.excludeFilter, path)
-
 	return c
 }
 
-func (c *Command) filterAllowPath(path ...string) bool {
+func (c *MapSetCommand) filterAllowPath(path ...string) bool {
 
 	// No filter has been set: Allow all paths
 	if len(c.includeFilter) == 0 && len(c.excludeFilter) == 0 {

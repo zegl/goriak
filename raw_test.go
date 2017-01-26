@@ -36,9 +36,9 @@ func TestSetRawWithIndex(t *testing.T) {
 
 	for _, s := range strs {
 		res, err := Bucket("json", "default").
+			SetRaw([]byte(s)).
 			AddToIndex("testA_bin", "hello").
 			AddToIndex("testB_bin", "world").
-			SetRaw([]byte(s)).
 			Run(c)
 
 		if err != nil {
@@ -84,9 +84,9 @@ func TestSetRawAddToMultipleIndexes(t *testing.T) {
 	c := con()
 
 	res, err := Bucket("json", "default").
+		SetRaw([]byte("fooooobar")).
 		AddToIndex("testC_bin", "foo").
 		AddToIndex("testC_bin", "bar").
-		SetRaw([]byte("fooooobar")).
 		Run(c)
 
 	if err != nil {

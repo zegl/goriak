@@ -9,8 +9,8 @@ import (
 func TestSiblings(t *testing.T) {
 	key := randomKey()
 
-	a1 := Bucket("sibs", "tests").Key(key).SetJSON("bob")
-	a2 := Bucket("sibs", "tests").Key(key).SetJSON("sven")
+	a1 := Bucket("sibs", "tests").SetJSON("bob").Key(key)
+	a2 := Bucket("sibs", "tests").SetJSON("sven").Key(key)
 
 	c := con()
 
@@ -46,8 +46,8 @@ func TestSiblings(t *testing.T) {
 
 	var out string
 	_, err = Bucket("sibs", "tests").
-		ConflictResolver(resolver).
 		GetJSON(key, &out).
+		ConflictResolver(resolver).
 		Run(c)
 
 	if err != nil {
@@ -61,8 +61,8 @@ func TestSiblings(t *testing.T) {
 	didConflictResolution = false
 
 	_, err = Bucket("sibs", "tests").
-		ConflictResolver(resolver).
 		GetJSON(key, &out).
+		ConflictResolver(resolver).
 		Run(c)
 
 	if err != nil {
@@ -108,25 +108,25 @@ func TestConflictResolverInterface(t *testing.T) {
 
 	c := con()
 
-	_, err := Bucket("sibs", "tests").Key(key).SetJSON(ourTypeWithResolveInterface{200}).Run(c)
+	_, err := Bucket("sibs", "tests").SetJSON(ourTypeWithResolveInterface{200}).Key(key).Run(c)
 
 	if err != nil {
 		t.Error(err)
 	}
 
-	_, err = Bucket("sibs", "tests").Key(key).SetJSON(ourTypeWithResolveInterface{500}).Run(c)
+	_, err = Bucket("sibs", "tests").SetJSON(ourTypeWithResolveInterface{500}).Key(key).Run(c)
 
 	if err != nil {
 		t.Error(err)
 	}
 
-	_, err = Bucket("sibs", "tests").Key(key).SetJSON(ourTypeWithResolveInterface{400}).Run(c)
+	_, err = Bucket("sibs", "tests").SetJSON(ourTypeWithResolveInterface{400}).Key(key).Run(c)
 
 	if err != nil {
 		t.Error(err)
 	}
 
-	_, err = Bucket("sibs", "tests").Key(key).SetJSON(ourTypeWithResolveInterface{300}).Run(c)
+	_, err = Bucket("sibs", "tests").SetJSON(ourTypeWithResolveInterface{300}).Key(key).Run(c)
 
 	if err != nil {
 		t.Error(err)
@@ -169,7 +169,7 @@ func TestPreventConflicts(t *testing.T) {
 	key := randomKey()
 	c := con()
 
-	_, err := Bucket("sibs", "tests").Key(key).SetJSON(ourTypeWithResolveInterface{200}).Run(c)
+	_, err := Bucket("sibs", "tests").SetJSON(ourTypeWithResolveInterface{200}).Key(key).Run(c)
 
 	if err != nil {
 		t.Error(err)
@@ -178,7 +178,7 @@ func TestPreventConflicts(t *testing.T) {
 	var val ourTypeWithResolveInterface
 	res, err := Bucket("sibs", "tests").GetJSON(key, &val).Run(c)
 
-	_, err = Bucket("sibs", "tests").VClock(res.VClock).Key(key).SetJSON(ourTypeWithResolveInterface{200}).Run(c)
+	_, err = Bucket("sibs", "tests").SetJSON(ourTypeWithResolveInterface{200}).VClock(res.VClock).Key(key).Run(c)
 
 	if err != nil {
 		t.Error(err)
@@ -208,13 +208,13 @@ func ExampleConflictResolver() {
 	key := "object-1"
 
 	// Save the same object without using .VClock() causing a conflict
-	_, err := Bucket("bucket", "tests").Key(key).SetJSON("hello").Run(session)
+	_, err := Bucket("bucket", "tests").SetJSON("hello").Key(key).Run(session)
 
 	if err != nil {
 		log.Println(err)
 	}
 
-	_, err = Bucket("bucket", "tests").Key(key).SetJSON("worlds of conflicts!").Run(session)
+	_, err = Bucket("bucket", "tests").SetJSON("worlds of conflicts!").Key(key).Run(session)
 
 	if err != nil {
 		log.Println(err)
@@ -240,8 +240,8 @@ func ExampleConflictResolver() {
 	// Get your object
 	var res string
 	_, err = Bucket("bucket", "tests").
-		ConflictResolver(resolver).
 		GetJSON(key, &res).
+		ConflictResolver(resolver).
 		Run(session)
 
 	if err != nil {

@@ -24,7 +24,7 @@ func TestRegisterMap(t *testing.T) {
 	key := randomKey()
 
 	val := ourTestType{}
-	_, err := bucket().Key(key).Set(&val).Run(c)
+	_, err := bucket().Set(&val).Key(key).Run(c)
 	assert.Nil(t, err)
 	assert.Empty(t, val.Name.Value())
 	assert.Empty(t, val.Name.String())
@@ -42,7 +42,7 @@ func TestRegisterMap(t *testing.T) {
 
 	// Update via Set
 	val.Name.SetString("bar")
-	_, err = bucket().Key(key).Set(&val).Run(c)
+	_, err = bucket().Set(&val).Key(key).Run(c)
 	assert.Nil(t, err)
 
 	// Get
@@ -68,7 +68,7 @@ func TestNestedHelperTypes(t *testing.T) {
 	key := randomKey()
 	c := con()
 
-	_, err := bucket().Key(key).Set(&val).Run(c)
+	_, err := bucket().Set(&val).Key(key).Run(c)
 	assert.Nil(t, err)
 
 	// Register

@@ -25,7 +25,7 @@ func TestFlagMap(t *testing.T) {
 	key := randomKey()
 
 	val := ourTestType{}
-	_, err := bucket().Key(key).Set(&val).Run(c)
+	_, err := bucket().Set(&val).Key(key).Run(c)
 
 	assert.Nil(t, err)
 	assert.False(t, val.Enabled.Value())
@@ -42,7 +42,7 @@ func TestFlagMap(t *testing.T) {
 
 	// Update via Set
 	val.Enabled.Set(true)
-	_, err = bucket().Key(key).Set(&val).Run(c)
+	_, err = bucket().Set(&val).Key(key).Run(c)
 	assert.Nil(t, err)
 
 	// Get

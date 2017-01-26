@@ -5,7 +5,7 @@ import (
 )
 
 func TestFilterIncludeSingle(t *testing.T) {
-	setup := bucket().FilterInclude("A")
+	setup := bucket().Set(nil).FilterInclude("A")
 
 	type check struct {
 		path     []string
@@ -28,7 +28,7 @@ func TestFilterIncludeSingle(t *testing.T) {
 }
 
 func TestFilterIncludeDouble(t *testing.T) {
-	setup := bucket().FilterInclude("A", "B").FilterInclude("C")
+	setup := bucket().Set(nil).FilterInclude("A", "B").FilterInclude("C")
 
 	type check struct {
 		path     []string
@@ -52,7 +52,7 @@ func TestFilterIncludeDouble(t *testing.T) {
 }
 
 func TestFilterExclude(t *testing.T) {
-	setup := bucket().FilterExclude("B")
+	setup := bucket().Set(nil).FilterExclude("B")
 
 	type check struct {
 		path     []string
@@ -74,7 +74,7 @@ func TestFilterExclude(t *testing.T) {
 }
 
 func TestFilterExclude2(t *testing.T) {
-	setup := bucket().FilterExclude("B", "C")
+	setup := bucket().Set(nil).FilterExclude("B", "C")
 
 	type check struct {
 		path     []string
@@ -96,7 +96,7 @@ func TestFilterExclude2(t *testing.T) {
 }
 
 func TestFilterInludeWithExclude(t *testing.T) {
-	setup := bucket().
+	setup := bucket().Set(nil).
 		FilterInclude("A").
 		FilterExclude("A", "B")
 
@@ -121,7 +121,7 @@ func TestFilterInludeWithExclude(t *testing.T) {
 }
 
 func TestFilterExcludeWithInclude(t *testing.T) {
-	setup := bucket().
+	setup := bucket().Set(nil).
 		FilterInclude().
 		FilterExclude("A").
 		FilterInclude("A", "B")
@@ -149,7 +149,7 @@ func TestFilterExcludeWithInclude(t *testing.T) {
 }
 
 func TestFilterIncludeAndExcludeSave(t *testing.T) {
-	setup := bucket().
+	setup := bucket().Set(nil).
 		FilterExclude("A").
 		FilterInclude("A")
 
@@ -177,10 +177,10 @@ func TestFilterSet(t *testing.T) {
 		B string
 	}
 
-	res, err := bucket().FilterInclude("A").Set(item{
+	res, err := bucket().Set(item{
 		A: "A",
 		B: "B",
-	}).Run(con())
+	}).FilterInclude("A").Run(con())
 	if err != nil {
 		t.Error(err)
 	}
@@ -212,7 +212,7 @@ func TestFilterSetNested(t *testing.T) {
 	i.A.AB = "AB"
 	i.B = "B"
 
-	res, err := bucket().FilterInclude("A").Set(i).Run(con())
+	res, err := bucket().Set(i).FilterInclude("A").Run(con())
 	if err != nil {
 		t.Error(err)
 	}
@@ -228,36 +228,4 @@ func TestFilterSetNested(t *testing.T) {
 	}
 
 	t.Errorf("Unexpected: %+v", val)
-}
-
-func TestFilterIncludeAfterSet(t *testing.T) {
-	type item struct {
-		A string
-	}
-
-	_, err := bucket().Set(item{}).FilterInclude("B").Run(con())
-
-	if err == nil {
-		t.Error("no error")
-	}
-
-	if err.Error() != "FilterInclude() must be called before Set()" {
-		t.Error("unexpected error")
-	}
-}
-
-func TestFilterExcludeAfterSet(t *testing.T) {
-	type item struct {
-		A string
-	}
-
-	_, err := bucket().Set(item{}).FilterExclude("B").Run(con())
-
-	if err == nil {
-		t.Error("no error")
-	}
-
-	if err.Error() != "FilterExclude() must be called before Set()" {
-		t.Error("unexpected error")
-	}
 }

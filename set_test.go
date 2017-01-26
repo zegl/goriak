@@ -227,7 +227,7 @@ func TestAutoMapSetAddRemoveSetMap(t *testing.T) {
 		t.Error("Set 2: ", resVal)
 	}
 
-	_, errset = bucket().Key(result.Key).Set(resVal).Run(con())
+	_, errset = bucket().Set(resVal).Key(result.Key).Run(con())
 
 	if errset != nil {
 		t.Error("Set 2: ", errset)
@@ -278,7 +278,7 @@ func ExampleSet() {
 	art.Tags.AddString("one")
 	art.Tags.AddString("two")
 
-	_, err := Bucket("bucket", "bucketType").Key(riakKey).Set(art).Run(session)
+	_, err := Bucket("bucket", "bucketType").Set(art).Key(riakKey).Run(session)
 
 	if err != nil {
 		// ..
@@ -369,7 +369,7 @@ func TestSetUnitialized(t *testing.T) {
 	val := testType{}
 	key := randomKey()
 
-	_, err := bucket().Key(key).Set(&val).Run(con())
+	_, err := bucket().Set(&val).Key(key).Run(con())
 
 	if err != nil {
 		t.Error(err)
@@ -391,33 +391,6 @@ func TestSetUnitialized(t *testing.T) {
 
 	if !val2.Foos.HasString("wohoohooo") {
 		t.Error("Not in set after save")
-	}
-}
-
-func TestSetUnitializedOtherOrder(t *testing.T) {
-	type testType struct {
-		Foos *Set
-	}
-
-	val := testType{}
-	key := randomKey()
-
-	// The difference is here
-	_, err := bucket().Set(&val).Key(key).Run(con())
-
-	if err != nil {
-		t.Error(err)
-	}
-
-	err = val.Foos.AddString("wohoohooo").Exec(con())
-
-	if err == nil {
-		t.Error("Got no error after AddString()")
-		return
-	}
-
-	if err.Error() != "Invalid key in Set Exec()" {
-		t.Error("Unexpected error:", err.Error())
 	}
 }
 
