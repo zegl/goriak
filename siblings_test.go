@@ -178,7 +178,7 @@ func TestPreventConflicts(t *testing.T) {
 	var val ourTypeWithResolveInterface
 	res, err := Bucket("sibs", "tests").GetJSON(key, &val).Run(c)
 
-	_, err = Bucket("sibs", "tests").SetJSON(ourTypeWithResolveInterface{200}).VClock(res.VClock).Key(key).Run(c)
+	_, err = Bucket("sibs", "tests").SetJSON(ourTypeWithResolveInterface{200}).WithContext(res.Context).Key(key).Run(c)
 
 	if err != nil {
 		t.Error(err)

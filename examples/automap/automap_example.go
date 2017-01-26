@@ -1,9 +1,8 @@
 package main
 
 import (
-	"github.com/zegl/goriak"
-
 	"fmt"
+	"gopkg.in/zegl/goriak.v2"
 )
 
 type User struct {

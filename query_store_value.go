@@ -48,7 +48,7 @@ func (c *SetRawCommand) WithW(val uint32) *SetRawCommand {
 	return c
 }
 
-func (c *SetRawCommand) VClock(val []byte) *SetRawCommand {
+func (c *SetRawCommand) WithContext(val []byte) *SetRawCommand {
 	c.storeValueCommandBuilder.WithVClock(val)
 	return c
 }

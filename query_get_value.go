@@ -67,7 +67,7 @@ func (c *GetRawCommand) fetchValueWithResolver(session *Session, values []*riak.
 		Bucket(c.bucket, c.bucketType).
 			SetRaw(useObj.Value).
 			Key(c.key).
-			VClock(useObj.VClock).
+			WithContext(useObj.VClock).
 			Run(session)
 
 		return useObj.Value, useObj.VClock, nil
@@ -107,7 +107,7 @@ func (c *GetRawCommand) Run(session *Session) (*Result, error) {
 		return &Result{NotFound: true}, errors.New("Not found")
 	}
 
-	value, vclock, err := c.fetchValueWithResolver(session, fetchCmd.Response.Values)
+	value, context, err := c.fetchValueWithResolver(session, fetchCmd.Response.Values)
 	if err != nil {
 		return nil, err
 	}
@@ -122,7 +122,7 @@ func (c *GetRawCommand) Run(session *Session) (*Result, error) {
 	}
 
 	return &Result{
-		Key:    c.key,
-		VClock: vclock,
+		Key:     c.key,
+		Context: context,
 	}, nil
 }
