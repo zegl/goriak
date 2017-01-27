@@ -13,16 +13,18 @@ type SecondaryIndexQueryResult struct {
 }
 
 type CommandKeysInIndex struct {
-	*Command
-
+	c       *Command
 	builder *riak.SecondaryIndexQueryCommandBuilder
+}
+
+type KeysInIndexResult struct {
+	Continuation []byte
 }
 
 // KeysInIndex returns all keys in the index indexName that has the value indexValue
 // The values will be returned to the callbak function
 // When all keys have been returned SecondaryIndexQueryResult.IsComplete will be true
 func (c *Command) KeysInIndex(indexName, indexValue string, callback func(SecondaryIndexQueryResult)) *CommandKeysInIndex {
-
 	cb := func(res []*riak.SecondaryIndexQueryResult) error {
 		if len(res) == 0 {
 			callback(SecondaryIndexQueryResult{
@@ -50,7 +52,7 @@ func (c *Command) KeysInIndex(indexName, indexValue string, callback func(Second
 		WithCallback(cb)
 
 	return &CommandKeysInIndex{
-		Command: c,
+		c:       c,
 		builder: builder,
 	}
 }
@@ -62,9 +64,12 @@ func (c *CommandKeysInIndex) Limit(limit uint32) *CommandKeysInIndex {
 	return c
 }
 
-// buildSecondaryIndexQueryCommand completes the buildinf of the SecondaryIndexQueryCommand used by KeysInIndex
-func (c *CommandKeysInIndex) Run(session *Session) (*Result, error) {
+func (c *CommandKeysInIndex) IndexContinuation(continuation []byte) *CommandKeysInIndex {
+	c.builder.WithContinuation(continuation)
+	return c
+}
 
+func (c *CommandKeysInIndex) Run(session *Session) (*KeysInIndexResult, error) {
 	// Build it!
 	cmd, err := c.builder.Build()
 	if err != nil {
@@ -82,5 +87,7 @@ func (c *CommandKeysInIndex) Run(session *Session) (*Result, error) {
 		return nil, errors.New("not successful")
 	}
 
-	return &Result{}, nil
+	return &KeysInIndexResult{
+		Continuation: res.Response.Continuation,
+	}, nil
 }
