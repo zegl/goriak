@@ -16,7 +16,7 @@ func (c *Command) SetRaw(value []byte) *SetRawCommand {
 		WithBucketType(c.bucketType)
 
 	return &SetRawCommand{
-		Command:                  c,
+		c:                        c,
 		storeValueObject:         object,
 		storeValueCommandBuilder: builder,
 	}

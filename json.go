@@ -14,7 +14,7 @@ import (
 func (c *Command) SetJSON(value interface{}) *SetRawCommand {
 	by, err := json.Marshal(value)
 
-	cmdSet := &SetRawCommand{Command: c}
+	cmdSet := &SetRawCommand{c: c}
 
 	if err != nil {
 		cmdSet.err = err
@@ -122,7 +122,7 @@ func (c *Command) GetJSON(key string, output interface{}) *GetRawCommand {
 		WithKey(key)
 
 	return &GetRawCommand{
-		Command: c,
+		c:       c,
 		builder: builder,
 		key:     key,
 		output:  output,

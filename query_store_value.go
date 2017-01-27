@@ -6,7 +6,7 @@ import (
 )
 
 type SetRawCommand struct {
-	*Command
+	c *Command
 
 	// Riak builder type for SetValue
 	// Other commands populate riakComand directly

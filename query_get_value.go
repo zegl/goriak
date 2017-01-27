@@ -7,7 +7,7 @@ import (
 )
 
 type GetRawCommand struct {
-	*Command
+	c *Command
 
 	// Riak builder type for SetValue
 	// Other commands populate riakComand directly
@@ -64,7 +64,7 @@ func (c *GetRawCommand) fetchValueWithResolver(session *Session, values []*riak.
 		}
 
 		// Save resolution
-		Bucket(c.bucket, c.bucketType).
+		Bucket(c.c.bucket, c.c.bucketType).
 			SetRaw(useObj.Value).
 			Key(c.key).
 			WithContext(useObj.VClock).

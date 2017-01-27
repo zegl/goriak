@@ -6,7 +6,7 @@ import (
 )
 
 type MapGetCommand struct {
-	*Command
+	c       *Command
 	output  interface{}
 	key     string
 	builder *riak.FetchMapCommandBuilder
@@ -22,7 +22,7 @@ func (c *Command) Get(key string, output interface{}) *MapGetCommand {
 		WithKey(key)
 
 	return &MapGetCommand{
-		Command: c,
+		c:       c,
 		output:  output,
 		key:     key,
 		builder: builder,
@@ -53,8 +53,8 @@ func (c *MapGetCommand) Run(session *Session) (*Result, error) {
 	}
 
 	req := requestData{
-		bucket:     c.bucket,
-		bucketType: c.bucketType,
+		bucket:     c.c.bucket,
+		bucketType: c.c.bucketType,
 		key:        c.key,
 	}
 

@@ -6,7 +6,7 @@ import (
 )
 
 type MapOperationCommand struct {
-	*Command
+	c       *Command
 	builder *riak.UpdateMapCommandBuilder
 }
 
@@ -18,7 +18,7 @@ func (c *Command) MapOperation(op riak.MapOperation) *MapOperationCommand {
 		WithMapOperation(&op)
 
 	return &MapOperationCommand{
-		Command: c,
+		c:       c,
 		builder: builder,
 	}
 }

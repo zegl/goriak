@@ -6,7 +6,7 @@ import (
 )
 
 type AllKeysCommand struct {
-	*Command
+	c       *Command
 	builder *riak.ListKeysCommandBuilder
 }
 
@@ -20,7 +20,7 @@ func (c *Command) AllKeys(callback func([]string) error) *AllKeysCommand {
 		WithStreaming(true)
 
 	return &AllKeysCommand{
-		Command: c,
+		c:       c,
 		builder: builder,
 	}
 }

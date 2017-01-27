@@ -6,7 +6,7 @@ import (
 )
 
 type DeleteCommand struct {
-	*Command
+	c       *Command
 	builder *riak.DeleteValueCommandBuilder
 }
 
@@ -18,7 +18,7 @@ func (c *Command) Delete(key string) *DeleteCommand {
 		WithKey(key)
 
 	return &DeleteCommand{
-		Command: c,
+		c:       c,
 		builder: builder,
 	}
 }
