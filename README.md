@@ -1,6 +1,8 @@
 # goriak [![Build Status](https://circleci.com/gh/zegl/goriak.svg?style=shield)](https://circleci.com/gh/zegl/goriak) [![codecov](https://codecov.io/gh/zegl/goriak/branch/v2/graph/badge.svg)](https://codecov.io/gh/zegl/goriak/branch/v2) [![Go Report Card](https://goreportcard.com/badge/gopkg.in/zegl/goriak.v2)](https://goreportcard.com/report/gopkg.in/zegl/goriak.v2) [![Join the chat at https://gitter.im/golangriak/Lobby](https://badges.gitter.im/golangriak/Lobby.svg)](https://gitter.im/golangriak/Lobby)
 
-Current version: `v2.4.0`.
+v3 of Goriak is currently in beta. It is mostly stable and only minor changes will be done before the first stable release.
+
+Current version: `v3.0.0-beta1`.
 Riak KV version: 2.0 or higher, the latest version of Riak KV is always recommended. 
 
 # What is goriak?
@@ -10,7 +12,7 @@ goriak is a wrapper around [riak-go-client](https://github.com/basho/riak-go-cli
 # Installation
 
 ```bash
-go get -u gopkg.in/zegl/goriak.v2
+go get -u gopkg.in/zegl/goriak.v3
 ```
 
 # Maps (Riak Data Types)
@@ -32,7 +34,7 @@ user := User {
     Alises: []string{"Foo", "Bar"},
 }
 
-goriak.Bucket("bucket-name", "bucket-type").Key("key").Set(user).Run(c)
+goriak.Bucket("bucket-name", "bucket-type").Set(user).Key("key").Run(c)
 ```
 
 ### Tags
@@ -53,7 +55,7 @@ The map can later be retreived as a whole:
 
 ```go
 var res User
-goriak.Bucket("bucket-name", "bucket-type").Key("key").Get(&res).Run(c)
+goriak.Bucket("bucket-name", "bucket-type").Get("key", &res).Run(c)
 ```
 
 ## Supported Go types
@@ -99,7 +101,7 @@ type Article struct {
 
 // Get our object
 var article Article
-goriak.Bucket("articles", "map").Key("1-hello-world").Get(&article).Run(con)
+goriak.Bucket("articles", "map").Get("1-hello-world", &article).Run(con)
 
 // Increase views by 1
 err := article.Views.Increase(1).Exec(con)
@@ -127,7 +129,7 @@ type Article struct {
 
 // Get our object
 var article Article
-goriak.Bucket("articles", "map").Key("1-hello-world").Get(&article).Run(con)
+goriak.Bucket("articles", "map").Get("1-hello-world", &article).Run(con)
 
 // Add the tag "animals"
 err := article.Tags.AddString("animals").Exec(con)
@@ -145,13 +147,13 @@ There is also `SetRaw()` and `GetRaw()` that works directly on `[]byte`s.
 ## SetJSON
 
 ```go
-goriak.Bucket("bucket-name", "bucket-type").Key("key").SetJSON(obj).Run(con)
+goriak.Bucket("bucket-name", "bucket-type").SetJSON(obj).Key("key").Run(con)
 ```
 
 ## GetJSON
 
 ```go
-goriak.Bucket("bucket-name", "bucket-type").Key("key").GetJSON(&obj).Run(con)
+goriak.Bucket("bucket-name", "bucket-type").GetJSON("key", &obj).Run(con)
 ```
 
 ## MapOperation
@@ -224,7 +226,7 @@ An alternative way of setting Secondary Indexes is by using `AddToIndex()`.
 
 ```go
 goriak.Bucket("bucket-name", "bucket-type").
-    AddToIndex("indexname_bin", "value").
     SetRaw(data).
+    AddToIndex("indexname_bin", "value").
     Run(con)
 ```
