@@ -11,7 +11,7 @@ type Command struct {
 type Result struct {
 	NotFound bool   // Wether or not the item was not found when using Get, GetJSON, or GetRaw.
 	Key      string // Returns your automatically generated key when using Set, SetJSON, or SetRaw.
-	Context   []byte // Returns the Riak Context used in map operations. Is set when using Get.
+	Context  []byte // Returns the Riak Context used in map operations. Is set when using Get.
 }
 
 // Bucket specifies the bucket and bucket type that your following command will be performed on.

@@ -13,11 +13,11 @@ func TestFilterIncludeSingle(t *testing.T) {
 	}
 
 	tests := []check{
-		check{path: []string{"A"}, expected: true},
-		check{path: []string{"A", "B"}, expected: true},
-		check{path: []string{"B"}, expected: false},
-		check{path: []string{"B", "C"}, expected: false},
-		check{path: []string{""}, expected: false},
+		{path: []string{"A"}, expected: true},
+		{path: []string{"A", "B"}, expected: true},
+		{path: []string{"B"}, expected: false},
+		{path: []string{"B", "C"}, expected: false},
+		{path: []string{""}, expected: false},
 	}
 
 	for _, test := range tests {
@@ -36,12 +36,12 @@ func TestFilterIncludeDouble(t *testing.T) {
 	}
 
 	tests := []check{
-		check{path: []string{"A"}, expected: false},
-		check{path: []string{"A", "B"}, expected: true},
-		check{path: []string{"B"}, expected: false},
-		check{path: []string{"B", "C"}, expected: false},
-		check{path: []string{"C"}, expected: true},
-		check{path: []string{"C", "D", "E"}, expected: true},
+		{path: []string{"A"}, expected: false},
+		{path: []string{"A", "B"}, expected: true},
+		{path: []string{"B"}, expected: false},
+		{path: []string{"B", "C"}, expected: false},
+		{path: []string{"C"}, expected: true},
+		{path: []string{"C", "D", "E"}, expected: true},
 	}
 
 	for _, test := range tests {
@@ -60,10 +60,10 @@ func TestFilterExclude(t *testing.T) {
 	}
 
 	tests := []check{
-		check{path: []string{"A"}, expected: true},
-		check{path: []string{"B"}, expected: false},
-		check{path: []string{"C"}, expected: true},
-		check{path: []string{"B", "C"}, expected: false},
+		{path: []string{"A"}, expected: true},
+		{path: []string{"B"}, expected: false},
+		{path: []string{"C"}, expected: true},
+		{path: []string{"B", "C"}, expected: false},
 	}
 
 	for _, test := range tests {
@@ -82,10 +82,10 @@ func TestFilterExclude2(t *testing.T) {
 	}
 
 	tests := []check{
-		check{path: []string{"A"}, expected: true},
-		check{path: []string{"B"}, expected: true},
-		check{path: []string{"C"}, expected: true},
-		check{path: []string{"B", "C"}, expected: false},
+		{path: []string{"A"}, expected: true},
+		{path: []string{"B"}, expected: true},
+		{path: []string{"C"}, expected: true},
+		{path: []string{"B", "C"}, expected: false},
 	}
 
 	for _, test := range tests {
@@ -106,11 +106,11 @@ func TestFilterInludeWithExclude(t *testing.T) {
 	}
 
 	tests := []check{
-		check{path: []string{"A"}, expected: true},
-		check{path: []string{"B"}, expected: false},
-		check{path: []string{"A", "B"}, expected: false},
-		check{path: []string{"A", "C"}, expected: true},
-		check{path: []string{"A", "C", "D"}, expected: true},
+		{path: []string{"A"}, expected: true},
+		{path: []string{"B"}, expected: false},
+		{path: []string{"A", "B"}, expected: false},
+		{path: []string{"A", "C"}, expected: true},
+		{path: []string{"A", "C", "D"}, expected: true},
 	}
 
 	for _, test := range tests {
@@ -132,13 +132,13 @@ func TestFilterExcludeWithInclude(t *testing.T) {
 	}
 
 	tests := []check{
-		check{path: []string{"A"}, expected: false},
-		check{path: []string{"B"}, expected: true},
-		check{path: []string{"B", "B"}, expected: true},
-		check{path: []string{"A", "B"}, expected: true},
-		check{path: []string{"A", "C"}, expected: false},
-		check{path: []string{"A", "C", "D"}, expected: false},
-		check{path: []string{"A", "B", "D"}, expected: true},
+		{path: []string{"A"}, expected: false},
+		{path: []string{"B"}, expected: true},
+		{path: []string{"B", "B"}, expected: true},
+		{path: []string{"A", "B"}, expected: true},
+		{path: []string{"A", "C"}, expected: false},
+		{path: []string{"A", "C", "D"}, expected: false},
+		{path: []string{"A", "B", "D"}, expected: true},
 	}
 
 	for _, test := range tests {
@@ -159,9 +159,9 @@ func TestFilterIncludeAndExcludeSave(t *testing.T) {
 	}
 
 	tests := []check{
-		check{path: []string{"A"}, expected: true},
-		check{path: []string{"A", "B"}, expected: true},
-		check{path: []string{"B"}, expected: false},
+		{path: []string{"A"}, expected: true},
+		{path: []string{"A", "B"}, expected: true},
+		{path: []string{"B"}, expected: false},
 	}
 
 	for _, test := range tests {
