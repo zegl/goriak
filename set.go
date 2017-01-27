@@ -51,7 +51,7 @@ func (s *Set) Strings() []string {
 // Add adds an item to the direct value of the Set.
 // Save the changes to Riak with Set.Exec() or SetMap().
 func (s *Set) Add(add []byte) *Set {
-	// Do not allow empty items (for backwards compability with goriak < 2.4)
+	// Do not allow empty items (for backwards compatibility with goriak < 2.4)
 	if len(add) == 0 {
 		return s
 	}
@@ -235,7 +235,7 @@ func (s *Set) UnmarshalJSON(data []byte) error {
 func (s *Set) removeEmptyItems() {
 	for i, v := range s.value {
 		if len(v) == 0 {
-			// Remove without perserving order
+			// Remove without preserving order
 			s.value[i] = s.value[len(s.value)-1]
 			s.value[len(s.value)-1] = nil
 			s.value = s.value[:len(s.value)-1]
