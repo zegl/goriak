@@ -26,8 +26,8 @@ func main() {
 
 	// Save our User object to Riak
 	_, err = goriak.Bucket("bucket", "bucketType").
-		Key("user-400").
 		Set(user).
+		Key("user-400").
 		Run(con)
 
 	if err != nil {

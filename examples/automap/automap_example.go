@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"gopkg.in/zegl/goriak.v2"
+	"github.com/zegl/goriak"
 )
 
 type User struct {
@@ -24,8 +24,8 @@ func main() {
 
 	// Save our User object to Riak
 	_, err = goriak.Bucket("bucket", "bucketType").
-		Key("user-400").
 		Set(user).
+		Key("user-400").
 		Run(con)
 
 	if err != nil {
