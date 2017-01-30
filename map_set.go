@@ -38,18 +38,17 @@ Set automatically converts your Go datatype to the equivalent type in Riak
 	| map        | map       |
 	| time.Time  | register  |
 */
-func (cmd *Command) Set(val interface{}) *MapSetCommand {
-	c := &MapSetCommand{
+func (c *Command) Set(val interface{}) *MapSetCommand {
+	builder := riak.NewUpdateMapCommandBuilder().
+		WithBucket(c.bucket).
+		WithBucketType(c.bucketType)
+
+	return &MapSetCommand{
 		input:      val,
-		bucket:     cmd.bucket,
-		bucketType: cmd.bucketType,
+		bucket:     c.bucket,
+		bucketType: c.bucketType,
+		builder:    builder,
 	}
-
-	c.builder = riak.NewUpdateMapCommandBuilder().
-		WithBucket(cmd.bucket).
-		WithBucketType(cmd.bucketType)
-
-	return c
 }
 
 func (c *MapSetCommand) Key(key string) *MapSetCommand {
