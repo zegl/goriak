@@ -58,7 +58,6 @@ func (c *Session) connect() error {
 
 	// Build auth options
 	if c.opts.User != "" {
-
 		rootCertPemData, err := ioutil.ReadFile(c.opts.CARootCert)
 		if err != nil {
 			return errors.New("Opening CARootCert: " + err.Error())
@@ -70,7 +69,6 @@ func (c *Session) connect() error {
 		}
 
 		tlsConf := &tls.Config{
-			ServerName:         "localhost",
 			InsecureSkipVerify: true,
 			RootCAs:            rootCertPool,
 		}
@@ -94,6 +92,12 @@ func (c *Session) connect() error {
 		if !strings.Contains(address, ":") {
 			// Add port if not set in the user config
 			address = address + ":" + strconv.FormatUint(uint64(port), 10)
+		}
+
+		// Set ServerName based on the address we're connecting to
+		if authOptions != nil {
+			addressWithoutPort := address[0:strings.Index(address, ":")]
+			authOptions.TlsConfig.ServerName = addressWithoutPort
 		}
 
 		node, err := riak.NewNode(&riak.NodeOptions{
