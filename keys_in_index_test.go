@@ -4,13 +4,13 @@ import (
 	"testing"
 )
 
-func TestKeysInIndexRange(t *testing.T) {
+func TestKeysInIndex(t *testing.T) {
 	type tt struct {
 		Val string
 	}
 
 	for _, key := range []string{"A", "B", "C", "D", "E", "F", "G"} {
-		_, err := Bucket("json", "default").SetJSON(tt{Val: key}).AddToIndex("rangetest_bin", "AAAA").Key(key).Run(con())
+		_, err := Bucket("json", "default").SetJSON(tt{Val: key}).AddToIndex("indextest_bin", "AAAA").Key(key).Run(con())
 		if err != nil {
 			t.Error(err)
 		}
@@ -29,7 +29,7 @@ func TestKeysInIndexRange(t *testing.T) {
 
 	for {
 		res, err := Bucket("json", "default").
-			KeysInIndex("rangetest_bin", "AAAA", cb).
+			KeysInIndex("indextest_bin", "AAAA", cb).
 			Limit(3).
 			IndexContinuation(cont).
 			Run(con())
@@ -54,4 +54,42 @@ func TestKeysInIndexRange(t *testing.T) {
 	if keyCount != 7 {
 		t.Error("did not find 7 keys")
 	}
+}
+
+func TestKeysInIndexRange(t *testing.T) {
+	type tt struct {
+		Val string
+	}
+
+	for _, indexVal := range []string{"a", "b", "c", "d", "e"} {
+		for _, key := range []string{"A", "B", "C", "D", "E", "F", "G"} {
+			_, err := Bucket("json", "default").SetJSON(tt{Val: key}).AddToIndex("rangetest_bin", indexVal).Key(indexVal + key).Run(con())
+			if err != nil {
+				t.Error(err)
+			}
+		}
+	}
+
+	keyCount := 0
+	cb := func(r SecondaryIndexQueryResult) {
+		//t.Logf("%+v", r)
+
+		if !r.IsComplete {
+			keyCount++
+		}
+	}
+
+	res, err := Bucket("json", "default").
+		KeysInIndexRange("rangetest_bin", "b", "d", cb).
+		Limit(1000).
+		Run(con())
+	if err != nil {
+		t.Error(err)
+	}
+
+	if keyCount != 21 {
+		t.Error("unexpected count")
+	}
+
+	t.Logf("%+v", res)
 }
