@@ -28,6 +28,7 @@ func (c *DeleteCommand) WithDw(dw uint32) *DeleteCommand {
 	return c
 }
 
+// WithPw sets the number of primary nodes  that must report back a successful write for the command to be successful.
 func (c *DeleteCommand) WithPw(pw uint32) *DeleteCommand {
 	c.builder.WithPw(pw)
 	return c
@@ -43,6 +44,7 @@ func (c *DeleteCommand) WithR(r uint32) *DeleteCommand {
 	return c
 }
 
+// WithW sets the number of nodes that must report back a successful write for the command to be successful.
 func (c *DeleteCommand) WithW(w uint32) *DeleteCommand {
 	c.builder.WithW(w)
 	return c

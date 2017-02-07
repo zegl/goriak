@@ -15,6 +15,7 @@ func TestMain(m *testing.M) {
 	deleteAllIn("testsuitemap", "maps")
 	deleteAllIn("json", "default")
 	deleteAllIn("testdelete", "default")
+	deleteAllIn("hll-test", "hlls")
 
 	rand.Seed(time.Now().UnixNano())
 

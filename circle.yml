@@ -10,6 +10,8 @@ machine:
     - sudo riak-admin bucket-type activate maps
     - sudo riak-admin bucket-type create tests '{"props":{"backend":"leveldb"}}'
     - sudo riak-admin bucket-type activate tests
+    - sudo riak-admin bucket-type create hlls '{"props":{"datatype":"hll","backend":"leveldb"}}'
+    - sudo riak-admin bucket-type activate hlls
 
 
 test:
