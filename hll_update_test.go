@@ -80,3 +80,24 @@ func TestHllWithoutReturn(t *testing.T) {
 		t.Error("res was not nil")
 	}
 }
+
+func TestHllAddMultiple(t *testing.T) {
+	res, err := Bucket("hll-test", "hlls").
+		UpdateHyperLogLog().
+		AddMultiple([]byte{1}, []byte{2}, []byte{3}).
+		AddMultiple([]byte{1}, []byte{2}, []byte{3}).
+		ReturnBody(true).
+		Run(con())
+
+	if err != nil {
+		t.Error(err)
+	}
+
+	if res == nil {
+		t.Error("res was nil")
+	}
+
+	if res.Cardinality != 3 {
+		t.Error("unexpected val")
+	}
+}
