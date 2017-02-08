@@ -121,18 +121,21 @@ func filterMapOperation(cmd *MapSetCommand, input *riakMapOperation, path []stri
 	return op
 }
 
+// WithPw sets the number of primary nodes  that must report back a successful write for the command to be successful.
 func (c *MapSetCommand) WithPw(pw uint32) *MapSetCommand {
 	c.builder.WithPw(pw)
 	return c
 }
 
+// WithDw sets the number of nodes that must report back a successful write to their backend storage for the command to be successful.
 func (c *MapSetCommand) WithDw(dw uint32) *MapSetCommand {
 	c.builder.WithDw(dw)
 	return c
 }
 
+// WithW sets the number of nodes that must report back a successful write for the command to be successful.
 func (c *MapSetCommand) WithW(w uint32) *MapSetCommand {
-	c.builder.WithPw(w)
+	c.builder.WithW(w)
 	return c
 }
 
