@@ -26,6 +26,9 @@ func (c *Command) SetRaw(value []byte) *SetRawCommand {
 // The output will be written to output by Run().
 func (c *Command) GetRaw(key string, output *[]byte) *GetRawCommand {
 	cmd := &GetRawCommand{
+		bucket:     c.bucket,
+		bucketType: c.bucketType,
+
 		key:         key,
 		outputBytes: output,
 		isRawOutput: true,
