@@ -122,9 +122,12 @@ func (c *Command) GetJSON(key string, output interface{}) *GetRawCommand {
 		WithKey(key)
 
 	return &GetRawCommand{
-		c:       c,
+		key: key,
+
+		bucket:     c.bucket,
+		bucketType: c.bucketType,
+
 		builder: builder,
-		key:     key,
 		output:  output,
 	}
 }
