@@ -8,10 +8,6 @@ import (
 // SetRaw gives you full control of the data stored, compared to SetJSON and Set.
 func (c *Command) SetRaw(value []byte) *SetRawCommand {
 
-	if len(GlobalSetMiddleware) > 0 {
-		globalSetMiddleware[0]()
-	}
-
 	object := &riak.Object{
 		Value: value,
 	}

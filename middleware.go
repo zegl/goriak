@@ -1,22 +1,16 @@
 package goriak
 
-type SetMiddlewarer interface {
-	GetValue() ([]byte, error)
-	SetValue([]byte) error
-
-	//GetMapOperation() (*riak.MapOperation, error)
-	//SetMapOperation(*riak.MapOperation) error
-
+type ExecMiddlewarer interface {
 	GetKey() string
-	SetKey(string)
 }
 
-type SetMiddleware func(SetMiddlewarer, SetMiddleware)
+type ExecuteMiddleware func(cmd ExecMiddlewarer, next func() (*Result, error)) (*Result, error)
 
-var globalSetMiddleware []SetMiddleware
+func (c *SetRawCommand) AddMiddleware(mid ExecuteMiddleware) *SetRawCommand {
+	c.execMiddleware = append(c.execMiddleware, mid)
+	return c
+}
 
-type NextMiddlewareFunc func()
-
-func RegisterSetMiddleware(middleware SetMiddleware) {
-	globalSetMiddleware = append(globalSetMiddleware, middleware)
+func (c *SetRawCommand) GetKey() string {
+	return c.key
 }

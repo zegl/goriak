@@ -3,6 +3,7 @@ package goriak
 import (
 	"errors"
 	riak "github.com/basho/riak-go-client"
+	"log"
 )
 
 type SetRawCommand struct {
@@ -13,6 +14,8 @@ type SetRawCommand struct {
 	// SetJSON and SetRaw will populate these values instead
 	storeValueCommandBuilder *riak.StoreValueCommandBuilder
 	storeValueObject         *riak.Object
+
+	execMiddleware []ExecuteMiddleware
 
 	key string
 
@@ -62,11 +65,36 @@ func (c *SetRawCommand) Run(session *Session) (*Result, error) {
 	// Set object
 	c.storeValueCommandBuilder.WithContent(c.storeValueObject)
 
+	// Keep track of whick middleware that we should execute next
+	middlewareI := 0
+
+	// Needed so that next can call itself
+	var next2 func() (*Result, error)
+
+	next := func() (*Result, error) {
+		if middlewareI == len(c.execMiddleware) {
+			return c.riakExecute(session)
+		}
+
+		middlewareI++
+
+		return c.execMiddleware[middlewareI-1](c, next2)
+	}
+
+	next2 = next
+
+	return next()
+}
+
+func (c *SetRawCommand) riakExecute(session *Session) (*Result, error) {
+
 	// Build it!
 	cmd, err := c.storeValueCommandBuilder.Build()
 	if err != nil {
 		return nil, err
 	}
+
+	log.Println("Riak Execute")
 
 	err = session.riak.Execute(cmd)
 	if err != nil {
@@ -79,15 +107,14 @@ func (c *SetRawCommand) Run(session *Session) (*Result, error) {
 		return nil, errors.New("Not successful")
 	}
 
-	var key string
+	log.Println("Key:", c.key)
 
-	if c.key != "" {
-		key = c.key
-	} else {
-		key = storeCmd.Response.GeneratedKey
+	if c.key == "" {
+		log.Println("Added GeneratedKey")
+		c.key = storeCmd.Response.GeneratedKey
 	}
 
 	return &Result{
-		Key: key,
+		Key: c.key,
 	}, nil
 }
