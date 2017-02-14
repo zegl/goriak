@@ -3,7 +3,6 @@ package goriak
 import (
 	"errors"
 	riak "github.com/basho/riak-go-client"
-	"log"
 )
 
 type SetRawCommand struct {
@@ -71,6 +70,10 @@ func (c *SetRawCommand) Run(session *Session) (*Result, error) {
 	// Needed so that next can call itself
 	var next2 func() (*Result, error)
 
+	middlewarer := setRawMiddlewarer{
+		cmd: c,
+	}
+
 	next := func() (*Result, error) {
 		if middlewareI == len(c.execMiddleware) {
 			return c.riakExecute(session)
@@ -78,7 +81,7 @@ func (c *SetRawCommand) Run(session *Session) (*Result, error) {
 
 		middlewareI++
 
-		return c.execMiddleware[middlewareI-1](c, next2)
+		return c.execMiddleware[middlewareI-1](middlewarer, next2)
 	}
 
 	next2 = next
@@ -94,8 +97,6 @@ func (c *SetRawCommand) riakExecute(session *Session) (*Result, error) {
 		return nil, err
 	}
 
-	log.Println("Riak Execute")
-
 	err = session.riak.Execute(cmd)
 	if err != nil {
 		return nil, err
@@ -107,10 +108,7 @@ func (c *SetRawCommand) riakExecute(session *Session) (*Result, error) {
 		return nil, errors.New("Not successful")
 	}
 
-	log.Println("Key:", c.key)
-
 	if c.key == "" {
-		log.Println("Added GeneratedKey")
 		c.key = storeCmd.Response.GeneratedKey
 	}
 
