@@ -7,14 +7,13 @@ import (
 )
 
 type GetRawCommand struct {
-	// Riak builder type for SetValue
-	// Other commands populate riakComand directly
-	// SetJSON and SetRaw will populate these values instead
 	builder *riak.FetchValueCommandBuilder
+
+	c *Command
 
 	key string
 
-	// Used in conflict resolution
+	// Used in conflict resolution and middleware
 	bucket     string
 	bucketType string
 

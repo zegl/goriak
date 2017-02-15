@@ -33,9 +33,9 @@ func (c getRawMiddlewarer) Key() string {
 }
 
 func (c getRawMiddlewarer) Bucket() string {
-	return c.cmd.c.bucket
+	return c.cmd.bucket
 }
 
 func (c getRawMiddlewarer) BucketType() string {
-	return c.cmd.c.bucketType
+	return c.cmd.bucketType
 }
