@@ -25,6 +25,8 @@ func Bucket(bucket, bucketType string) *Command {
 	}
 }
 
+// RegisterRunMiddleware adds a middleware function that will wrap the execution of the command.
+// Is currently supported by Get, GetRaw, GetJSON, Set, SetRaw, and SetJSON
 func (c *Command) RegisterRunMiddleware(middleware RunMiddleware) *Command {
 	c.runMiddleware = append(c.runMiddleware, middleware)
 	return c
