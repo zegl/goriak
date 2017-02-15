@@ -12,6 +12,8 @@ type requestData struct {
 }
 
 type MapSetCommand struct {
+	c *Command
+
 	bucket     string
 	bucketType string
 	key        string
@@ -44,6 +46,7 @@ func (c *Command) Set(val interface{}) *MapSetCommand {
 		WithBucketType(c.bucketType)
 
 	return &MapSetCommand{
+		c:          c,
 		input:      val,
 		bucket:     c.bucket,
 		bucketType: c.bucketType,
@@ -137,6 +140,14 @@ func (c *MapSetCommand) WithW(w uint32) *MapSetCommand {
 }
 
 func (c *MapSetCommand) Run(session *Session) (*Result, error) {
+	middlewarer := &setMiddlewarer{
+		cmd: c,
+	}
+
+	return runMiddleware(middlewarer, c.c.runMiddleware, c.riakExec, session)
+}
+
+func (c *MapSetCommand) riakExec(session *Session) (*Result, error) {
 	riakContext, op, err := encodeInterface(c.input, requestData{
 		bucket:     c.bucket,
 		bucketType: c.bucketType,
@@ -181,4 +192,20 @@ func (c *MapSetCommand) Run(session *Session) (*Result, error) {
 	return &Result{
 		Key: updateCmd.Response.GeneratedKey,
 	}, nil
+}
+
+type setMiddlewarer struct {
+	cmd *MapSetCommand
+}
+
+func (c *setMiddlewarer) Key() string {
+	return c.cmd.key
+}
+
+func (c *setMiddlewarer) Bucket() string {
+	return c.cmd.bucket
+}
+
+func (c *setMiddlewarer) BucketType() string {
+	return c.cmd.bucketType
 }
