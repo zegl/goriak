@@ -62,6 +62,15 @@ func (c *SetRawCommand) Run(session *Session) (*Result, error) {
 	// Set object
 	c.storeValueCommandBuilder.WithContent(c.storeValueObject)
 
+	middlewarer := setRawMiddlewarer{
+		cmd: c,
+	}
+
+	return runMiddleware(middlewarer, c.c.runMiddleware, c.riakExecute, session)
+}
+
+func (c *SetRawCommand) riakExecute(session *Session) (*Result, error) {
+
 	// Build it!
 	cmd, err := c.storeValueCommandBuilder.Build()
 	if err != nil {
@@ -79,15 +88,11 @@ func (c *SetRawCommand) Run(session *Session) (*Result, error) {
 		return nil, errors.New("Not successful")
 	}
 
-	var key string
-
-	if c.key != "" {
-		key = c.key
-	} else {
-		key = storeCmd.Response.GeneratedKey
+	if c.key == "" {
+		c.key = storeCmd.Response.GeneratedKey
 	}
 
 	return &Result{
-		Key: key,
+		Key: c.key,
 	}, nil
 }

@@ -7,14 +7,13 @@ import (
 )
 
 type GetRawCommand struct {
-	// Riak builder type for SetValue
-	// Other commands populate riakComand directly
-	// SetJSON and SetRaw will populate these values instead
 	builder *riak.FetchValueCommandBuilder
+
+	c *Command
 
 	key string
 
-	// Used in conflict resolution
+	// Used in conflict resolution and middleware
 	bucket     string
 	bucketType string
 
@@ -89,7 +88,37 @@ func (c *GetRawCommand) WithR(r uint32) *GetRawCommand {
 	return c
 }
 
+func runMiddleware(middlewarer RunMiddlewarer, middlewareList []RunMiddleware, execFunc func(*Session) (*Result, error), session *Session) (*Result, error) {
+	// Keep track of whick middleware that we should execute next
+	middlewareI := 0
+
+	// Needed so that next can call itself
+	var next2 func() (*Result, error)
+
+	next := func() (*Result, error) {
+		if middlewareI == len(middlewareList) {
+			return execFunc(session)
+		}
+
+		middlewareI++
+
+		return middlewareList[middlewareI-1](middlewarer, next2)
+	}
+
+	next2 = next
+
+	return next()
+}
+
 func (c *GetRawCommand) Run(session *Session) (*Result, error) {
+	middlewarer := &getRawMiddlewarer{
+		cmd: c,
+	}
+
+	return runMiddleware(middlewarer, c.c.runMiddleware, c.runExec, session)
+}
+
+func (c *GetRawCommand) runExec(session *Session) (*Result, error) {
 	cmd, err := c.builder.Build()
 	if err != nil {
 		return nil, err

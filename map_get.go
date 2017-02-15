@@ -30,6 +30,14 @@ func (c *Command) Get(key string, output interface{}) *MapGetCommand {
 }
 
 func (c *MapGetCommand) Run(session *Session) (*Result, error) {
+	middlewarer := &getMiddlewarer{
+		cmd: c,
+	}
+
+	return runMiddleware(middlewarer, c.c.runMiddleware, c.riakExec, session)
+}
+
+func (c *MapGetCommand) riakExec(session *Session) (*Result, error) {
 	cmd, err := c.builder.Build()
 	if err != nil {
 		return nil, err
@@ -67,4 +75,20 @@ func (c *MapGetCommand) Run(session *Session) (*Result, error) {
 		Key:     c.key,
 		Context: mapCommand.Response.Context,
 	}, nil
+}
+
+type getMiddlewarer struct {
+	cmd *MapGetCommand
+}
+
+func (c *getMiddlewarer) Key() string {
+	return c.cmd.key
+}
+
+func (c *getMiddlewarer) Bucket() string {
+	return c.cmd.c.bucket
+}
+
+func (c *getMiddlewarer) BucketType() string {
+	return c.cmd.c.bucketType
 }
