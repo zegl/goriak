@@ -21,10 +21,7 @@ type KeysInIndexResult struct {
 	Continuation []byte
 }
 
-// KeysInIndex returns all keys in the index indexName that has the value indexValue
-// The values will be returned to the callbak function
-// When all keys have been returned SecondaryIndexQueryResult.IsComplete will be true
-func (c *Command) KeysInIndex(indexName, indexValue string, callback func(SecondaryIndexQueryResult)) *CommandKeysInIndex {
+func (c *Command) commonIndexBuilder(indexName string, callback func(SecondaryIndexQueryResult)) *riak.SecondaryIndexQueryCommandBuilder {
 	cb := func(res []*riak.SecondaryIndexQueryResult) error {
 		if len(res) == 0 {
 			callback(SecondaryIndexQueryResult{
@@ -43,13 +40,31 @@ func (c *Command) KeysInIndex(indexName, indexValue string, callback func(Second
 		return nil
 	}
 
-	builder := riak.NewSecondaryIndexQueryCommandBuilder().
+	return riak.NewSecondaryIndexQueryCommandBuilder().
 		WithBucket(c.bucket).
 		WithBucketType(c.bucketType).
 		WithIndexName(indexName).
-		WithIndexKey(indexValue).
 		WithStreaming(true).
 		WithCallback(cb)
+}
+
+// KeysInIndex returns all keys in the index indexName that has the value indexValue
+// The values will be returned to the callbak function
+// When all keys have been returned SecondaryIndexQueryResult.IsComplete will be true
+func (c *Command) KeysInIndex(indexName, indexValue string, callback func(SecondaryIndexQueryResult)) *CommandKeysInIndex {
+	builder := c.commonIndexBuilder(indexName, callback)
+	builder = builder.WithIndexKey(indexValue)
+
+	return &CommandKeysInIndex{
+		c:       c,
+		builder: builder,
+	}
+}
+
+// KeysInIndexRange is similar to KeysInIndex(), but works with with a range of index values
+func (c *Command) KeysInIndexRange(indexName, min, max string, callback func(SecondaryIndexQueryResult)) *CommandKeysInIndex {
+	builder := c.commonIndexBuilder(indexName, callback)
+	builder = builder.WithRange(min, max)
 
 	return &CommandKeysInIndex{
 		c:       c,
