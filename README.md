@@ -145,15 +145,13 @@ Check [godoc](https://godoc.org/github.com/zegl/goriak#Set) for more information
 Values can be automatically JSON Marshalled/Unmarshalled by using `SetJSON()` and `GetJSON()`.
 There is also `SetRaw()` and `GetRaw()` that works directly on `[]byte`s.
 
-## SetJSON
+## JSON
 
 ```go
+// Set object
 goriak.Bucket("bucket-name", "bucket-type").SetJSON(obj).Key("key").Run(con)
-```
 
-## GetJSON
-
-```go
+// Get object
 goriak.Bucket("bucket-name", "bucket-type").GetJSON("key", &obj).Run(con)
 ```
 
