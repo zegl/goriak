@@ -7,14 +7,17 @@ import (
 )
 
 type GetRawCommand struct {
-	c *Command
-
 	// Riak builder type for SetValue
 	// Other commands populate riakComand directly
 	// SetJSON and SetRaw will populate these values instead
 	builder *riak.FetchValueCommandBuilder
 
-	key         string
+	key string
+
+	// Used in conflict resolution
+	bucket     string
+	bucketType string
+
 	output      interface{}
 	outputBytes *[]byte
 
@@ -64,7 +67,7 @@ func (c *GetRawCommand) fetchValueWithResolver(session *Session, values []*riak.
 		}
 
 		// Save resolution
-		Bucket(c.c.bucket, c.c.bucketType).
+		Bucket(c.bucket, c.bucketType).
 			SetRaw(useObj.Value).
 			Key(c.key).
 			WithContext(useObj.VClock).

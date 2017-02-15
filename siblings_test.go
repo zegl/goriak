@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-func TestSiblings(t *testing.T) {
+func TestSiblingsJSON(t *testing.T) {
 	key := randomKey()
 
 	a1 := Bucket("sibs", "tests").SetJSON("bob").Key(key)
@@ -62,6 +62,74 @@ func TestSiblings(t *testing.T) {
 
 	_, err = Bucket("sibs", "tests").
 		GetJSON(key, &out).
+		ConflictResolver(resolver).
+		Run(c)
+
+	if err != nil {
+		t.Error(err)
+	}
+
+	if didConflictResolution {
+		t.Error("Did resolution after already being resolved?")
+	}
+}
+
+func TestSiblingsRaw(t *testing.T) {
+	key := randomKey()
+
+	a1 := Bucket("sibs", "tests").SetRaw([]byte("foo")).Key(key)
+	a2 := Bucket("sibs", "tests").SetRaw([]byte("bar")).Key(key)
+
+	c := con()
+
+	_, err := a1.Run(c)
+
+	if err != nil {
+		t.Error(err)
+	}
+
+	_, err = a2.Run(c)
+
+	if err != nil {
+		t.Error(err)
+	}
+
+	didConflictResolution := false
+
+	resolver := func(objects []ConflictObject) ResolvedConflict {
+
+		if len(objects) != 2 {
+			t.Errorf("Did not receive 2 objects to conflict resolution. Got %d", len(objects))
+		}
+
+		for _, obj := range objects {
+			if string(obj.Value) == "foo" {
+				didConflictResolution = true
+				return obj.GetResolved()
+			}
+		}
+
+		return objects[0].GetResolved()
+	}
+
+	var out []byte
+	_, err = Bucket("sibs", "tests").
+		GetRaw(key, &out).
+		ConflictResolver(resolver).
+		Run(c)
+
+	if err != nil {
+		t.Error(err)
+	}
+
+	if !didConflictResolution {
+		t.Error("Did not do conflict resolution")
+	}
+
+	didConflictResolution = false
+
+	_, err = Bucket("sibs", "tests").
+		GetRaw(key, &out).
 		ConflictResolver(resolver).
 		Run(c)
 

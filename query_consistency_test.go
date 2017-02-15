@@ -137,3 +137,27 @@ func TestDeleteWithConsistancyOptions(t *testing.T) {
 		t.Error(err)
 	}
 }
+
+func TestUpdateHllWithConsistancyOptions(t *testing.T) {
+	_, err := Bucket("raw", "hlls").UpdateHyperLogLog().
+		Add([]byte{1}).
+		WithDw(5).
+		WithPw(5).
+		WithW(5).
+		Run(con())
+
+	if err == nil {
+		t.Error("no error")
+	}
+}
+
+func TestGetHllWithConsistancyOptions(t *testing.T) {
+	_, err := Bucket("raw", "hlls").GetHyperLogLog("123").
+		WithPr(5).
+		WithR(5).
+		Run(con())
+
+	if err == nil {
+		t.Error("no error")
+	}
+}

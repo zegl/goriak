@@ -28,6 +28,8 @@ func (c *Command) SetRaw(value []byte) *SetRawCommand {
 func (c *Command) GetRaw(key string, output *[]byte) *GetRawCommand {
 	cmd := &GetRawCommand{
 		c:           c,
+		bucket:     c.bucket,
+		bucketType: c.bucketType,
 		key:         key,
 		outputBytes: output,
 		isRawOutput: true,
