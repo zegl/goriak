@@ -1,17 +1,12 @@
 package goriak
 
-type ExecMiddlewarer interface {
+type RunMiddlewarer interface {
 	Key() string
 	Bucket() string
 	BucketType() string
 }
 
-type ExecuteMiddleware func(cmd ExecMiddlewarer, next func() (*Result, error)) (*Result, error)
-
-func (c *SetRawCommand) AddMiddleware(mid ExecuteMiddleware) *SetRawCommand {
-	c.execMiddleware = append(c.execMiddleware, mid)
-	return c
-}
+type RunMiddleware func(cmd RunMiddlewarer, next func() (*Result, error)) (*Result, error)
 
 type setRawMiddlewarer struct {
 	cmd *SetRawCommand
@@ -26,5 +21,21 @@ func (c setRawMiddlewarer) Bucket() string {
 }
 
 func (c setRawMiddlewarer) BucketType() string {
+	return c.cmd.c.bucketType
+}
+
+type getRawMiddlewarer struct {
+	cmd *GetRawCommand
+}
+
+func (c getRawMiddlewarer) Key() string {
+	return c.cmd.key
+}
+
+func (c getRawMiddlewarer) Bucket() string {
+	return c.cmd.c.bucket
+}
+
+func (c getRawMiddlewarer) BucketType() string {
 	return c.cmd.c.bucketType
 }

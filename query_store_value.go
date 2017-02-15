@@ -14,8 +14,6 @@ type SetRawCommand struct {
 	storeValueCommandBuilder *riak.StoreValueCommandBuilder
 	storeValueObject         *riak.Object
 
-	execMiddleware []ExecuteMiddleware
-
 	key string
 
 	err error
@@ -64,29 +62,11 @@ func (c *SetRawCommand) Run(session *Session) (*Result, error) {
 	// Set object
 	c.storeValueCommandBuilder.WithContent(c.storeValueObject)
 
-	// Keep track of whick middleware that we should execute next
-	middlewareI := 0
-
-	// Needed so that next can call itself
-	var next2 func() (*Result, error)
-
 	middlewarer := setRawMiddlewarer{
 		cmd: c,
 	}
 
-	next := func() (*Result, error) {
-		if middlewareI == len(c.execMiddleware) {
-			return c.riakExecute(session)
-		}
-
-		middlewareI++
-
-		return c.execMiddleware[middlewareI-1](middlewarer, next2)
-	}
-
-	next2 = next
-
-	return next()
+	return runMiddleware(middlewarer, c.c.runMiddleware, c.riakExecute, session)
 }
 
 func (c *SetRawCommand) riakExecute(session *Session) (*Result, error) {

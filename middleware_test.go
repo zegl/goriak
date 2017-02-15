@@ -6,13 +6,13 @@ import (
 )
 
 func TestMiddlewareSetAbort(t *testing.T) {
-	m := func(cmd ExecMiddlewarer, next func() (*Result, error)) (*Result, error) {
+	m := func(cmd RunMiddlewarer, next func() (*Result, error)) (*Result, error) {
 		return nil, errors.New("aborted middleware")
 	}
 
 	_, err := Bucket("middleware", "tests").
+		RegisterRunMiddleware(m).
 		SetRaw([]byte{1, 2, 3, 4, 5}).
-		AddMiddleware(m).
 		Run(con())
 	if err == nil {
 		t.Error("no error")
@@ -27,7 +27,7 @@ func TestMiddlewareSetKeyTest(t *testing.T) {
 	beforeEmpty := 0
 	afterWithKey := 0
 
-	m := func(cmd ExecMiddlewarer, next func() (*Result, error)) (*Result, error) {
+	m := func(cmd RunMiddlewarer, next func() (*Result, error)) (*Result, error) {
 		if cmd.Key() == "" {
 			beforeEmpty++
 		}
@@ -42,9 +42,9 @@ func TestMiddlewareSetKeyTest(t *testing.T) {
 	}
 
 	_, err := Bucket("middleware", "tests").
+		RegisterRunMiddleware(m).
+		RegisterRunMiddleware(m).
 		SetRaw([]byte{1, 2, 3, 4, 5}).
-		AddMiddleware(m).
-		AddMiddleware(m).
 		Run(con())
 	if err != nil {
 		t.Error(err)
@@ -60,7 +60,7 @@ func TestMiddlewareSetKeyTest(t *testing.T) {
 }
 
 func TestMiddlewareSetBucketType(t *testing.T) {
-	m := func(cmd ExecMiddlewarer, next func() (*Result, error)) (*Result, error) {
+	m := func(cmd RunMiddlewarer, next func() (*Result, error)) (*Result, error) {
 		if cmd.Bucket() != "middleware" {
 			t.Error("unexpected before bucket")
 		}
@@ -81,10 +81,48 @@ func TestMiddlewareSetBucketType(t *testing.T) {
 	}
 
 	_, err := Bucket("middleware", "tests").
+		RegisterRunMiddleware(m).
 		SetRaw([]byte{1, 2, 3, 4, 5}).
-		AddMiddleware(m).
 		Run(con())
 	if err != nil {
 		t.Error(err)
 	}
+}
+
+func TestMiddlewareGetRaw(t *testing.T) {
+	m := func(cmd RunMiddlewarer, next func() (*Result, error)) (*Result, error) {
+		if cmd.Bucket() != "middleware" {
+			t.Error("unexpected before bucket")
+		}
+		if cmd.BucketType() != "tests" {
+			t.Error("unexpected before bucket type")
+		}
+		if cmd.Key() != "hello123" {
+			t.Error("unexpected before key")
+		}
+
+		res, err := next()
+
+		if cmd.Bucket() != "middleware" {
+			t.Error("unexpected after bucket")
+		}
+		if cmd.BucketType() != "tests" {
+			t.Error("unexpected after bucket type")
+		}
+		if cmd.Key() != "hello123" {
+			t.Error("unexpected after key")
+		}
+
+		if err == nil {
+			t.Error("did not get error")
+		}
+
+		return res, err
+	}
+
+	var out []byte
+	Bucket("middleware", "tests").
+		RegisterRunMiddleware(m).
+		GetRaw("hello123", &out).
+		Run(con())
 }

@@ -5,6 +5,9 @@ type Command struct {
 	// Key information
 	bucket     string
 	bucketType string
+
+	// Middleware
+	runMiddleware []RunMiddleware
 }
 
 // Result contains your query result data from Run()
@@ -20,4 +23,9 @@ func Bucket(bucket, bucketType string) *Command {
 		bucket:     bucket,
 		bucketType: bucketType,
 	}
+}
+
+func (c *Command) RegisterRunMiddleware(middleware RunMiddleware) *Command {
+	c.runMiddleware = append(c.runMiddleware, middleware)
+	return c
 }
