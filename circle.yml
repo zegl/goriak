@@ -5,7 +5,8 @@ machine:
 machine:
   post:
     - curl -s https://packagecloud.io/install/repositories/basho/riak/script.deb.sh | sudo bash
-    - sudo apt-get install riak
+    - sudo apt-get update
+    - sudo apt-get install riak=2.2.0-1
     - sudo sed -i 's/storage_backend.*/storage_backend = leveldb/' /etc/riak/riak.conf
     - sudo service riak restart
     - sudo riak version
