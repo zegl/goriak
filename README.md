@@ -4,6 +4,9 @@ Current version: `v3.2.0`.
 Riak KV version: 2.0 or higher, the latest version of Riak KV is always recommended.  
 Version 2 of goriak is available [here](https://github.com/zegl/goriak/tree/v2).  
 
+
+![](https://i.imgur.com/0RmZ9E5.png)
+
 # What is goriak?
 
 goriak is a wrapper around [riak-go-client](https://github.com/basho/riak-go-client) to make it easier and more friendly for developers to use Riak KV.
