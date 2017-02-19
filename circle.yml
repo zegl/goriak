@@ -5,7 +5,7 @@ machine:
 machine:
   post:
     - curl -s https://packagecloud.io/install/repositories/basho/riak/script.deb.sh | sudo bash
-    - sudo apt-get install riak=2.2.0-1 
+    - sudo apt-get install riak
     - sudo sed -i 's/storage_backend.*/storage_backend = leveldb/' /etc/riak/riak.conf
     - sudo service riak restart
     - sudo riak version
@@ -15,7 +15,6 @@ machine:
     - sudo riak-admin bucket-type activate tests
     - sudo riak-admin bucket-type create hlls '{"props":{"datatype":"hll","backend":"leveldb"}}'
     - sudo riak-admin bucket-type activate hlls
-
 
 test:
   override:
