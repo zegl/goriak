@@ -4,6 +4,8 @@ machine:
 
 machine:
   post:
+    - curl -s https://packagecloud.io/install/repositories/computology/apt-backport/script.deb.sh | sudo bash
+    - sudo apt-get install apt=1.2.10
     - curl -s https://packagecloud.io/install/repositories/basho/riak/script.deb.sh | sudo bash
     - sudo apt-get update
     - sudo apt-get install riak=2.2.0-1
