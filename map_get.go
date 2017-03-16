@@ -92,3 +92,7 @@ func (c *getMiddlewarer) Bucket() string {
 func (c *getMiddlewarer) BucketType() string {
 	return c.cmd.c.bucketType
 }
+
+func (c getMiddlewarer) Command() CommandType {
+	return CommandTypeGet
+}
