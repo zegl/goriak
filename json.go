@@ -6,7 +6,7 @@ import (
 	"reflect"
 	"strconv"
 
-	riak "github.com/basho/riak-go-client"
+	riak "gopkg.in/zegl/goriak.v3/deps/riak-go-client"
 )
 
 // SetJSON saves value as key in the bucket bucket/bucketType

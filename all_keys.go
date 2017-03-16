@@ -2,7 +2,7 @@ package goriak
 
 import (
 	"errors"
-	riak "github.com/basho/riak-go-client"
+	riak "gopkg.in/zegl/goriak.v3/deps/riak-go-client"
 )
 
 type AllKeysCommand struct {
@@ -17,6 +17,7 @@ func (c *Command) AllKeys(callback func([]string) error) *AllKeysCommand {
 		WithBucket(c.bucket).
 		WithBucketType(c.bucketType).
 		WithCallback(callback).
+		WithAllowListing().
 		WithStreaming(true)
 
 	return &AllKeysCommand{
