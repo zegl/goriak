@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"time"
 
-	riak "github.com/basho/riak-go-client"
+	riak "gopkg.in/zegl/goriak.v3/deps/riak-go-client"
 )
 
 func decodeInterface(data *riak.FetchMapResponse, output interface{}, riakRequest requestData) error {

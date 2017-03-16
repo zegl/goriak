@@ -2,7 +2,7 @@ package goriak
 
 import (
 	"errors"
-	riak "github.com/basho/riak-go-client"
+	riak "gopkg.in/zegl/goriak.v3/deps/riak-go-client"
 )
 
 type requestData struct {

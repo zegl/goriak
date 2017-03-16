@@ -1,7 +1,7 @@
 package goriak
 
 import (
-	riak "github.com/basho/riak-go-client"
+	riak "gopkg.in/zegl/goriak.v3/deps/riak-go-client"
 )
 
 // SetRaw allows you to set a []byte directly to Riak.
