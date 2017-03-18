@@ -1,15 +1,14 @@
 # goriak [![Build Status](https://circleci.com/gh/zegl/goriak.svg?style=shield)](https://circleci.com/gh/zegl/goriak) [![codecov](https://codecov.io/gh/zegl/goriak/branch/v3/graph/badge.svg)](https://codecov.io/gh/zegl/goriak/branch/v3) [![Go Report Card](https://goreportcard.com/badge/gopkg.in/zegl/goriak.v3)](https://goreportcard.com/report/gopkg.in/zegl/goriak.v3) [![Join the chat at https://gitter.im/golangriak/Lobby](https://badges.gitter.im/golangriak/Lobby.svg)](https://gitter.im/golangriak/Lobby)
 
-Current version: `v3.2.0`.  
-Riak KV version: 2.0 or higher, the latest version of Riak KV is always recommended.  
-Version 2 of goriak is available [here](https://github.com/zegl/goriak/tree/v2).  
+Current version: `v3.2.1`.  
+Riak KV version: 2.0 or higher, the latest version of Riak KV is always recommended. 
 
 
 ![](https://i.imgur.com/0RmZ9E5.png)
 
 # What is goriak?
 
-goriak is a wrapper around [riak-go-client](https://github.com/basho/riak-go-client) to make it easier and more friendly for developers to use Riak KV.
+goriak is a wrapper around [riak-go-client](https://github.com/basho/riak-go-client) (version `1.9.0` or newer is required) to make it easier and more friendly for developers to use Riak KV.
 
 * [Documentation](https://godoc.org/gopkg.in/zegl/goriak.v3)
 
