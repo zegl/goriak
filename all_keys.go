@@ -17,6 +17,7 @@ func (c *Command) AllKeys(callback func([]string) error) *AllKeysCommand {
 		WithBucket(c.bucket).
 		WithBucketType(c.bucketType).
 		WithCallback(callback).
+		WithAllowListing(). // Required as of github.com/basho/riak-go-client 1.9.0
 		WithStreaming(true)
 
 	return &AllKeysCommand{
