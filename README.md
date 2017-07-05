@@ -1,4 +1,4 @@
-# goriak [![Build Status](https://circleci.com/gh/zegl/goriak.svg?style=shield)](https://circleci.com/gh/zegl/goriak) [![codecov](https://codecov.io/gh/zegl/goriak/branch/v3/graph/badge.svg)](https://codecov.io/gh/zegl/goriak/branch/v3) [![Go Report Card](https://goreportcard.com/badge/gopkg.in/zegl/goriak.v3)](https://goreportcard.com/report/gopkg.in/zegl/goriak.v3) [![Join the chat at https://gitter.im/golangriak/Lobby](https://badges.gitter.im/golangriak/Lobby.svg)](https://gitter.im/golangriak/Lobby)
+# goriak [![Build Status](https://circleci.com/gh/zegl/goriak.svg?style=shield)](https://circleci.com/gh/zegl/goriak) [![codecov](https://codecov.io/gh/zegl/goriak/branch/v3/graph/badge.svg)](https://codecov.io/gh/zegl/goriak/branch/v3) [![Go Report Card](https://goreportcard.com/badge/gopkg.in/zegl/goriak.v3)](https://goreportcard.com/report/gopkg.in/zegl/goriak.v3)
 
 Current version: `v3.2.1`.  
 Riak KV version: 2.0 or higher, the latest version of Riak KV is always recommended. 
