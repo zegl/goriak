@@ -3,8 +3,15 @@
 Current version: `v3.2.1`.  
 Riak KV version: 2.0 or higher, the latest version of Riak KV is always recommended. 
 
-
 ![](https://i.imgur.com/0RmZ9E5.png)
+
+## A warning for new users (Riak is dead)
+
+Basho (the company behind Riak), has stopped all development of Riak. I would not recommend the use of Riak KV in new projects.
+
+* [riak-users: "Is Riak dead?"](http://lists.basho.com/pipermail/riak-users_lists.basho.com/2017-July/019405.html)
+* [GitHub: "Status of Riak core - Is it dead?"](https://github.com/basho/riak_core/issues/909)
+* [Twitter: "It isn’t obvious to some, but Basho is 100% dead."](https://twitter.com/_jared/status/878036763805048832)
 
 # What is goriak?
 
