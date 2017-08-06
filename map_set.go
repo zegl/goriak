@@ -212,3 +212,7 @@ func (c *setMiddlewarer) Bucket() string {
 func (c *setMiddlewarer) BucketType() string {
 	return c.cmd.bucketType
 }
+
+func (c setMiddlewarer) Command() CommandType {
+	return CommandTypeSet
+}
