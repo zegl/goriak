@@ -29,7 +29,11 @@ func TestTime(t *testing.T) {
 		t.Error("Fetch:", err.Error())
 	}
 
-	if val.TS != fetch.TS {
+	if val.TS.UnixNano() != fetch.TS.UnixNano() {
 		t.Error("Did not get same value back")
+		t.Logf("%+v", val.TS)
+		t.Logf("%+v", fetch.TS)
+		t.Logf("%+v", val.TS.UnixNano())
+		t.Logf("%+v", fetch.TS.UnixNano())
 	}
 }
