@@ -156,8 +156,6 @@ func (e *mapEncoder) encodeValue(op *riakMapOperation, itemKey string, f reflect
 			done = true
 		}
 
-		_ = time.Time{}
-
 		if !done {
 			subOp := op.Map(itemKey)
 
