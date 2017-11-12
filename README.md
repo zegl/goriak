@@ -5,14 +5,6 @@ Riak KV version: 2.0 or higher, the latest version of Riak KV is always recommen
 
 ![](https://i.imgur.com/0RmZ9E5.png)
 
-## A warning for new users (Riak is dead)
-
-Basho (the company behind Riak), has stopped all development of Riak. I would not recommend the use of Riak KV in new projects.
-
-* [riak-users: "Is Riak dead?"](http://lists.basho.com/pipermail/riak-users_lists.basho.com/2017-July/019405.html)
-* [GitHub: "Status of Riak core - Is it dead?"](https://github.com/basho/riak_core/issues/909)
-* [Twitter: "It isn’t obvious to some, but Basho is 100% dead."](https://twitter.com/_jared/status/878036763805048832)
-
 # What is goriak?
 
 goriak is a wrapper around [riak-go-client](https://github.com/basho/riak-go-client) (version `1.9.0` or newer is required) to make it easier and more friendly for developers to use Riak KV.
