@@ -1,4 +1,4 @@
-module github.com/zegl/goriak
+module github.com/zegl/goriak/v3
 
 require (
 	github.com/basho/backoff v0.0.0-20150307023525-2ff7c4694083 // indirect
