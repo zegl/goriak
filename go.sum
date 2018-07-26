@@ -1,0 +1,8 @@
+github.com/basho/backoff v0.0.0-20150307023525-2ff7c4694083 h1:GKs410QTI0WKMlVOHG3C5894qNC+iLT0gKd3llmk8Q4=
+github.com/basho/backoff v0.0.0-20150307023525-2ff7c4694083/go.mod h1:LPMmhtk79U7hVIuDjCUSLi5eujsYZhjUYremMNOd7/Y=
+github.com/basho/riak-go-client v0.0.0-20170327205844-5587c16e0b8b h1:f0tQ8Qe56AQUC6S6KLA4O/WKktzOkE0WOVXoYG+1iuE=
+github.com/basho/riak-go-client v0.0.0-20170327205844-5587c16e0b8b/go.mod h1:/kA2cT67OJUBL2iod0m2oK9iIOzp++uogoqJRLWFeCo=
+github.com/basho/riak-go-client v1.7.0 h1:tswHqvworxn0sGV8lL4HiPjrwWUqdhlsLbtXscUTbKo=
+github.com/basho/riak-go-client v1.7.0/go.mod h1:/kA2cT67OJUBL2iod0m2oK9iIOzp++uogoqJRLWFeCo=
+github.com/golang/protobuf v1.1.0 h1:0iH4Ffd/meGoXqF2lSAhZHt8X+cPgkfn/cb6Cce5Vpc=
+github.com/golang/protobuf v1.1.0/go.mod h1:6lQm79b+lXiMfvg/cZm0SGofjICqVBUtrP5yJMmIC1U=
