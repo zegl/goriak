@@ -13,6 +13,14 @@ goriak is a wrapper around [riak-go-client](https://github.com/basho/riak-go-cli
 
 # Installation
 
+As a Go module (requires Go 1.11 or later):
+
+```bash
+go get github.com/zegl/goriak/v3@v3.2.3
+```
+
+As a Go package:
+
 ```bash
 go get -u gopkg.in/zegl/goriak.v3
 ```
