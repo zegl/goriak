@@ -36,40 +36,64 @@ func TestSetJSONWithIndexes(t *testing.T) {
 		Name     string
 	}
 
-	val := testType{
-		Username: "zegl",
-		Name:     "Gustav",
+	tt := []struct {
+		name     string
+		indexKey string
+		getItem  func() interface{}
+	}{
+		{
+			name:     "SetJSON by value case",
+			indexKey: "zegl",
+			getItem: func() interface{} {
+				return testType{
+					Username: "zegl",
+					Name:     "Gustav",
+				}
+			},
+		},
+		{
+			name:     "SetJSON by pointer case",
+			indexKey: "shkurpylo",
+			getItem: func() interface{} {
+				return &testType{
+					Username: "shkurpylo",
+					Name:     "Anatolii",
+				}
+			},
+		},
 	}
 
-	setresult, err := Bucket("json", "default").SetJSON(val).Run(con())
+	for _, tc := range tt {
 
-	if err != nil {
-		t.Error(err)
-		return
-	}
+		setresult, err := Bucket("json", "default").SetJSON(tc.getItem()).Run(con())
 
-	foundCount := 0
-	foundCorrent := false
-
-	cb := func(key SecondaryIndexQueryResult) {
-		if !key.IsComplete {
-			foundCount++
+		if err != nil {
+			t.Error(err)
+			return
 		}
 
-		if key.Key == setresult.Key {
-			foundCorrent = true
+		foundCount := 0
+		foundCorrent := false
+
+		cb := func(key SecondaryIndexQueryResult) {
+			if !key.IsComplete {
+				foundCount++
+			}
+
+			if key.Key == setresult.Key {
+				foundCorrent = true
+			}
 		}
 
-	}
+		Bucket("json", "default").KeysInIndex("username_bin", tc.indexKey, cb).Run(con())
 
-	Bucket("json", "default").KeysInIndex("username_bin", "zegl", cb).Run(con())
+		if foundCount != 1 {
+			t.Errorf("%s: Expected to find 1 item, found %d\n", tc.name, foundCount)
+		}
 
-	if foundCount != 1 {
-		t.Error("Expected to find 1 item, found ", foundCount)
-	}
-
-	if !foundCorrent {
-		t.Error("Did not find the correct item")
+		if !foundCorrent {
+			t.Errorf("%s: Did not find the correct item\n", tc.name)
+		}
 	}
 }
 

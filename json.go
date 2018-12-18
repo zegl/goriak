@@ -25,8 +25,17 @@ func (c *Command) SetJSON(value interface{}) *SetRawCommand {
 		Value: by,
 	}
 
-	refType := reflect.TypeOf(value)
 	refValue := reflect.ValueOf(value)
+	// Handling case with the pointer as an argument
+	if refValue.Kind() == reflect.Ptr {
+		refValue = refValue.Elem()
+	}
+
+	refType := reflect.TypeOf(value)
+	// Avoiding panic when zero value passed
+	if refValue.IsValid() {
+		refType = refValue.Type()
+	}
 
 	// Indexes from struct value
 	if refType.Kind() == reflect.Struct {
