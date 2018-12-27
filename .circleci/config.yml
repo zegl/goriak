@@ -6,6 +6,7 @@ jobs:
     working_directory: /go/app
     steps:
     - checkout
+    - run: riak start
     - run: go test -v -race -coverprofile=coverage.txt -covermode=atomic
     - run: bash <(curl -s https://codecov.io/bash)
 
