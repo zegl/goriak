@@ -22,9 +22,6 @@ type GetRawCommand struct {
 
 	isRawOutput bool
 
-	// VClock is used in conflict resolution
-	// http://docs.basho.com/riak/kv/2.1.4/developing/usage/conflict-resolution/
-	vclock               []byte
 	conflictResolverFunc func([]ConflictObject) ResolvedConflict
 }
 
